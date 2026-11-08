@@ -1,6 +1,6 @@
 {
   "version": "3.0",
-  "updated_at": "2026-11-08",
+  "updated_at": "2026-11-09",
   "status_note": "Batch07 fixed workspace binding/schema3 backup independently accepted. Normal-install291 run,289 pass,2 OS skips; independent133 run,132 pass,1 skip. No live API/key/billing. NLP01/MKT01 in_progress; NLP02 not_started. Same-ID rollback, reconciliation and production switching pending. WB06 later partial self-report not verified receipt; WB07 separately tracked.",
   "tasks": [
     {
@@ -801,13 +801,13 @@
       "depends_on": [
         "ENG-03"
       ],
-      "status": "in_progress",
+      "status": "review",
       "write_paths": [
         "collaboration/workbuddy/results/WB-07-report.md",
         "collaboration/workbuddy/results/WB-07-results.json"
       ],
       "acceptance": "One synchronous child actual raw body, or truthful blocked final; tests_run0",
-      "dispatch_evidence": "Desktop task 执行 WB-07 任务单并生成报告 observed processing; task and contract reads observed; no result yet"
+      "dispatch_evidence": "Observed one synchronous child task entry and natural finalization. Two files/full body received; original tool logs not independently authenticated. QA clarified overbroad failure/atomicity wording. See docs/verification/batch-07-workbuddy-triage.md"
     }
   ],
   "user_model_configuration": {
@@ -906,10 +906,10 @@
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
     "state": "uploaded",
-    "verified_source_commit": "0a2ad279aef6cba164c2241bd5b084d0bacc2ba8",
-    "verified_remote_commit": "95abae0e4a8f795ebea615704d2f4b7b650f64cf",
-    "verified_tree": "27fbe6ec271650bc371a9225b73aef27088ee9b9",
-    "verification_scope": "Batch06 independently verified code; WB06 finalized blocked because raw child results were not recovered. Publication and review records archived in a following documentation commit",
+    "verified_source_commit": "7be55d7a3e2a492b57c5594eaadc2f4c50802937",
+    "verified_remote_commit": "14045db15c4139ea057d377bbac4f112e3b1a4a5",
+    "verified_tree": "1b59b434032d0e36c9d2753c009b22d03205b9f3",
+    "verification_scope": "Batch07 independently verified binding/schema3 code, remote exact-tree confirmed; following archive records WorkBuddy review and publication. WB07 full body received but original tool logs not independently authenticated; review, not test proof.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }

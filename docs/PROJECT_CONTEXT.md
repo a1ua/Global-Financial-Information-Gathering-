@@ -1,6 +1,6 @@
 # 项目上下文与额度中断恢复记录
 
-更新时间：2026-11-08。本文是工作交接快照；机器任务状态以 `collaboration/task-board.json` 为准，具体执行证据以 `docs/verification/` 为准。
+更新时间：2026-11-09。本文是工作交接快照；机器任务状态以 `collaboration/task-board.json` 为准，具体执行证据以 `docs/verification/` 为准。
 
 ## 用户目标与授权
 
@@ -42,7 +42,9 @@ CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief
 - 新增固定工作区`llm-state.db`与`llm-binding.json`身份/路径绑定；`ledger-bind --adopt-existing`显式采用合法无绑定旧账本。check只读，live入口先验证绑定，再核对客户端身份。单边丢失、移动、损坏、符号链接/junction均拒绝。
 - schema3备份使用0.2清单核对身份，schema1/2仍兼容0.1；恢复不生成活动绑定。两文件全删、另建工作区、同身份旧快照回退、人工对账和生产恢复切换仍未覆盖，NLP-01整体保持in_progress。
 - 离线全套及普通安装均291项：289通过、2项Windows符号链接权限跳过，实际junction通过；独立133项目标联验132通过、1跳过，另验证三种迁移逐列保留与换库/删库无调用。安装证据`.venv/setup-runs/20261108-210528-3cfec227/`，详细报告见`docs/verification/batch-07.md`和`batch-07-review.md`。无真实模型调用、密钥检查或实际费用。
-- WB-06在上次发布后追加partial定稿，声称回收recovery一份子任务正文，另一份未收到；主控保留修改及历史blocked记录，独立QA不把其自述当作已核实工具回执。WB-07已按新任务单派发一次普通同步子任务设计审查；实际结果另行记录。
+- WB-06在上次发布后追加partial定稿，声称回收recovery一份子任务正文，另一份未收到；主控保留修改及历史blocked记录，独立QA不把其自述当作已核实工具回执。WB-07两份定稿及三点正文已收齐，独立QA指出其失败语义措辞过宽，主控已澄清，见`batch-07-workbuddy-triage.md`。底层工具日志未独立认证，任务保持review，不算产品测试。
+
+Batch07源代码提交本地`7be55d7a3e2a492b57c5594eaadc2f4c50802937`，GitHub对应快照`14045db15c4139ea057d377bbac4f112e3b1a4a5`，tree相同`1b59b434032d0e36c9d2753c009b22d03205b9f3`；后续另提交本轮审查及发布归档。通过授权连接上传文件树，保留本地提交历史，不声称远程包含相同完整历史。
 
 下一项优先处理NLP-01的人工对账契约与受控恢复/回退边界，真实模型smoke仍需用户本地安全配置与显式启用。当前不提前派发NLP-02或宣称G3通过。
 

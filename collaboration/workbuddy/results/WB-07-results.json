@@ -1,0 +1,11 @@
+{
+  "task_id": "WB-07",
+  "status": "completed",
+  "execution_mode": "single ordinary synchronous blocking subagent (run_in_background=false, no name/team); full conclusion body returned inline in the same call; no async team, no TaskOutput/SendMessage polling, no retry",
+  "subagent_used": true,
+  "raw_result_recovered": true,
+  "actual_tool_receipt": "One Agent tool call (subagent_type=general-purpose, run_in_background=false, name/team unset) returned the full 3-point conclusion text inline as the tool result; the receipt was a result body, not a dispatch-only or completion-only status. Trailing tool tag: [Agent ID: agent-6a4f43d9-1d31-4eb3-9138-99e5ba6edf83]. No time or ticket was fabricated.",
+  "subagent_result": "1) 未被误写成「旧快照回退防护」——恰恰相反，原文两处明确排除了该能力：文首限定「本批只防止意外删除、不同身份替换或移动后的自动建空库，不是恶意本机管理员防护或同身份旧快照回退检测」，备份兼容段又写明「不能用同一个 ledger_id 证明快照最新，也不能把旧 snapshot 配回原绑定当作安全生产切换；同身份旧快照需要后续高水位/对账与受控切换设计」。身份绑定的真实定位是：schema3 的 ledger_identity 表恰一行（singleton=1，ledger_id 为 ledger_ 加 32 位小写十六进制，created_at 用真实 UTC 系统时间、不消耗注入 clock），仅供固定工作区在 `llm-state.db` 与 `llm-binding.json` 之间核对「固定绝对 ledger_path ↔ 库唯一身份」的一致性，属运行状态、放 data/out 忽略目录、不入库。边界同样写死：不防恶意本机管理员，不阻止调用方另建工作区或重写全部文件，不约束直接 Python ModelClient 这一受信任库接口，真实调用仍需显式 --live 与本地密钥，本批不执行实网。\n\n2) 失败关闭靠「原子发布 + 任何异常态一律拒绝、绝不补齐」实现：写绑定用独占创建或不覆盖的原子发布，并发初始化可安全失败且不覆盖别人的文件；崩溃留下单边/不完整文件时下次直接拒绝、不静默重建。`check_workspace_ledger` 只读（不建目录、不迁移、不读 key），对身份/路径不符、损坏绑定、绑定存在但库缺失抛固定 ModelError，且不回显输入或底层异常；`ensure` 在「绑定存在而库缺失」时拒绝 bound_ledger_missing 且不建空库，schema3 身份缺失/非法必须拒绝、不得自动生成新身份，两者都存在时严格核对固定路径与库身份，不一致即拒绝、即使 adopt_existing=True 也不覆盖重绑定，并拒绝 symlink/junction 与路径逃逸。加上 schema1/2 迁移须先完成既有 currency 迁移再添加身份、不改任何原行或费用，以及预检和失败都不发起网络请求，所有异常态都收敛为「固定错误 + 拒绝」，没有隐式创建、重建或覆盖路径。\n\n3) 二者写集与目的互不相交。`adopt_existing=True` 只作用于「库存在、绑定不存在」这一态（默认 ledger_binding_required），用于验证并迁移已有活动库、建立绑定，且所有预算/pending 保持；它明确「不接管隔离恢复清单所在目录」，并且当两文件都存在时即使用它也不覆盖重绑定、不一致即拒绝。隔离恢复则是「仅创建新隔离目录的 ledger.db 及恢复清单，不生成活动绑定、不覆盖当前库」：schema3 恢复清单走 llm-ledger-backup/0.2，在既有严格字段上新增的 ledger_id 及返回值只要求等于快照库唯一身份，其余业务闭包、费用、pending 与路径校验不变。因此分界是：adopt_existing 给工作区固定路径上的活动库补绑定，恢复只在旁侧产出隔离副本且不回写绑定；把恢复出的旧 snapshot 配回原绑定属被禁止的生产切换，须留待后续高水位/对账与受控切换设计。",
+  "tests_run": 0,
+  "finalized": true
+}
