@@ -1,0 +1,1015 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>全球市场信息 Agent · V3 多Agent开发计划</title><style>:root{--ink:#172638;--muted:#53677c;--blue:#175b91;--line:#dce5ee;--paper:#fff;--bg:#f2f5f8}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.85,"Segoe UI","Microsoft YaHei",sans-serif}
+.layout{max-width:1480px;margin:auto;display:grid;grid-template-columns:245px minmax(0,1fr);gap:30px;padding:30px}
+aside{position:sticky;top:24px;align-self:start;max-height:92vh;overflow:auto;font-size:12px;padding:14px 0}aside strong{display:block;font-size:16px;margin:0 12px 12px}aside a{display:block;text-decoration:none;color:var(--muted);padding:7px 12px;border-radius:6px}aside a:hover{background:#e2ecf6;color:var(--blue)}
+main{min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:38px 42px;box-shadow:0 8px 30px #17375607}.eyebrow{font-size:12px;letter-spacing:.14em;color:var(--blue);font-weight:700}.summary{background:#edf5fc;border-left:4px solid var(--blue);padding:15px 20px;border-radius:6px;margin:20px 0 30px}
+h1{font-size:30px;line-height:1.45;margin:10px 0 20px}h2{font-size:23px;border-top:1px solid var(--line);padding-top:30px;margin-top:40px;line-height:1.5}h3{font-size:18px;margin-top:26px}p{margin:12px 0}a{color:var(--blue);overflow-wrap:anywhere}
+.table-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;width:100%;min-width:650px;font-size:13px;line-height:1.75}th{text-align:left;background:#edf2f7;color:#203c55;padding:12px 14px}td{padding:12px 14px;vertical-align:top;border-top:1px solid var(--line)}tbody tr:nth-child(even){background:#fafcfe}td:first-child{font-weight:600;min-width:95px}pre{white-space:pre;overflow:auto;padding:22px;background:#152b40;color:#e0ebf5;border-radius:10px;line-height:1.7;font-size:13px}code{font-family:Consolas,"Microsoft YaHei",monospace}li{margin:8px 0}
+.milestones{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}.milestones div{padding:15px;border:1px solid var(--line);border-radius:8px;background:#fafcfe}.milestones b{display:block;color:var(--blue);font-size:16px}.milestones span{font-size:12px;color:var(--muted)}footer{margin-top:35px;border-top:1px solid var(--line);padding-top:20px;color:var(--muted);font-size:12px}
+@media(max-width:1000px){.layout{display:block;padding:16px}aside{position:static;max-height:none;margin-bottom:20px}aside a{display:inline-block}main{padding:24px}.milestones{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){h1{font-size:24px}h2{font-size:20px}main{padding:20px 16px}body{font-size:14px}}
+@media print{body{background:white;font-size:10pt}.layout{display:block;padding:0}aside,.eyebrow{display:none}main{border:0;box-shadow:none;padding:0}h2{break-after:avoid}tr{break-inside:avoid}.table-wrap{overflow:visible}table{min-width:0;font-size:9pt}pre{white-space:pre-wrap;background:#f3f5f7;color:#172638}a{color:inherit;text-decoration:none}.milestones{grid-template-columns:repeat(4,1fr)}}</style></head><body>
+<div class="layout"><aside aria-label="章节目录"><strong>立项与实施 · V3</strong><a href="#chapter-2">全球市场信息 Agent：立项章程 V3</a>
+<a href="#chapter-10">全球市场信息 Agent：V3 开发工作分解与集成闸门</a>
+<a href="#chapter-18">数据契约 v0.1：证据到简报的首条纵向链路</a>
+<a href="#chapter-32">多Agent与WorkBuddy执行协议</a>
+<a href="#chapter-37">环境基线与执行端差异</a>
+<a href="#chapter-41">本轮实施与验收记录</a></aside><main>
+<div class="eyebrow">MULTI-AGENT DEVELOPMENT / V3</div>
+<div class="summary"><strong>已开始协作：</strong>三个专项Agent完成审查与文档；WorkBuddy已交付独立探测，结果partial；离线合成链路15项测试通过。完整项目闸门尚未通过。</div>
+<h1 id="chapter-1">全球市场信息 Agent：V3 立项与多Agent开发执行计划</h1>
+<p>日期：2026-11-07｜首版A股研究优先｜协作方式：Codex主控 + 专项Agent + WorkBuddy独立工作包</p>
+<p>本版合并立项价值、详细WBS、数据契约、开发协作协议和本轮真实执行记录。原V2方案保留。以下章节由对应源文档生成；后续修改源文档后运行scripts/render-v3.ps1重新生成。</p>
+<p>本次交付：25项开发/验证任务、G0–G5闸门、机器可读任务板、WB-01探测交付及已通过15项测试的离线原型。真实采集、LLM、行情评价和持续运行尚未完成。</p>
+<p>投入预算：90–147小时，约11–19个单人等效工作日；另设2–3日风险缓冲。7交易日运行验收另计，可与部分后续工作重叠；不按Agent数量直接折算完成日期。</p>
+<h2 id="chapter-2">全球市场信息 Agent：立项章程 V3</h2>
+<p>日期：2026-11-07｜基线：<a href="market-intel-agent-dev-plan-v2-20261107.md">开发计划 V2.0</a>｜状态：待真实数据与前瞻运行验证</p>
+<p>本章程补齐 V2 的立项价值、覆盖边界和阶段决策条件。数据契约、时间口径、评价协议与运行架构沿用 V2；本文件不代表已完成连通性测试、系统开发或运行验收。</p>
+<h3 id="chapter-3">1. 立项假设与用户价值基线</h3>
+<p>目标用户为单个 A 股研究者。核心假设是：在固定、可说明的来源范围内，把证据归档、增量筛选和简报整理自动化，能够减少日常阅读时间，同时不增加重大事实错误或关键事件遗漏。</p>
+<p>“前瞻判断是否存在稳定统计表现”是独立研究问题，不作为简报软件交付前提。首版的软件价值由研究耗时、事实可靠性、覆盖完整性和持续运行能力共同衡量。</p>
+<p>在首个试运行交易日前冻结基线方法：由使用者按同一来源矩阵完成至少 3 个交易日的人工阅读记录；随后至少 7 个交易日使用系统，并保留必要原文核查时间。样本仅用于产品决策，不作统计充分性承诺。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>记录方法</th>
+<th>立项观察目标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每日研究耗时</td>
+<td>盘前、盘后分别记录实际阅读与核查分钟数，不含等待程序时间；人工基线和系统辅助期使用相同覆盖范围</td>
+<td>系统辅助期中位耗时比人工基线减少至少 30%；若未达到则分析整理、核查或内容排序的成本，不直接扩源</td>
+</tr>
+<tr>
+<td>关键事件遗漏</td>
+<td>人工独立标注覆盖范围内的关键事件，记录系统是否在报告截点前发现并纳入</td>
+<td>达到冻结的覆盖门槛，同时逐条解释漏采与漏选原因</td>
+</tr>
+<tr>
+<td>可用观察事项</td>
+<td>使用者为简报中的观察事项标记“可直接使用 / 需修改 / 无用”，保留修改理由</td>
+<td>至少一半可直接使用；此目标为产品试验门槛，不等于投资有效性</td>
+</tr>
+<tr>
+<td>事实可靠性</td>
+<td>对已发布内容检查来源支持、数字、主体、日期和转述性质</td>
+<td>无未解决的重大无依据事实；发现后回退相关输出并追踪修复</td>
+</tr>
+</tbody>
+</table></div>
+<p>用户无法持续提供耗时和使用反馈时，仍可交付技术 MVP，但立项结论必须写为“用户价值未验证”，不能替换为模型自评。</p>
+<h3 id="chapter-4">2. 首版范围与覆盖矩阵</h3>
+<p>“全球”描述信息视角，不代表全面覆盖。每个来源必须通过实测后写入实际机构、入口、覆盖主题、回溯范围及失效条件。以下为待填实的范围基线，不是已接通清单。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>观察类别</th>
+<th>首版承诺</th>
+<th>首版明确缺口</th>
+<th>扩展触发条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>国内政策与监管</td>
+<td>至少 1 个经验证官方来源；围绕利率、监管及配置的重点政策主题</td>
+<td>未接入机构、地方政策及非公开信息不纳入覆盖承诺</td>
+<td>运行稳定且漏采清单证明扩源有明确收益</td>
+</tr>
+<tr>
+<td>海外宏观与监管</td>
+<td>至少 1 个经验证官方来源；观察影响 A 股的海外事件</td>
+<td>不承诺覆盖全部经济数据或全球监管活动</td>
+<td>已有数据完整、时区明确，新增主题可独立验收</td>
+</tr>
+<tr>
+<td>补充资讯</td>
+<td>最多先接入 1 个可用补充源，明确标注转述与核实状态</td>
+<td>不将媒体报道等同于官方确认，不承诺全网舆情</td>
+<td>事实核查负担可接受且不降低证据质量</td>
+</tr>
+<tr>
+<td>公司公告</td>
+<td>先支持已接入来源内、与观察实体相关的公告证据</td>
+<td>不承诺全 A 股公告无遗漏；个股评价默认不启用</td>
+<td>主数据、证券映射与行情质量通过后单列范围</td>
+</tr>
+<tr>
+<td>行情与基准</td>
+<td>固定指数及少量行业代理，代码和数据口径在 M0 冻结</td>
+<td>不包含逐笔、全市场资金流或任意自选股收益评价</td>
+<td>行情与公司行动处理能满足已冻结协议</td>
+</tr>
+<tr>
+<td>交易日历</td>
+<td>A 股运行日历；海外来源时间转换及必要会话信息</td>
+<td>美股独立盘前/盘后简报不属于首版</td>
+<td>双市场调度、提前收市及数据延迟实测通过</td>
+</tr>
+</tbody>
+</table></div>
+<p>每份简报展示本次实际覆盖的来源、信息截点及不可用来源。缺少输入时标记降级；不以旧数据、模型常识或不相干主题填补。</p>
+<h3 id="chapter-5">3. 事件重要性与筛选规则</h3>
+<p>首版使用可审阅的规则排序，不让模型单独控制样本入口。重要性和方向判断分开保存。</p>
+<p>规则优先级依次为：官方决定或公告、冻结的重点事件类型、命中观察实体、首次出现或实质修订、发布时间。来源级别是证据质量线索，不保证经济重要性；已确认的关键事件采用显式规则保留，不能仅因标题不含关键词而丢弃。</p>
+<p>具体执行要求：</p>
+<ol>
+<li>精确去重后保存所有合格条目；筛选只影响报告和模型调用，不删除原始事件。</li>
+<li>为每条入选、未入选、仅列标题或送模型的记录保存规则版本、命中项与原因码。</li>
+<li>每日报告长度和模型候选上限在 M0 冻结；超过上限保留完整事件索引，并标记被截断区间。</li>
+<li>实质修订、撤回或多源冲突优先进入人工核查/显式提示，不能自动归并为已确认事实。</li>
+<li>对漏选样本单独统计。修改规则形成新版本，不回写历史判断或将旧表现当作新规则前瞻表现。</li>
+</ol>
+<h3 id="chapter-6">4. 指标、分母与验收口径</h3>
+<p>开发集、验证集和前瞻运行期分别保存，不混算。人工标注由开发者初标、独立审核 Agent 检查一致性，争议事项由使用者或明确授权的负责人裁定。审核 Agent 不得直接修改门槛以使结果达标。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>分子 / 分母或计算口径</th>
+<th>初始目标与限制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>关键事件捕获率</td>
+<td>截点前已入库的人工关键事件数 / 冻结来源、主题和区间内人工独立标注的关键事件总数</td>
+<td>≥80%；分母不能仅来自系统已采集内容；超出覆盖范围另列</td>
+</tr>
+<tr>
+<td>关键事件报告覆盖率</td>
+<td>截点前已在报告中出现的人工关键事件数 / 同区间人工关键事件总数</td>
+<td>单独报告，区分抓取漏采与规则漏选；不得与捕获率混用</td>
+</tr>
+<tr>
+<td>分类准确率</td>
+<td>分类正确的验证记录数 / 冻结验证记录总数</td>
+<td>≥90%；按类别及中英文分列，缺失输出计错误</td>
+</tr>
+<tr>
+<td>合并精确率</td>
+<td>被系统合并且人工确认同一事件的候选对数 / 系统实际合并的候选对总数</td>
+<td>≥95%；无合并对时记不可计算，不报100%</td>
+</tr>
+<tr>
+<td>合并召回率</td>
+<td>被正确合并的真实重复候选对数 / 标注集真实重复候选对总数</td>
+<td>分别报告，不以低合并率掩盖漏合并；分母为零记不可计算</td>
+</tr>
+<tr>
+<td>引用可解析率</td>
+<td>引用可解析且对应实际输入证据的事实陈述数 / 已发布事实陈述总数</td>
+<td>100%；仅链接存在不等于事实受支持</td>
+</tr>
+<tr>
+<td>事实支持度</td>
+<td>人工抽检确认受证据支持的事实陈述数 / 本次抽检事实陈述总数</td>
+<td>报告样本数、抽样方法与错误明细；重大错误为发布阻断项</td>
+</tr>
+<tr>
+<td>简报按时率</td>
+<td>目标时间内发布的完整或明确降级报告数 / 观察期计划报告总数</td>
+<td>完整版、降级版另列；机器离线仍在分母，迟到不算按时</td>
+</tr>
+<tr>
+<td>完整报告率</td>
+<td>截点及必需输入满足要求的完整报告数 / 观察期计划报告总数</td>
+<td>不把降级报告算完整；门槛由 M0 实测锁定</td>
+</tr>
+<tr>
+<td>发布/处理延迟</td>
+<td>按可靠发布时间→发现、发现→入库、入库→报告分别算 P50/P90</td>
+<td>时间仅精确到日期或无法解析的记录单列；不得强行补时间</td>
+</tr>
+<tr>
+<td>评价数据完整率</td>
+<td>到期且所需价格完整的评价样本数 / 观察期所有到期评价样本数</td>
+<td>显示缺失、停牌及异常原因；不把缺失收益记零</td>
+</tr>
+<tr>
+<td>弃权率</td>
+<td>uncertain或明确弃权判断数 / 已进入判断阶段的事件数</td>
+<td>同时展示未进入判断阶段数量及筛除原因，避免筛选隐藏样本</td>
+</tr>
+<tr>
+<td>二元方向命中率</td>
+<td>达到预先冻结规则的正确正/负判断数 / 已成熟且数据完整的有效正/负判断数</td>
+<td>neutral、mixed、uncertain单列；正负方向和绝对/相对口径不可混算</td>
+</tr>
+</tbody>
+</table></div>
+<p>覆盖与时效的 SLO 在 M0 根据来源特性冻结。连续运行验收至少 7 个交易日，附完整/降级/失败/迟到计数，且无未解决阻断故障；该观察长度不证明长期可靠性或研究有效性。</p>
+<h3 id="chapter-7">5. 阶段退出与停止条件</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>退出条件</th>
+<th>不满足时处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M0 范围与依赖验证</td>
+<td>覆盖矩阵填实；至少两个官方来源有真实样本；运行环境可用；预算与依赖明确</td>
+<td>缩小范围或替换来源；无法获得合法且足够的证据则暂停相关能力，不进入扩源开发</td>
+</tr>
+<tr>
+<td>M1 简报 MVP</td>
+<td>一条真实来源纵向链路可运行；引用和原始证据可回溯；重跑幂等；失败可降级；无模型仍能输出事件清单</td>
+<td>修复数据与证据基础，暂停增加模型能力、主题及界面</td>
+</tr>
+<tr>
+<td>M2 可评价版本</td>
+<td>固定判断协议；行情/日历合格；无未来数据用例、手算和固定快照重算通过</td>
+<td>保留简报功能，关闭不合格评价；不得以备用口径静默替换</td>
+</tr>
+<tr>
+<td>M3 运行交付</td>
+<td>至少7个交易日记录；恢复演练通过；无未解决阻断缺陷；交付文档与限制齐全</td>
+<td>修复后重验受影响窗口；不把技术完成写成运行验收完成</td>
+</tr>
+<tr>
+<td>价值复核</td>
+<td>人工基线与使用期记录完整，耗时、遗漏和事实可靠性可以比较</td>
+<td>数据不足标为未验证；连续试用无明显节时或核查负担过高，优先调整范围和排序，不继续加功能</td>
+</tr>
+</tbody>
+</table></div>
+<p>任一阶段发现严重无依据事实、评价前视偏差、历史判断可被普通操作改写、无法解释的行情口径变化，应暂停相应输出或评分直至修复。暂停范围以受影响能力为限，保留可验证的事件清单与证据访问。</p>
+<h3 id="chapter-8">6. 投入、缓冲与多 Agent 协作原则</h3>
+<p>V2的10–15个开发工作日作为原始参考。V3详细工作包汇总为90–147个有效投入小时（含WorkBuddy独立辅助），约11–19个单人等效工作日，作为当前总量预算；另预留2–3个工作日风险缓冲处理真实来源适配、环境差异或接口修订。至少7个交易日运行观察单列，可部分重叠。实际日历工期取决于可并行任务和主控集成能力，M0后重新估算，不把前瞻样本成熟期压入开发承诺。</p>
+<p>多 Agent 用于并行检查和边界清晰的工作包，不假定必然缩短工期。接口协商、集成、审查和返工需要时间；不因 Agent 数量增加按比例缩短估计。</p>
+<p>主控负责接口与共享 schema、依赖文件及集成；采集 Agent 负责来源与标准化；报告 Agent 负责模型输出与模板；独立验证 Agent 负责跨模块审查。WorkBuddy 作为能力待实测的额外执行端，先承担一个可隔离工作包或只读评审，不假定存在 CLI、API、后台协作或跨 Agent 消息接口。</p>
+<p>每项委派包括任务 ID、允许编辑路径、输入版本、输出文件、验收命令、实际测试结果和限制。共享工作区遵守目录独占；涉及共享契约的变更由主控串行集成。验收未通过的依赖不得作为已完成输入。具体工作包、任务状态和 WorkBuddy 接入记录由主控维护的实施计划承接。</p>
+<h3 id="chapter-9">7. 本次立项决策</h3>
+<p>可以继续实施最小纵向链路及真实来源验证；暂不扩大到美股独立简报、全市场公告或自动调参。M0 决定数据可行性，M1 证明证据与简报链路可用，M3 结合运行记录与价值基线决定是否扩展。软件可用与研究有效性分别给结论。</p>
+<hr />
+<h2 id="chapter-10">全球市场信息 Agent：V3 开发工作分解与集成闸门</h2>
+<p>日期：2026-11-07。状态：实施前任务基线。本文件细化 V2 产品方案，不表示代码、来源或验收已经完成。任务执行状态以 <code>collaboration/task-board.json</code> 为准；计划变更由主控同步两份文件。</p>
+<h3 id="chapter-11">1. 立项后仍需先解决的工程缺口</h3>
+<ul>
+<li>当前已观察到的仓库内容为 V2 计划、HTML 与渲染脚本；未看到产品实现。检查时 Git 尚无提交。</li>
+<li><code>py --list-paths</code> 未发现注册的 Python。此结果仅说明启动器未找到解释器，不能证明电脑其他位置不存在 Python。主控随后通过 <code>load_workspace_dependencies</code> 找到Codex捆绑解释器，并实际验证 Python 3.12.14、SQLite 3.53.1与 America/New_York 时区可用；完整G0仍需安装/启动文档、项目依赖及CLI验证，不能据此标记全闸门通过。</li>
+<li>多 Agent 和 WorkBuddy 是开发协作工具；产品运行继续使用确定性流水线。首版不额外引入运行时多 Agent 框架。</li>
+<li>共享模型、数据库迁移、CLI、依赖配置须先冻结公共契约和编辑责任，避免并行实现相互不兼容。</li>
+<li>所有联网来源均为候选，只有真实探测与使用条件检查通过后，才进入正式配置；离线 fixture 的测试通过不代表来源长期可用。</li>
+</ul>
+<h3 id="chapter-12">2. 角色、写入范围与工作方式</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>角色</th>
+<th>责任</th>
+<th>默认可写路径</th>
+<th>共享文件处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主控/集成者</td>
+<td>范围、环境、公共契约、集成、发布、任务板</td>
+<td><code>pyproject.toml</code>、依赖锁、<code>README.md</code>、<code>.gitignore</code>、<code>src/market_intel/contracts/</code>、<code>store/</code>、<code>cli.py</code>、总计划与任务板</td>
+<td>schema、契约、CLI 及依赖的变更均由主控整合</td>
+</tr>
+<tr>
+<td>采集 Agent</td>
+<td>来源、解析、检查点、幂等与来源隔离</td>
+<td><code>src/market_intel/adapters/news/</code>、<code>pipeline/capture/</code>、<code>tests/adapters/</code>、对应 fixture</td>
+<td>不直接改 schema 或通用模型；提交契约变更建议</td>
+</tr>
+<tr>
+<td>数据/复盘 Agent</td>
+<td>标的、行情、交易会话、评价协议与计算</td>
+<td><code>src/market_intel/market/</code>、<code>review/</code>、<code>tests/market/</code>、<code>tests/review/</code></td>
+<td>新字段先请求主控批准契约版本</td>
+</tr>
+<tr>
+<td>模型/报告 Agent</td>
+<td>模型客户端、证据、预算、报告</td>
+<td><code>src/market_intel/llm/</code>、<code>pipeline/process/</code>、<code>report/</code>、对应测试</td>
+<td>不能自行改变证据ID、时间、判断冻结语义</td>
+</tr>
+<tr>
+<td>QA/审查 Agent</td>
+<td>独立回归、故障及端到端检查</td>
+<td><code>tests/integration/</code>、<code>tests/e2e/</code>、<code>docs/verification/</code></td>
+<td>若测试暴露公共问题，先报给文件所有者</td>
+</tr>
+<tr>
+<td>WorkBuddy</td>
+<td>指定任务单内的独立验证与开发辅助</td>
+<td>首包仅 <code>collaboration/workbuddy/results/</code></td>
+<td>未交接编辑权限前，不修改产品代码、配置或任务板</td>
+</tr>
+</tbody>
+</table></div>
+<p>每个工作包只有一个当前实现者和一个验收者。主控加最多三个执行/审查 Agent 构成一轮；不得因任务表有多个角色就默认这些角色已经运行。WorkBuddy 与 Agent 即使能访问同一目录，也不同时编辑相同文件。</p>
+<p>优先在独立 checkout 中开发，并以基线提交、patch/提交及测试记录交接；若当前只能共享工作区，则使用本表的文件所有权，禁止其他 Agent 切换全局分支或覆盖未提交文件。没有提交基线之前只开展环境/来源检查及隔离文档工作。</p>
+<h3 id="chapter-13">3. WBS：每项任务的输入、产物与验收</h3>
+<p>工时为有效投入小时范围，含任务内基本验证，不含来源等待、凭证等待、七交易日观察及跨任务返工。独立审查和集成仍占投入，不能把总工时直接除以 Agent 数量作为交付承诺。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>工作包 / 责任角色</th>
+<th>前置</th>
+<th>交付物</th>
+<th>验收步骤与预期</th>
+<th>估计小时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ENG-01</td>
+<td>环境定位 / 主控</td>
+<td>无</td>
+<td>解释器、SQLite、时区与依赖可用性清单</td>
+<td>定位实际 Python 可执行文件；执行版本、sqlite3、zoneinfo 检查；无可用解释器时如实标记阻塞</td>
+<td>2–4</td>
+</tr>
+<tr>
+<td>ENG-02</td>
+<td>可安装脚手架 / 主控</td>
+<td>ENG-01</td>
+<td>包目录、pyproject、依赖方案、忽略规则、启动文档及 Git 基线</td>
+<td>新虚拟环境按文档安装；CLI help 返回成功；密钥、运行数据不纳入版本库</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>ENG-03</td>
+<td>公共契约 v0 / 主控</td>
+<td>ENG-02</td>
+<td>ID/UTC/证据/事件/判断/错误码/状态样例及契约</td>
+<td>校验有效和无效样例；各实现者确认输入输出；记录契约版本</td>
+<td>4–6</td>
+</tr>
+<tr>
+<td>ENG-04</td>
+<td>存储与迁移 / 主控</td>
+<td>ENG-03</td>
+<td>schema、迁移、事务及不可变保护</td>
+<td>验证外键、唯一键、修订追加、拒绝历史改写；备份副本验证迁移</td>
+<td>5–8</td>
+</tr>
+<tr>
+<td>ENG-05</td>
+<td>离线纵向样例 / 主控</td>
+<td>ENG-04</td>
+<td>固定证据→事件→简报的最小链路及输入清单</td>
+<td>单命令离线生成报告；事实引用可解析；固定输入重跑无重复</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>SRC-01</td>
+<td>来源验证 / 采集 Agent</td>
+<td>ENG-03</td>
+<td>国内/海外/补充资讯候选矩阵、真实样本、保留条件</td>
+<td>逐项记录请求时间、响应、字段、原始时间、正文及失败；候选明确通过/不通过/待确认</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>SRC-02</td>
+<td>首批适配器 / 采集 Agent</td>
+<td>SRC-01、ENG-05</td>
+<td>RSS 适配器及一个真实通过的页面/API适配器</td>
+<td>固定样本解析；空页、编码、缺正文和错误格式测试；受控联网探测独立记录</td>
+<td>5–8</td>
+</tr>
+<tr>
+<td>SRC-03</td>
+<td>增量与恢复 / 采集 Agent</td>
+<td>SRC-02</td>
+<td>检查点、重叠回看、幂等、单源隔离</td>
+<td>断网不推进检查点；重复触发无重复；乱序/同时间戳/正文修订可恢复</td>
+<td>4–6</td>
+</tr>
+<tr>
+<td>MKT-01</td>
+<td>行情与日历能力验证 / 数据 Agent</td>
+<td>ENG-03</td>
+<td>标准标的、基准、交易会话与供应商能力矩阵</td>
+<td>核实代码、币种、OHLC、调整口径和日历来源；不满足时关闭对应评价协议</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>MKT-02</td>
+<td>行情/日历版本化 / 数据 Agent</td>
+<td>MKT-01、ENG-04</td>
+<td>同步、质量检查与固定快照</td>
+<td>测试假期、DST、提前收市、缺失、修订与公司行动异常；原快照仍可读取</td>
+<td>5–8</td>
+</tr>
+<tr>
+<td>NLP-01</td>
+<td>模型调用与预算 / 模型 Agent</td>
+<td>ENG-03</td>
+<td>薄客户端、调用记录、限额、重试、缓存</td>
+<td>mock 测试超时/无效JSON/超额；真实调用须先配置凭证及明确限额，不自动无限重试</td>
+<td>4–6</td>
+</tr>
+<tr>
+<td>NLP-02</td>
+<td>抽取与证据 / 模型 Agent</td>
+<td>NLP-01、SRC-03</td>
+<td>结构化事件、证据片段及分类评测记录</td>
+<td>开发/验证集分开；缺信息留空；正文指令不改变系统；引用必须绑定可用片段</td>
+<td>5–8</td>
+</tr>
+<tr>
+<td>NLP-03</td>
+<td>聚类与冲突 / 模型 Agent</td>
+<td>NLP-02</td>
+<td>规则候选、歧义裁决、冲突保留与版本</td>
+<td>独立检查误合并/漏合并；进展新闻不覆盖旧证据；无需调用模型的重复先由代码处理</td>
+<td>4–6</td>
+</tr>
+<tr>
+<td>RPT-01</td>
+<td>报告输入与证据检查 / 报告 Agent</td>
+<td>NLP-02、ENG-05</td>
+<td>截点选择、结构化事实/解释/观察事项</td>
+<td>首次发现晚于截点的数据不进入历史截点版；引用不存在拒绝发布；无主题不强填</td>
+<td>4–6</td>
+</tr>
+<tr>
+<td>RPT-02</td>
+<td>正式双模板与补版 / 报告 Agent</td>
+<td>RPT-01</td>
+<td>盘前/后 HTML与Markdown、降级、原子发布</td>
+<td>完整与降级版均有截点/行情时点/run_id；失败不覆盖旧版；补版生成新版本</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>REV-01</td>
+<td>冻结判断与协议 / 数据 Agent</td>
+<td>MKT-02、NLP-03</td>
+<td>方向、标的、基准、时间窗口、弃权和协议版本</td>
+<td>价格起点严格晚于校验提交成功的committed_at；缺字段拒收；修改历史失败、更正追加</td>
+<td>5–8</td>
+</tr>
+<tr>
+<td>REV-02</td>
+<td>成熟队列与核对 / 数据 Agent</td>
+<td>REV-01</td>
+<td>pending/eligible等状态、AR/CAR及排除原因</td>
+<td>手算价格样例一致；未成熟不评分；缺价格不当作零；同快照重算数值一致</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>REV-03</td>
+<td>周度核对 / 数据 Agent</td>
+<td>REV-02</td>
+<td>样本、弃权、完整率、方向结果与CAR分布</td>
+<td>样本分母可逐条追溯；同一事件多标的/窗口不伪装独立事件；无因果或有效性保证</td>
+<td>5–8</td>
+</tr>
+<tr>
+<td>OPS-01</td>
+<td>调度与恢复 / 主控</td>
+<td>RPT-02、SRC-03</td>
+<td>Windows任务模板、锁、漏跑恢复、状态输出</td>
+<td>重复触发、进程退出、过期锁、断网和电脑离线均有可解释结果</td>
+<td>4–6</td>
+</tr>
+<tr>
+<td>OPS-02</td>
+<td>备份恢复 / 主控</td>
+<td>ENG-04、ENG-05</td>
+<td>一致备份、证据清单与副本恢复命令</td>
+<td>在独立副本恢复库和引用文件；核对完整性；不覆盖生产工作库</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>QA-01</td>
+<td>集成与故障审查 / QA Agent</td>
+<td>OPS-01、OPS-02、REV-03</td>
+<td>回归报告、失败样例、严重性清单</td>
+<td>离线必需测试通过；联网探测单列；主要故障与未来数据隔离有证据</td>
+<td>5–8</td>
+</tr>
+<tr>
+<td>QA-02</td>
+<td>运行验收与交付 / 主控</td>
+<td>QA-01</td>
+<td>至少7交易日记录、手册、限制与最终DoD</td>
+<td>完整/降级/迟到/失败全部计入；未解决阻断项不能标完成；数据不足不声称研究有效</td>
+<td>3–5</td>
+</tr>
+<tr>
+<td>WB-01</td>
+<td>环境与来源只读探测 / WorkBuddy</td>
+<td>无</td>
+<td>独立探测报告，仅写结果目录</td>
+<td>明确命令/请求、时间、观察、失败与未验证项；不改产品配置、不安装、不填造数据</td>
+<td>1–3</td>
+</tr>
+<tr>
+<td>WB-02</td>
+<td>时间与收益黑盒复核 / WorkBuddy</td>
+<td>REV-02</td>
+<td>独立预期输入输出、差异报告</td>
+<td>手算/独立算法与产品结果逐条比对；覆盖盘前中后、假期、缺失、未成熟</td>
+<td>2–4</td>
+</tr>
+<tr>
+<td>WB-03</td>
+<td>报告阅读与证据抽检 / WorkBuddy</td>
+<td>RPT-02</td>
+<td>带样例ID的内容与布局检查报告</td>
+<td>检查事实支持、截点、数字、缺失标记及宽/窄屏；未观察到的视觉结果不得声称通过</td>
+<td>2–4</td>
+</tr>
+</tbody>
+</table></div>
+<p>精确允许目录和当前状态见机器任务板。目录均相对项目根；某任务允许的路径不意味着它已经创建，也不授权直接改其他公共文件。</p>
+<h3 id="chapter-14">4. 任务依赖与执行批次</h3>
+<pre><code class="language-text">ENG-01 → ENG-02 → ENG-03 → ENG-04 → ENG-05
+                     ├→ SRC-01 → SRC-02 → SRC-03 → NLP-02 → NLP-03
+                     ├→ NLP-01 ───────────────────┘             │
+                     └→ MKT-01 → MKT-02 ──────────────────→ REV-01
+                                                                    ↓
+ENG-05 + NLP-02 → RPT-01 → RPT-02 → OPS-01                REV-02 → REV-03
+ENG-04 + ENG-05 → OPS-02                              OPS-01/02 + REV-03
+                                                                    ↓
+                                                                  QA-01 → QA-02
+</code></pre>
+<p>任务板中 <code>depends_on</code> 是权威依赖列表。上图用于阅读，省略部分跨线依赖。QA-02完成要求所有前置通过，七交易日观察可在 OPS-01 已通过并启用稳定配置后提前开始；影响运行行为的修复须重测对应窗口，不以早期不完整原型的记录替代正式观察。</p>
+<p>建议批次：</p>
+<ol>
+<li><strong>批次0：</strong> 主控完成ENG-01至ENG-03；WorkBuddy并行做WB-01，但其结果经核对后才能写入正式来源配置。</li>
+<li><strong>批次1：</strong> 主控完成ENG-04/05；采集Agent做SRC-01；数据Agent做MKT-01；公共契约变更由主控协调。</li>
+<li><strong>批次2：</strong> 采集Agent完成SRC-02/03；数据Agent做MKT-02；模型Agent做NLP-01；主控检查接口和纵向样例。</li>
+<li><strong>批次3：</strong> 模型Agent做NLP-02/03；主控或报告Agent做RPT-01/02；数据Agent在依赖成熟后做REV-01/02；WB-03可独立抽检。</li>
+<li><strong>批次4：</strong> 主控做OPS；数据Agent做REV-03；QA进行独立审查；WB-02复核计算；合并通过后开始/继续正式运行验收。</li>
+</ol>
+<p>批次内依赖仍然有效，不能因为“并行”提前使用未冻结输出。实现者交付“待审查”，主控或独立审查者验收后才改为完成。</p>
+<h3 id="chapter-15">5. G0–G5集成闸门</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>闸门</th>
+<th>出口条件</th>
+<th>必备证据</th>
+<th>阻断后的允许工作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>G0 环境就绪</td>
+<td>ENG-01/02通过；实际解释器、隔离环境、依赖与CLI可运行</td>
+<td>执行路径、版本、命令和结果；Git基线</td>
+<td>可继续只读来源调研与文档，不宣称代码测试通过</td>
+</tr>
+<tr>
+<td>G1 契约冻结</td>
+<td>ENG-03/04通过；模型、schema、错误、时间与状态规则一致</td>
+<td>契约样例、schema版本、迁移/约束测试</td>
+<td>独立来源探测可继续；跨模块实现不得猜接口</td>
+</tr>
+<tr>
+<td>G2 离线纵向通过</td>
+<td>ENG-05通过；证据到简报可回放</td>
+<td>固定fixture、运行命令、引用清单、报告</td>
+<td>可开发适配器；不对外承诺真实覆盖</td>
+</tr>
+<tr>
+<td>G3 真实简报通过</td>
+<td>SRC-01/02/03、NLP-01/02、RPT-01/02、OPS-01通过</td>
+<td>真样本、报告截点、幂等、预算和降级记录</td>
+<td>行情失败时可发布明确降级事件版；不开启不合格评价</td>
+</tr>
+<tr>
+<td>G4 评价通过</td>
+<td>MKT-01/02、NLP-03、REV-01/02/03通过</td>
+<td>手算样例、日历/未来隔离测试、不可变及快照结果</td>
+<td>样本仍不足时保留功能可用结论，不作研究有效性结论</td>
+</tr>
+<tr>
+<td>G5 交付通过</td>
+<td>OPS-02、QA-01/02通过；G0–G4无未解决阻断项</td>
+<td>恢复演练、至少7交易日运行、DoD、手册和已知限制</td>
+<td>未通过项列入缺口，不把规划或派发当完成</td>
+</tr>
+</tbody>
+</table></div>
+<p>任务板25项估计合计90–147个有效投入小时，其中核心开发及QA约85–136小时、WorkBuddy独立辅助约5–11小时。总量按8小时折算约11.25–18.4个单人等效工作日，不包含七交易日观察和等待；协作并行只可能缩短其中部分日历时间，不会消除审查及集成投入。原V2的10–15开发工作日保留为需M0校准的范围参考，非日期承诺；若要严格保持该上限，应减少首批源或延后非关键功能，不压缩验证。并行总工时、单人等效天数、实际日历工期分别报告。</p>
+<h3 id="chapter-16">6. WorkBuddy交接与回收协议</h3>
+<p>主控通过实际验证的入口派发任务，不猜测WorkBuddy API或CLI。WB-01任务单只允许写 <code>collaboration/workbuddy/results/</code>；用户已要求WorkBuddy协助开发，但“发出任务”“收到结果”“验收结果”仍是三个不同状态。主控根据实际观察单独更新派发状态；本工作包初始任务板统一为planned。</p>
+<p>每次任务单包含：任务ID、基线提交或清单、契约版本、允许读写目录、禁止修改项、输入样本、期望操作、失败处理、验收方法、输出路径与结果结构。涉及产品代码时，另分配独立checkout/分支和文件所有权；首包没有这项权限。</p>
+<p>结果至少列出：task_id、执行开始/结束时间、执行者/工具、实际命令或请求、观察、产物路径、校验结果、未验证项、阻塞、下一步建议。凭证及完整环境变量不得写入结果。联网失败保留失败事实，不改为“来源不存在”；仅检查首页也不能宣称增量、正文、历史和许可全已通过。</p>
+<p>回收步骤：主控读取产物→复核范围及真实性→必要时复跑关键命令→独立验收→将已确认结论写入文档；来源正式配置需额外通过接入门槛→任务板标done。返回的报告和代码同样是参考输入，不能自动获得修改共享契约或扩大任务范围的权力。</p>
+<h3 id="chapter-17">7. 状态、变更与每轮交付</h3>
+<p>任务状态采用planned、dispatched、in_progress、review、done、blocked。planned表示尚未执行；dispatched仅代表实际派发；review表示实现者交付但未通过验收；blocked需写明阻塞原因及解除条件。状态不能仅依据角色分配或文件存在自动升级。</p>
+<p>每轮交付记录基线、修改文件、测试命令及结果、产物、风险、未验证项、下游影响。需要公共契约变更时先提交变更提案，主控检查调用方、数据迁移及回归影响后统一整合。不得覆盖已有文档、未提交代码或他人正在写的文件。</p>
+<p>开始产品模块并行实现前的最小可观察成功条件：G0通过、G1样例可用、至少一项真实来源探测有证据、每个并行工作包有唯一文件所有者和验收者。环境与契约尚在建立时，可由主控先做隔离的纯标准库离线验证原型，并提供 <code>scripts/dev.ps1</code> 自动定位可用解释器；fixture→证据/事件→截点简报与manifest用于检验方案，不等于正式采集、LLM或全G0/G2已验收。不存在完整前置条件时先完成基础工作，不以多Agent数量代替可交付进度。</p>
+<hr />
+<h2 id="chapter-18">数据契约 v0.1：证据到简报的首条纵向链路</h2>
+<p>状态：设计基线，尚未实现 schema 或数据迁移。适用范围：单机、单用户、A 股优先的日频研究系统。本文约束代码接口与回归行为，不表示来源已接入或未来评价能力已实现。</p>
+<h3 id="chapter-19">1. 实施边界</h3>
+<p>MVP 必需：RawItem、EventVersion、Evidence、ReportManifest、时间截点规则、稳定标识、不可变引用、输入清单哈希、失败原因。首条纵向链路可以使用明确标注的合成 fixture 验证；合成样本不计入真实来源覆盖或研究效果。</p>
+<p>后置契约：Prediction、MarketSnapshot、ReviewResult、真实预算预留账本。本文提前固定其交界字段，防止首版设计阻碍扩展；不要求简报 MVP 实现行情或评分。</p>
+<p>所有 JSON 示例均为合成数据，URL 使用保留示例域名。示例哈希为结构占位值，必须由真实序列化内容计算后才能进入运行系统。</p>
+<h3 id="chapter-20">2. 公共字段与时间规范</h3>
+<ul>
+<li>schema_version：该对象的数据结构版本，不等于业务记录版本。</li>
+<li>稳定逻辑 ID 与版本 ID 分离。event_id 标识同一事件，event_version_id 标识一次不可变事实快照；正文修订产生新的 raw_item_id。</li>
+<li>存储时间使用带 Z 的 UTC ISO 8601 字符串，比较前解析为时间，不能依靠任意格式字符串排序。展示时区使用 IANA 标识，例如 Asia/Shanghai。</li>
+<li>source_published_at 为来源声称的发布时间，可为 null；source_time_text、source_timezone、source_time_precision、time_parse_status 保留原始表达与解析质量。只有日期时，source_published_at 留空，另存 source_published_date；不补出午夜作为精确时点。</li>
+<li>first_seen_at 是系统第一次观察到该内容版本的时刻；fetched_at 为一次成功获取结束时刻；persisted_at 为持久化完成时刻；processed_at 为结构化输出校验并提交时刻。原始内容通常满足 first_seen_at ≤ fetched_at ≤ persisted_at，结构化对象满足 processed_at ≥ 输入的可用时刻。</li>
+<li>available_at 是对象可作为系统输入的最早提交时刻。RawItem 使用持久化完成时间；EventVersion、Evidence 使用各自通过校验并提交的时间。若不能在同一事务提交，则报告要求全部输入分别已提交。</li>
+<li>机器时钟异常、未来时间或无法解释的先后顺序进入 quarantine，原因码 timestamp_order_invalid；不自动改写时间掩盖异常。系统记录时钟不能证明外部来源的真实发布时间。</li>
+<li>金额、价格、收益在未来数值协议中采用固定精度十进制字符串；不把 null、缺失、不可用转换成数值 0。</li>
+<li>枚举未知值需要显式 unknown/null 或契约升级，不能静默创造新枚举。ID 不包含 URL、标题等可变化业务字段。</li>
+</ul>
+<h3 id="chapter-21">3. MVP 对象及示例</h3>
+<h4 id="chapter-22">3.1 RawItem：一次来源内容版本</h4>
+<p>同一 URL 的标题或正文发生实质修订时生成新版本；重复抓取不重复创建内容版本，抓取尝试记录在独立运行日志。内容身份由 source_id、规范化来源项目标识和内容哈希组合确定，不能仅用 URL 去重。</p>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;raw-item/0.1&quot;,
+  &quot;raw_item_id&quot;: &quot;raw_demo_001_v1&quot;,
+  &quot;source_id&quot;: &quot;fixture_official&quot;,
+  &quot;source_config_version&quot;: &quot;sources-demo-1&quot;,
+  &quot;source_item_key&quot;: &quot;announcement-demo-001&quot;,
+  &quot;original_url&quot;: &quot;https://example.com/announcements/demo-001&quot;,
+  &quot;canonical_url&quot;: &quot;https://example.com/announcements/demo-001&quot;,
+  &quot;source_tier&quot;: &quot;primary&quot;,
+  &quot;title&quot;: &quot;合成示例公告&quot;,
+  &quot;source_time_text&quot;: &quot;2026-11-09 08:00&quot;,
+  &quot;source_timezone&quot;: &quot;Asia/Shanghai&quot;,
+  &quot;source_time_precision&quot;: &quot;minute&quot;,
+  &quot;time_parse_status&quot;: &quot;parsed&quot;,
+  &quot;source_published_at&quot;: &quot;2026-11-09T00:00:00Z&quot;,
+  &quot;source_published_date&quot;: &quot;2026-11-09&quot;,
+  &quot;first_seen_at&quot;: &quot;2026-11-09T00:05:00Z&quot;,
+  &quot;fetched_at&quot;: &quot;2026-11-09T00:05:02Z&quot;,
+  &quot;persisted_at&quot;: &quot;2026-11-09T00:05:03Z&quot;,
+  &quot;available_at&quot;: &quot;2026-11-09T00:05:03Z&quot;,
+  &quot;storage_policy&quot;: &quot;full_text_fixture&quot;,
+  &quot;content_ref&quot;: &quot;fixtures/raw/demo-001-v1.json&quot;,
+  &quot;content_sha256&quot;: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;,
+  &quot;normalized_text&quot;: &quot;示例公告：机构发布产业支持文件。&quot;,
+  &quot;normalization_version&quot;: &quot;text-normalize/0.1&quot;,
+  &quot;supersedes_raw_item_id&quot;: null,
+  &quot;is_synthetic&quot;: true
+}
+</code></pre>
+<p>真实来源的 storage_policy 由来源条件确定，可为 full_text、excerpt_metadata、metadata_only。metadata_only 不允许抽取其未保存且不可验证的正文事实；简报应显示证据范围。规范化不得删除数字、否定词或改变事实含义；原始字节与规范化文本的哈希分别管理。</p>
+<h4 id="chapter-23">3.2 EventVersion：固定事实快照</h4>
+<p>一个逻辑事件可以有多个不可变版本。事实修订使用 supersedes，后续新进展保留关联但不必强行替代原事件。来源评级只表明出处类型，不代表事实绝对正确。</p>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;event-version/0.1&quot;,
+  &quot;event_id&quot;: &quot;event_demo_001&quot;,
+  &quot;event_version_id&quot;: &quot;event_demo_001_v1&quot;,
+  &quot;version&quot;: 1,
+  &quot;title&quot;: &quot;合成机构发布支持文件&quot;,
+  &quot;fact_summary&quot;: &quot;机构发布产业支持文件。&quot;,
+  &quot;category&quot;: &quot;policy&quot;,
+  &quot;markets&quot;: [&quot;A&quot;],
+  &quot;entities&quot;: [],
+  &quot;evidence_ids&quot;: [&quot;evidence_demo_001&quot;],
+  &quot;input_raw_item_ids&quot;: [&quot;raw_demo_001_v1&quot;],
+  &quot;extraction_method&quot;: &quot;fixture&quot;,
+  &quot;extractor_version&quot;: &quot;fixture-extractor/0.1&quot;,
+  &quot;extraction_quality&quot;: &quot;validated_fixture&quot;,
+  &quot;processed_at&quot;: &quot;2026-11-09T00:06:00Z&quot;,
+  &quot;available_at&quot;: &quot;2026-11-09T00:06:00Z&quot;,
+  &quot;supersedes_event_version_id&quot;: null,
+  &quot;is_synthetic&quot;: true
+}
+</code></pre>
+<p>MVP 类别初始集合为 macro、policy、company、fund_flow、geopolitics、sentiment、calendar、other。fact_summary 只表达有证据的事实；影响解释另存，不混入事实字段。模型生成时，保存 model_id、prompt_version、参数、输入清单哈希、原始输出与校验结果；fixture 不伪装成模型结果。</p>
+<h4 id="chapter-24">3.3 Evidence：具体证据片段</h4>
+<p>片段定位基于固定 normalization_version 的 normalized_text，offset_unit 明确为 Unicode code point，区间左闭右开。不能将 JavaScript UTF-16 索引直接当成码点索引；必须转换或使用一致文本库。证据同时保存 quote，运行时校验切片与 quote 一致。</p>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;evidence/0.1&quot;,
+  &quot;evidence_id&quot;: &quot;evidence_demo_001&quot;,
+  &quot;event_version_id&quot;: &quot;event_demo_001_v1&quot;,
+  &quot;raw_item_id&quot;: &quot;raw_demo_001_v1&quot;,
+  &quot;relation&quot;: &quot;supports&quot;,
+  &quot;claim_key&quot;: &quot;fact_summary&quot;,
+  &quot;normalization_version&quot;: &quot;text-normalize/0.1&quot;,
+  &quot;locator&quot;: {
+    &quot;field&quot;: &quot;normalized_text&quot;,
+    &quot;offset_unit&quot;: &quot;unicode_code_point&quot;,
+    &quot;start&quot;: 0,
+    &quot;end&quot;: 16
+  },
+  &quot;quote&quot;: &quot;示例公告：机构发布产业支持文件。&quot;,
+  &quot;validation_status&quot;: &quot;exact_quote_match&quot;,
+  &quot;available_at&quot;: &quot;2026-11-09T00:06:00Z&quot;,
+  &quot;is_synthetic&quot;: true
+}
+</code></pre>
+<p>relation 初始集合为 supports、reports、contradicts。reports 表示来源在转述，不自动升级为一手证据；contradicts 应保留并在简报中呈现冲突。exact_quote_match 只说明片段定位正确，不代表片段足以支持整个结论，仍需人工支持度抽检。</p>
+<h4 id="chapter-25">3.4 ReportManifest：本次报告输入与发布清单</h4>
+<p>报告必须冻结精确输入版本，不能在重渲染时查询最新事件、最新聚类或最新证据替代。manifest 中的时间字段不得参与内容哈希以外的随意过滤；哈希算法由明确的 canonical_json_version 约束。</p>
+<pre><code class="language-json">{
+  &quot;schema_version&quot;: &quot;report-manifest/0.1&quot;,
+  &quot;report_id&quot;: &quot;brief_A_pre_20261109_v1&quot;,
+  &quot;run_id&quot;: &quot;run_demo_001&quot;,
+  &quot;report_type&quot;: &quot;A_pre&quot;,
+  &quot;market_session_date&quot;: &quot;2026-11-09&quot;,
+  &quot;display_timezone&quot;: &quot;Asia/Shanghai&quot;,
+  &quot;information_cutoff&quot;: &quot;2026-11-09T00:30:00Z&quot;,
+  &quot;generated_at&quot;: &quot;2026-11-09T00:30:20Z&quot;,
+  &quot;published_at&quot;: &quot;2026-11-09T00:30:21Z&quot;,
+  &quot;status&quot;: &quot;degraded&quot;,
+  &quot;reason_codes&quot;: [&quot;synthetic_fixture&quot;, &quot;market_data_unavailable&quot;],
+  &quot;input_manifest&quot;: {
+    &quot;raw_item_ids&quot;: [&quot;raw_demo_001_v1&quot;],
+    &quot;event_version_ids&quot;: [&quot;event_demo_001_v1&quot;],
+    &quot;evidence_ids&quot;: [&quot;evidence_demo_001&quot;],
+    &quot;prediction_ids&quot;: [],
+    &quot;market_snapshot_id&quot;: null
+  },
+  &quot;source_config_version&quot;: &quot;sources-demo-1&quot;,
+  &quot;rules_version&quot;: &quot;rules/0.1&quot;,
+  &quot;template_version&quot;: &quot;brief/0.1&quot;,
+  &quot;renderer_version&quot;: &quot;renderer/0.1&quot;,
+  &quot;canonical_json_version&quot;: &quot;canonical-json/0.1&quot;,
+  &quot;input_manifest_sha256&quot;: &quot;bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb&quot;,
+  &quot;market_data_as_of&quot;: null,
+  &quot;citation_check&quot;: &quot;passed&quot;,
+  &quot;content_support_check&quot;: &quot;fixture_reviewed&quot;,
+  &quot;artifact_refs&quot;: [&quot;out/briefs/brief_A_pre_20261109_v1.html&quot;],
+  &quot;supersedes_report_id&quot;: null,
+  &quot;is_synthetic&quot;: true
+}
+</code></pre>
+<p>示例中 published_at 是报告发布时间，与 RawItem.source_published_at 不同。未成功发布的尝试记录在 job_runs，不生成貌似成功的发布manifest；失败尝试与最后成功报告分别展示。补版使用新report_id与supersedes_report_id，旧文件保留。</p>
+<h3 id="chapter-26">4. 信息截点查询语义</h3>
+<p>面向“当时系统知道什么”的正式报告，应满足以下条件：</p>
+<ol>
+<li>截点 T 在运行开始时固定，不随模型耗时滚动。</li>
+<li>对每条事实，RawItem.available_at、Evidence.available_at、EventVersion.available_at 均 ≤ T，且引用关系完整、对象校验通过。</li>
+<li>若同一event_id存在多个版本，只选择在T之前已经可用的版本；supersedes本身也必须在T之前可用。不能用后来新增的撤回或修订关系回写旧报告。</li>
+<li>source_published_at 仅用于来源时间描述与排序辅助，不代替available_at作为入选条件。晚采集的旧新闻只进入后续报告，并标注来源发布与系统发现时间差。</li>
+<li>当证据截点已到但结构化处理尚未完成，严格模式暂不纳入该EventVersion。若采用“截止时已采集、稍后处理”模式，必须另建mode和独立说明；MVP仅启用严格模式。</li>
+<li>报告引用的未来日历事件可以在T之后发生，但该日历版本本身必须在T之前已可用；未来发生时间不等于未来已知信息。</li>
+<li>历史补跑不能冒充原时点报告。使用 replay_as_of 与实际 generated_at，标记 retrospective；重放只使用固定输入清单，不用于证明模型前瞻有效性。</li>
+</ol>
+<h3 id="chapter-27">5. 不可变关系与允许更新的状态</h3>
+<p>不可变对象：RawItem内容版本、EventVersion、Evidence、已提交Prediction、MarketSnapshot、ReviewResult、已发布ReportManifest。被引用文件的内容必须与其哈希一致。允许将相同字节去重保存，但不能让路径被覆盖为其他内容。</p>
+<p>版本化对象：来源配置、规则、提示词、模型调用参数、交易日历、证券主数据、评价协议、聚类成员快照。历史输入应绑定版本或清单，不能仅绑定逻辑ID。</p>
+<p>可变运行状态：抓取游标、任务队列状态、重试计数、健康检查状态、预算预留状态。状态变化记录日志；推进游标必须晚于条目和运行检查点的成功持久化。应用应保证失败重跑幂等，不能通过回退整个历史库实现恢复。</p>
+<p>MVP允许不启用语义聚类；若启用，report/prediction必须引用固定cluster_version_id及成员版本清单。后续新增来源、修正分类或重组事件簇不得改变旧输入。</p>
+<h3 id="chapter-28">6. 后置：Prediction冻结协议</h3>
+<p>最小字段：prediction_id、event_version_ids、evidence_ids、cluster_version_id（可空）、model_call_id、created_at、committed_at、target_instrument_id、benchmark_instrument_id、direction、direction_basis、judgment_confidence、reasoning、counter_evidence、abstention_reason、evaluation_protocol_id、calendar_snapshot_id、rules_version、input_manifest_sha256、supersedes_prediction_id。</p>
+<p>direction 为 positive、negative、neutral、mixed、uncertain；direction_basis 为 absolute_return 或 benchmark_relative。模型自评置信度使用低/中/高，不能显示为已校准概率。uncertain需有弃权原因；中性与混合不进入普通正负命中率。</p>
+<p>评价协议在判断提交时固定，至少包含起点规则、窗口长度、目标与基准、收益类型、币种、价格调整口径、正负阈值、缺失/公司行动/重叠事件处理、评分公式版本。模型调用开始时间不能作为评价起点；以校验并提交成功的committed_at为准。</p>
+<p>首版主协议采用开盘严格晚于committed_at的下一交易会话开盘，至该会话或第5个会话收盘。首段为开盘至收盘，其后为相邻收盘收益；AR逐段相减后求和得到CAR。持有期复合收益差单独命名。开盘缺失记不可用，收盘协议必须另设ID且分开汇总。</p>
+<h3 id="chapter-29">7. 后置：MarketSnapshot与ReviewResult</h3>
+<p>MarketSnapshot字段：market_snapshot_id、available_at、provider_id、instrument_master_version、calendar_snapshot_id、currency、price_return_type、adjustment_method、bar_version_ids、requested_session_ids、missing_session_ids、quality_flags、manifest_sha256。OHLC保留供应商标识、获取时点、会话日期及版本；供应商修订生成新bar版本和新快照，不覆盖旧引用。</p>
+<p>ReviewResult字段：review_result_id、prediction_id、evaluation_protocol_id、algorithm_version、market_snapshot_id、input_manifest_sha256、evaluation_kind、calculated_at、state、reason_codes、start_session_id、end_session_id、target_return、benchmark_return、car、direction_hit、overlap_event_family_ids、supersedes_review_result_id。</p>
+<p>evaluation_kind为first_evaluation或revision_recalculation；旧首次评价不被新重算替换。state为pending、eligible、evaluated、unavailable、excluded；计算结果字段只在有定义时填值。未来状态变化用追加评价记录表达，当前状态视图是派生查询。</p>
+<p>结果幂等键包含prediction_id、evaluation_protocol_id、algorithm_version、market_snapshot_id与input_manifest_sha256。同输入重复计算应获得相同数值；不能仅以日期区间判断可复现。</p>
+<p>汇总明确分母：total_predictions、directional_predictions、matured_predictions、complete_predictions、abstained_predictions、independent_event_families。一个事件的多个标的和窗口分别保留结果，独立事件数不随之增加。评价币种、收益类型和协议不同的结果分别统计。</p>
+<h3 id="chapter-30">8. 十个固定回归用例</h3>
+<p>下列为必须落地的行为用例，本文不宣称测试已运行。MVP先实现R01–R03、R09–R10及证据切片校验；其余在对应后置功能开放前完成。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>ID</th>
+<th>输入/故障</th>
+<th>预期行为</th>
+<th>阶段</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R01</td>
+<td>来源08:00发布，09:00才获取入库，报告截点08:30</td>
+<td>不进入08:30报告；下一报告显示来源时间与系统发现时间</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td>R02</td>
+<td>08:00原文在08:10已采集，10:00正文修订</td>
+<td>08:30报告只引用已可用v1；10:00之后可新增v2，v1内容不变</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td>R03</td>
+<td>昨日事件已提交，今日新增证据或聚类成员</td>
+<td>昨日报告的输入清单、引用文本与哈希不变化；新报告使用新快照</td>
+<td>MVP，聚类部分后置</td>
+</tr>
+<tr>
+<td>R04</td>
+<td>判断09:29开始生成、09:31校验提交</td>
+<td>不允许以当日09:30开盘评分；选择提交后下一交易会话</td>
+<td>评价开放前</td>
+</tr>
+<tr>
+<td>R05</td>
+<td>分别构造未成熟窗口、供应商延迟、永久缺失、停牌</td>
+<td>pending与unavailable/排除原因可区分；均不补0或误判失败命中</td>
+<td>评价开放前</td>
+</tr>
+<tr>
+<td>R06</td>
+<td>已评分会话的供应商价格后续修订</td>
+<td>first_evaluation保持不变；revision_recalculation使用新快照与结果ID</td>
+<td>评价开放前</td>
+</tr>
+<tr>
+<td>R07</td>
+<td>同事件产生5个标的×2个窗口</td>
+<td>保存10个结果，但独立事件家族数为1；汇总披露分母</td>
+<td>汇总开放前</td>
+</tr>
+<tr>
+<td>R08</td>
+<td>两任务同时请求超过剩余额度的模型预算</td>
+<td>原子预留总额不超限，至少一个请求被降级/拒绝；失败可释放或结算</td>
+<td>并发真实调用前</td>
+</tr>
+<tr>
+<td>R09</td>
+<td>原始文件落档后崩溃，条目/游标未完整提交</td>
+<td>重跑不漏项、不产生重复内容版本；游标仅在成功提交后前进</td>
+<td>MVP</td>
+</tr>
+<tr>
+<td>R10</td>
+<td>数据库副本恢复成功，但manifest引用的一份证据文件缺失或哈希不同</td>
+<td>备份恢复验证失败并列明对象；不能宣称整体可恢复</td>
+<td>MVP交付前</td>
+</tr>
+</tbody>
+</table></div>
+<p>额外边界由对应任务补充：日期型发布时间、Unicode代理对、来源重复时间戳、URL正文修订、日历假期/DST/提前收市、外部正文中的指令、同作业锁冲突、报告临时文件发布失败。它们不能用上述十例的通过结果替代。</p>
+<h3 id="chapter-31">9. 契约变更与交接规则</h3>
+<p>共享契约与迁移由集成负责人单点整合。开发Agent可以提出字段变更，但不得在未更新本文与fixture之前擅自改变跨模块字段。兼容新增可提升次版本；字段重命名、含义变更或枚举破坏变更需新主版本和迁移说明。</p>
+<p>每个工作包交付：修改范围、契约版本、fixture、运行命令、实际测试结果、已知缺口。使用合成fixture、离线运行、未连接真实模型/来源时必须明确标注；未执行测试不得写成通过。</p>
+<hr />
+<h2 id="chapter-32">多Agent与WorkBuddy执行协议</h2>
+<h3 id="chapter-33">调度框架</h3>
+<p>主控维护依赖图与任务板，选择依赖已验收的planned任务，授予明确文件写入范围并更新dispatched/in_progress；执行者产出文件、测试与交接，进入review；独立审查者复核，主控串行集成并更新done。失败保持证据，修复后重新审查。最多主控加3个Codex子Agent并发；WorkBuddy作为额外执行端，同样遵守单文件所有者。</p>
+<p>开发框架由任务板、契约、目录所有权、任务单和验收闸门组成；不引入运行时LangGraph/CrewAI等依赖。若后续确需软件化调度，须以当前手工协作瓶颈为依据另行立项。</p>
+<h3 id="chapter-34">文件所有权</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>执行者</th>
+<th>允许范围</th>
+<th>公共变更处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>主控/集成</td>
+<td>AGENTS、README、配置、共享模型、schema、CLI、总计划</td>
+<td>唯一集成者</td>
+</tr>
+<tr>
+<td>采集Agent</td>
+<td>明确指定的adapters/pipeline和对应测试</td>
+<td>提交契约变更建议，主控整合</td>
+</tr>
+<tr>
+<td>数据/复盘Agent</td>
+<td>明确指定的market/review和对应测试</td>
+<td>不自行改变收益协议</td>
+</tr>
+<tr>
+<td>模型/报告Agent</td>
+<td>明确指定的llm/report和对应测试</td>
+<td>不改变截点与证据语义</td>
+</tr>
+<tr>
+<td>独立审查者</td>
+<td>审查报告或明确分配的测试文件</td>
+<td>默认只读实现代码</td>
+</tr>
+<tr>
+<td>WorkBuddy</td>
+<td>当前任务单白名单；WB-01仅results目录</td>
+<td>当前不修改共享代码</td>
+</tr>
+</tbody>
+</table></div>
+<p>共享目录下不并发切换Git分支。首次基线提交并验证worktree能力前使用文件独占；以后需要隔离时，从相同已接受提交创建独立checkout，返回提交或patch，由主控逐一检查集成。未经确认不自动采用他人生成的安装脚本或运行代码。</p>
+<h3 id="chapter-35">任务交接格式</h3>
+<pre><code class="language-text">任务ID / 目标 / 基线版本
+依赖与允许读取路径
+允许写入路径 / 禁止修改路径
+输入样例与契约版本
+具体步骤与不在范围内事项
+交付文件及验收命令
+实际结果与证据路径
+未执行检查 / 阻塞 / 已知限制
+状态及下一接收者
+</code></pre>
+<h3 id="chapter-36">集成闸门</h3>
+<ul>
+<li>G0 环境：解释器、SQLite、时区、安装方式可验证。py启动器存在不代表Python可用。</li>
+<li>G1 契约：字段、版本、时点、错误码和样例冻结，变更经过影响分析。</li>
+<li>G2 离线纵向样例：证据→事件→截点简报→manifest；合成fixture有显著标签，禁止冒充真实抓取。</li>
+<li>G3 真实来源：实测、增量、修订、幂等、引用与降级均通过。</li>
+<li>G4 评价：提交后起点、手算样例、成熟窗口、修订快照与复现均通过。</li>
+<li>G5 交付：恢复演练、用户价值对照、至少7交易日完整运行记录。</li>
+</ul>
+<p>原型通过部分测试不会自动接受整个工作包或闸门。禁止把规划中的测试命令填写成真实测试结果。</p>
+<hr />
+<h2 id="chapter-37">环境基线与执行端差异</h2>
+<p>检查日期：2026-11-07（北京时间）。项目要求Python≥3.11。以下为实际检查，不代表虚拟环境安装与全G0验收完成。</p>
+<h3 id="chapter-38">Codex执行端：主控已复跑</h3>
+<ul>
+<li><code>load_workspace_dependencies</code>返回真实解释器，位置在本机CodexPrimaryRuntime安装包的<code>dependencies/python/python.exe</code>。</li>
+<li><code>sys.version</code>：3.12.14；<code>sqlite3.sqlite_version</code>：3.53.1。</li>
+<li><code>ZoneInfo('Asia/Shanghai')</code>、<code>ZoneInfo('America/New_York')</code>均成功。</li>
+<li>本轮已验证<code>./scripts/dev.ps1 test</code>与<code>demo</code>。解释器完整路径保存于忽略的<code>scripts/python-path.local.txt</code>，不绑定到版本库。Codex升级后须重新定位。</li>
+<li><code>py -0p</code>在主控PowerShell执行时返回<code>No Installed Pythons Found!</code>；PATH没有可直接调用的Python。不能据此判定整机无Python。</li>
+<li>WindowsApps目录枚举未返回可用候选，因此脚本当前依赖明确路径文件或环境变量。此限制已写入README。</li>
+</ul>
+<p>主控实际验证命令：</p>
+<pre><code class="language-text">&lt;Codex依赖Python&gt; -c &quot;import sys,sqlite3,zoneinfo; print(sys.version); print(sqlite3.sqlite_version); print(zoneinfo.ZoneInfo('America/New_York'))&quot;
+./scripts/dev.ps1 test
+./scripts/dev.ps1 demo
+</code></pre>
+<h3 id="chapter-39">WorkBuddy执行端：独立报告加主控复核</h3>
+<ul>
+<li>WorkBuddy报告Git Bash中PATH解析到<code>C:/Users/user/.workbuddy/binaries/python/versions/3.13.12/python.exe</code>。</li>
+<li>主控直接执行此路径确认实际版本3.13.14、SQLite3.53.1、<code>tzdata</code>未安装。目录名不作为版本判断依据。</li>
+<li>WorkBuddy报告该运行时无法加载IANA时区；主控未独立复跑它的ZoneInfo失败用例，因此将此项标为WorkBuddy实测结论。</li>
+<li>WorkBuddy还报告<code>py</code>可找到3.8.10，与主控观察不同；原因未核实，不推断注册配置变化。</li>
+<li>3.8.10仅能作为其本次简单探测工具，不满足项目版本要求，不能作为产品备选。</li>
+</ul>
+<h3 id="chapter-40">决策与待办</h3>
+<p>暂以明确验证过的Codex3.12路径运行离线原型；产品正式部署应选可维护的独立Python环境并锁定依赖。统一使用IANA时区与已验证时区数据，不采纳固定UTC偏移或手写DST规则。</p>
+<p>ENG-02仍需验证全新隔离环境安装、CLI分发及Git基线。真实来源客户端的网络行为由SRC任务独立验证；不能将WorkBuddy HTTPS成功直接套用到其他运行时。</p>
+<hr />
+<h2 id="chapter-41">本轮实施与验收记录</h2>
+<p>日期：2026-11-07。范围：立项复查、多Agent计划、WorkBuddy首包、离线纵向原型。未启动真实LLM、定时任务或交易功能。</p>
+<h3 id="chapter-42">1. 实际协作</h3>
+<p>三个Codex子Agent分别完成产品立项、数据与复盘、工程分解审查，并独占写入章程、契约、开发任务表。主控维护公共代码与协作协议；数据Agent独立只读审查原型，工程Agent独立复核WorkBuddy产物。</p>
+<p>WorkBuddy通过桌面现有项目会话收到WB-01任务，已观察到任务启动和交付回复，结果文件存在且可解析。任务单仅允许写<code>collaboration/workbuddy/results/</code>；未授予核心代码修改权限。本轮没有可调用的WorkBuddy CLI/API，不宣称已建立自动后台通信。</p>
+<h3 id="chapter-43">2. 已实施与已测试</h3>
+<ul>
+<li>最小Python包、CLI、开发脚本与忽略规则；仅标准库，尚未做全新虚拟环境安装验证。</li>
+<li>合成RawItem、EventVersion、Evidence持久化；数据库普通修改保护、引用校验、内容哈希、逻辑版本唯一约束。</li>
+<li>严格截点选择，固定输入清单，HTML转义，目录级staging发布，冲突报告拒绝覆盖。</li>
+<li>已执行<code>./scripts/dev.ps1 test</code>：15项unittest通过。</li>
+<li>已执行<code>./scripts/dev.ps1 demo</code>：生成<code>out/demo/reports/demo_A_pre_v1/brief.html</code>及manifest；输出明确标为合成、降级、无行情。</li>
+</ul>
+<p>独立审查发现并修复：CRLF证据在文本重读时哈希变化；同事件同版本号映射多个快照导致选择不确定。增加对应回归；随后补充已发布HTML按字节读取，验证CRLF重复发布幂等。对象读取采用单条SQL的一致快照，但没有做并发运行验收。</p>
+<p>测试覆盖晚采集、晚处理、修订历史不变、重复导入、非法改写、冲突ID、无效引用、孤立文件重跑、证据缺失/损坏、输出路径限制、报告冲突、UTC格式、CRLF、版本号冲突和类型。</p>
+<h3 id="chapter-44">3. WB-01回收结论</h3>
+<p>交付可接收，工作包状态done；探测结果保持partial。独立复核确认JSON必需字段、5个来源及限制说明完整；本轮没有联网独立复测其全部请求。</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>候选</th>
+<th>WorkBuddy实测</th>
+<th>主控采用的结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>国家统计局</td>
+<td>列表和正文200，提供短片段</td>
+<td>有访问样本；时间语义/时区、留存和连续增量仍待验证</td>
+</tr>
+<tr>
+<td>美联储RSS</td>
+<td>RSS与正文URL200，可解析feed字段</td>
+<td>feed候选有价值；正文head可达不等于事实段落提取通过</td>
+</tr>
+<tr>
+<td>中国政府网</td>
+<td>页面200，实际最新政策条目未确认</td>
+<td>部分可达，不计正式接入</td>
+</tr>
+<tr>
+<td>Stooq</td>
+<td>返回浏览器验证HTML，无CSV</td>
+<td>当前客户端受阻，不绕过</td>
+</tr>
+<tr>
+<td>FRED SP500</td>
+<td>日期+单列数值可达</td>
+<td>可研究序列映射；无开盘价，不能支持当前开盘起点评价协议</td>
+</tr>
+</tbody>
+</table></div>
+<p>所有留存条件unknown，正式源配置尚未启用。WorkBuddy报告的时区缺口只适用于它测试的解释器，不覆盖已验证可用的Codex3.12。固定偏移加手写DST建议不采纳。Python3.8不是产品备选。完整来源证据见其原始报告，原始产物保留不改写。</p>
+<h3 id="chapter-45">4. 尚未通过的门槛</h3>
+<p>完整G0/G1/G2尚未接受：仍缺全新环境安装、正式契约全字段校验、schema迁移与完整冻结manifest重放；当前是先行隔离原型。G3–G5尚未开始验收。</p>
+<p>尚未实现真实来源适配器、采集游标、真实LLM与预算账本、行情/日历同步、判断与收益评价、Windows调度和备份恢复。未运行7交易日观察，未证明用户节时或研究有效性。</p>
+<p>已发布报告“不覆盖”已验证；按旧manifest精确重渲染未实现，不能把同截点重查当作该能力。测试文件缺失检测不是完整备份恢复演练。</p>
+<h3 id="chapter-46">5. 下一批执行</h3>
+<ol>
+<li>完成ENG-02隔离环境安装与基线，固化解释器和时区数据方案。</li>
+<li>对契约建立正式模型与schema迁移，补齐manifest重放；保留原型回归用例。</li>
+<li>基于WB-01候选完成许可/留存、正文解析和增量验证；优先一条RSS真实纵向链路。</li>
+<li>公共接口通过后再同时分配采集、模型/报告、行情任务，各自独占目录。</li>
+<li>真实简报与恢复就绪后开始7交易日观察；评价能力未通过时保持关闭。</li>
+</ol>
+
+<footer>本HTML及Markdown由六份源文档合并生成，无需网络即可阅读。任务状态以collaboration/task-board.json及验收记录为准。合成样本不代表真实市场信息。</footer>
+</main></div></body></html>

@@ -1,0 +1,75 @@
+{
+  "raw": {
+    "schema_version": "raw-item/0.1",
+    "raw_item_id": "raw_demo_001_v1",
+    "source_id": "fixture_official",
+    "source_config_version": "sources-demo-1",
+    "source_item_key": "announcement-demo-001",
+    "original_url": "https://example.com/announcements/demo-001",
+    "canonical_url": "https://example.com/announcements/demo-001",
+    "source_tier": "primary",
+    "title": "合成示例公告",
+    "source_time_text": "2026-11-06 08:00",
+    "source_timezone": "Asia/Shanghai",
+    "source_time_precision": "minute",
+    "time_parse_status": "parsed",
+    "source_published_at": "2026-11-06T00:00:00Z",
+    "source_published_date": "2026-11-06",
+    "first_seen_at": "2026-11-06T00:05:00Z",
+    "fetched_at": "2026-11-06T00:05:02Z",
+    "persisted_at": "2026-11-06T00:05:03Z",
+    "available_at": "2026-11-06T00:05:03Z",
+    "storage_policy": "full_text_fixture",
+    "content_ref": "raw/035502b45821174d6bab41b93c89b19cd304d5ba7fba1b8e965d1907cc97e499.txt",
+    "content_sha256": "035502b45821174d6bab41b93c89b19cd304d5ba7fba1b8e965d1907cc97e499",
+    "normalized_text": "示例公告：机构发布产业支持文件。",
+    "normalization_version": "text-normalize/0.1",
+    "supersedes_raw_item_id": null,
+    "is_synthetic": true
+  },
+  "event": {
+    "schema_version": "event-version/0.1",
+    "event_id": "event_demo_001",
+    "event_version_id": "event_demo_001_v1",
+    "version": 1,
+    "title": "合成机构发布支持文件",
+    "fact_summary": "机构发布产业支持文件。",
+    "category": "policy",
+    "markets": [
+      "A"
+    ],
+    "entities": [],
+    "evidence_ids": [
+      "evidence_demo_001"
+    ],
+    "input_raw_item_ids": [
+      "raw_demo_001_v1"
+    ],
+    "extraction_method": "fixture",
+    "extractor_version": "fixture-extractor/0.1",
+    "extraction_quality": "validated_fixture",
+    "processed_at": "2026-11-06T00:06:00Z",
+    "available_at": "2026-11-06T00:06:00Z",
+    "supersedes_event_version_id": null,
+    "is_synthetic": true
+  },
+  "evidence": {
+    "schema_version": "evidence/0.1",
+    "evidence_id": "evidence_demo_001",
+    "event_version_id": "event_demo_001_v1",
+    "raw_item_id": "raw_demo_001_v1",
+    "relation": "supports",
+    "claim_key": "fact_summary",
+    "normalization_version": "text-normalize/0.1",
+    "locator": {
+      "field": "normalized_text",
+      "offset_unit": "unicode_code_point",
+      "start": 0,
+      "end": 16
+    },
+    "quote": "示例公告：机构发布产业支持文件。",
+    "validation_status": "exact_quote_match",
+    "available_at": "2026-11-06T00:06:00Z",
+    "is_synthetic": true
+  }
+}

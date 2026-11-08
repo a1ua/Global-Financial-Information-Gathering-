@@ -1,0 +1,351 @@
+{
+  "task_id": "WB-01",
+  "status": "partial",
+  "status_reason": "WB-01 要求的只读环境探测、首批来源实测、报告与 JSON 交付均已执行完毕，两份文件齐全。标记 partial 仅因为存在未通过或未验证的依赖项：本机两个解释器都无法解析 IANA 时区、Stooq 行情候选被浏览器校验拦截、国家统计局正文时区与政府网条目发布时间未验证、全部来源的内容留存授权条件为 unknown、稳定性未做连续验证。partial 不代表本工作包未交付，也不代表项目通过 G0/G3 或 M0。",
+  "checked_at_utc": "2026-11-07T14:55:38Z",
+  "scope": {
+    "project_root": "C:/Users/user/Documents/ChatGPT/市场信息抓取",
+    "task_file": "collaboration/workbuddy/WB-01-task.md",
+    "reference_files_read_only": [
+      "market-intel-agent-dev-plan-v2-20261107.md (仅列目录，未读取内容)",
+      "docs/charter-v3.md",
+      "docs/contracts-v0.1.md"
+    ],
+    "write_scope": [
+      "collaboration/workbuddy/results/WB-01-report.md",
+      "collaboration/workbuddy/results/WB-01-results.json"
+    ],
+    "results_dir_created_by_this_task": true,
+    "constraints_observed": [
+      "未修改核心代码、docs、根目录计划或 Git 状态",
+      "未安装软件、未申请密钥、未登录账户、未调用付费 API、未外发消息",
+      "未绕过登录、验证码、付费或浏览器访问限制",
+      "仅保存最少元数据、不超过 350 字符的短片段与原文链接，未批量保存媒体全文",
+      "未使用旧 V1 计划中的任何已验证假设，全部结论来自本次实测"
+    ]
+  },
+  "environment": {
+    "probe_started_utc": "2026-11-07T14:50:19Z",
+    "py_launcher": {
+      "path": "C:\\Windows\\py.exe",
+      "command": "py --version",
+      "observed": "Python 3.8.10",
+      "command_2": "py -0p",
+      "observed_2": "Installed Pythons found by C:\\WINDOWS\\py.exe Launcher for Windows * / -3.8-64  C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
+      "registered_python": true,
+      "note": "与任务前置说明『py 启动器显示无注册Python』不一致。本次实测命令与输出如上，差异原因未查明，不臆测、不修改启动器注册状态。"
+    },
+    "interpreters": [
+      {
+        "id": "workbuddy_managed_3.13",
+        "resolved_by": "command -v python / command -v python3 / where.exe python (PATH 首项)",
+        "path": "C:\\Users\\user\\.workbuddy\\binaries\\python\\versions\\3.13.12\\python.exe",
+        "sys_version": "3.13.14 (main, Jun 11 2026, 04:04:46) [MSC v.1944 64 bit (AMD64)]",
+        "implementation": "CPython",
+        "directory_label_vs_actual_version": "目录名为 3.13.12，sys.version 报告 3.13.14；两者不一致，按实测值记录",
+        "sqlite_module": "2.6.0",
+        "sqlite_library": "3.53.1",
+        "tzdata": "absent",
+        "zoneinfo": "import ok; zoneinfo.TZPATH = (); ZoneInfo('Asia/Shanghai') 与 ZoneInfo('America/New_York') 均抛 ZoneInfoNotFoundError",
+        "usable_for_this_probe": true,
+        "note": "WorkBuddy 托管运行时，是否可作为项目长期依赖由主控决定"
+      },
+      {
+        "id": "registered_3.8",
+        "resolved_by": "py -0p 注册项 / C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
+        "path": "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
+        "sys_version": "3.8.10 (tags/v3.8.10:3d8993a, May 3 2021, 11:48:03) [MSC v.1928 64 bit (AMD64)]",
+        "implementation": "CPython",
+        "sqlite_module": "2.6.0",
+        "sqlite_library": "3.35.5",
+        "tzdata": "absent",
+        "zoneinfo": "ModuleNotFoundError (Python 3.8 标准库不含 zoneinfo)",
+        "usable_for_this_probe": true,
+        "note": "可用但不满足契约 v0.1 的 IANA 时区要求"
+      },
+      {
+        "id": "python39_dir",
+        "path": "C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python39",
+        "observed": "目录仅含 Scripts，无 python.exe",
+        "usable_for_this_probe": false,
+        "note": "PATH 中存在该目录条目，但不是可用解释器"
+      },
+      {
+        "id": "windowsapps_alias",
+        "path": "C:\\Users\\user\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe",
+        "observed": "符号链接指向 AppInstallerPythonRedirector.exe",
+        "usable_for_this_probe": false,
+        "note": "Microsoft Store 应用安装别名，不是真实解释器，未触发安装"
+      }
+    ],
+    "curl": {
+      "path": "C:\\WINDOWS\\system32\\curl",
+      "version": "curl 8.14.1 (Windows) libcurl/8.14.1 Schannel zlib/1.3.1 WinIDN",
+      "result": "failed",
+      "observed": "两次 HTTPS 请求均报 curl: (35) schannel: next InitializeSecurityContext failed: CRYPT_E_REVOCATION_OFFLINE (0x80092013)，HTTP 状态不可得",
+      "affected_urls": [
+        "https://www.federalreserve.gov/feeds/press_all.xml",
+        "https://www.stats.gov.cn/"
+      ],
+      "note": "本机 Schannel 证书吊销检查离线导致的客户端 TLS 失败，不是目标站点不可达的结论；未修改系统证书或网络设置"
+    },
+    "sqlite3_cli": "not_found (command -v sqlite3 无输出)；Python 内置 sqlite3 模块可用，嵌入式存储不依赖 CLI",
+    "network_client_used": "Python 3.13 标准库 urllib.request，内联 -B -c 脚本从 stdin 运行，未落盘临时文件、未写 pycache",
+    "iana_timezone_support": {
+      "status": "not_ready",
+      "detail": "docs/contracts-v0.1.md 要求展示时区使用 IANA 标识（如 Asia/Shanghai）。当前两个真实解释器均无法解析 Asia/Shanghai 与 America/New_York：3.13 缺 tzdata 且 TZPATH 为空，3.8 无 zoneinfo 模块。",
+      "action_taken": "未安装 tzdata、未修改环境或系统设置（任务边界禁止）",
+      "impact": "跨市场时间口径与 DST 处理无法在当前环境用标准库验证，属 M0 环境依赖项缺口"
+    },
+    "verdict": "存在可执行的真实 Python 解释器且 SQLite 可用，但 IANA 时区支持未就绪；curl 通道不可用，已用 Python urllib 完成全部来源实测。"
+  },
+  "sources": [
+    {
+      "id": "stats_gov_cn",
+      "name": "国家统计局（数据发布）",
+      "url": "https://www.stats.gov.cn/sj/zxfb/",
+      "source_type": "official_domestic_macro",
+      "source_tier": "primary",
+      "checked_at_utc": "2026-11-07T14:54:53Z",
+      "access_result": "success_list_and_body",
+      "http_status": 200,
+      "method": "GET via python-3.13-urllib, User-Agent: WB-01-ReadOnlyProbe/1.0",
+      "list_accessible": true,
+      "body_accessible": true,
+      "timestamp_precision": "列表条目为日期级（如 2026-11-04）；正文页 meta PubDate 为分钟级文本 2026/11/04 09:30，时区未标注，为来源声称值，未核实是否为真实发布时点",
+      "retention_status": "unknown",
+      "retention_note": "未核实 robots.txt、使用条款与版权/许可；本次仅保留不超过 350 字符片段与原文链接，未做全文存档，不宣称可全文存档",
+      "evidence": [
+        {
+          "utc": "2026-11-07T14:52:34Z",
+          "url": "https://www.stats.gov.cn/",
+          "http_status": 200,
+          "content_type": "text/html",
+          "observed": "<title>国家统计局</title>；meta SiteDomain=www.stats.gov.cn"
+        },
+        {
+          "utc": "2026-11-07T14:53:31Z",
+          "url": "https://www.stats.gov.cn/sj/zxfb/",
+          "http_status": 200,
+          "content_type": "text/html",
+          "observed": "标题『数据发布 - 国家统计局』；仅读前 8000 字节时 html 链接数为 0"
+        },
+        {
+          "utc": "2026-11-07T14:54:23Z",
+          "url": "https://www.stats.gov.cn/sj/zxfb/",
+          "http_status": 200,
+          "observed": "读取前 60000 字节后静态 html 链接 59 个，样例 ./202611/t20261103_1965738.html；日期 token 2026-11-04、2026-10-31、2026-10-30、2026-10-27；未见 .json 或 api 标记"
+        },
+        {
+          "utc": "2026-11-07T14:54:53Z",
+          "url": "https://www.stats.gov.cn/sj/zxfb/202611/t20261103_1965738.html",
+          "http_status": 200,
+          "content_type": "text/html",
+          "observed": "标题『2026年10月下旬流通领域重要生产资料市场价格变动情况 - 国家统计局』；meta ArticleTitle 同名；meta PubDate content=\"2026/11/04 09:30\""
+        }
+      ],
+      "next_checks": [
+        "核实 PubDate 的时区（是否 Asia/Shanghai）及其语义（发布 vs 页面生成/更新），按 contracts-v0.1 填 source_timezone 与 time_parse_status",
+        "取得并审阅 robots.txt、使用条款与版权声明后，才能确定 storage_policy 是 full_text / excerpt_metadata / metadata_only",
+        "连续多日增量抓取，验证条目稳定性、去重键、正文修订是否产生新版本、发布日期与采集时间差",
+        "确认是否存在官方数据接口及其授权条件；不可用前不假设有 API",
+        "抽样核对列表日期与正文 PubDate 是否一致"
+      ]
+    },
+    {
+      "id": "federal_reserve_rss",
+      "name": "美国联邦储备委员会 Press Release RSS",
+      "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+      "source_type": "official_overseas_macro_regulatory",
+      "source_tier": "primary",
+      "checked_at_utc": "2026-11-07T14:54:22Z",
+      "access_result": "success_list_and_body",
+      "http_status": 200,
+      "method": "GET via python-3.13-urllib, User-Agent: WB-01-ReadOnlyProbe/1.0",
+      "list_accessible": true,
+      "body_accessible": true,
+      "timestamp_precision": "RSS pubDate 为 RFC 822 GMT 秒级文本（来源声称）；前 5 条为 Thu, 5 Nov 2026 16:00:00 GMT / Thu, 29 Oct 2026 20:30:00 GMT / Wed, 28 Oct 2026 18:00:00 GMT / Fri, 16 Oct 2026 15:00:00 GMT / Tue, 13 Oct 2026 18:00:00 GMT，至少具备分钟级有效变化；系统记录时钟不能证明外部真实发布时间",
+      "retention_status": "unknown",
+      "retention_note": "https://www.federalreserve.gov/robots.txt 返回 404；未审阅 feeds.htm 使用条款、版权与许可；仅保留短片段与链接，未存档全文",
+      "evidence": [
+        {
+          "utc": "2026-11-07T14:52:33Z",
+          "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+          "http_status": 200,
+          "content_type": "text/xml",
+          "last_modified": "Thu, 05 Nov 2026 16:00:14 GMT",
+          "observed": "RSS version 2.0；channel title=FRB: Press Release - All Releases；含 item 节点"
+        },
+        {
+          "utc": "2026-11-07T14:53:28Z",
+          "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+          "http_status": 200,
+          "observed": "首条 item：title『Federal Reserve Board announces termination of enforcement action with Allegiant United Holdings, LLC, Nano Financial Holdings, Inc., and Nano Banc』；link https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261105a.htm；pubDate Thu, 5 Nov 2026 16:00:00 GMT"
+        },
+        {
+          "utc": "2026-11-07T14:53:29Z",
+          "url": "https://www.federalreserve.gov/newsevents/pressreleases/enforcement20261105a.htm",
+          "http_status": 200,
+          "content_type": "text/html",
+          "last_modified": "Thu, 05 Nov 2026 16:00:14 GMT",
+          "observed": "正文页返回 HTML，head 含 lang=en 与 meta charset=utf-8，可访问"
+        },
+        {
+          "utc": "2026-11-07T14:53:34Z",
+          "url": "https://www.federalreserve.gov/robots.txt",
+          "http_status": 404,
+          "observed": "HTTPError: Not Found；未据此推断授权状态"
+        },
+        {
+          "utc": "2026-11-07T14:54:22Z",
+          "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+          "http_status": 200,
+          "observed": "前 12000 字节含 16 个 item，pubDate 样例见 timestamp_precision"
+        }
+      ],
+      "next_checks": [
+        "审阅 https://www.federalreserve.gov/feeds/feeds.htm 与站点使用条款、版权声明，确定是否允许存档及 storage_policy",
+        "核实该 feed 覆盖范围（是否含货币政策、监管、执法等全部 press release 类别）与是否存在更细分的官方 feed",
+        "连续多日观察 feed 更新延迟、条目稳定性、Last-Modified 与 pubDate 关系、正文修订是否产生新版本",
+        "按 contracts-v0.1 记录 source_time_text / source_timezone / source_time_precision / time_parse_status，GMT 与北京时间的换算需可用的 IANA 时区数据",
+        "验证正文页可稳定解析事实段落，而非仅确认 HTTP 200"
+      ]
+    },
+    {
+      "id": "gov_cn_policy",
+      "name": "中国政府网 最新政策",
+      "url": "https://www.gov.cn/zhengce/zuixin/",
+      "source_type": "official_domestic_policy_supplementary",
+      "source_tier": "primary",
+      "checked_at_utc": "2026-11-07T14:54:53Z",
+      "access_result": "partial_list_only",
+      "http_status": 200,
+      "method": "GET via python-3.13-urllib, User-Agent: WB-01-ReadOnlyProbe/1.0",
+      "list_accessible": true,
+      "body_accessible": "not_verified",
+      "timestamp_precision": "unknown；仅观察到页面生成时间 2026-11-06 17:12:54，未从静态 HTML 解析到政策条目的发布时间，页面生成时间不等于条目发布时间",
+      "retention_status": "unknown",
+      "retention_note": "未核实 robots.txt、使用条款与版权；未存档正文",
+      "evidence": [
+        {
+          "utc": "2026-11-07T14:54:24Z",
+          "url": "https://www.gov.cn/zhengce/zuixin/",
+          "http_status": 200,
+          "content_type": "text/html",
+          "observed": "标题『最新政策_政策_中国政府网』；前 8000 字节内 .htm/.html 链接 1 个（邮箱入口）；日期 token 2026-11-06"
+        },
+        {
+          "utc": "2026-11-07T14:54:53Z",
+          "url": "https://www.gov.cn/zhengce/zuixin/",
+          "http_status": 200,
+          "observed": "读取 21484 字节（页面全长）；meta others=页面生成时间 2026-11-06 17:12:54；.htm/.html 链接 19 个，样例为 2023 年导航链接 https://www.gov.cn/home/2023-03/29/content_5748953.htm 等；日期 token 仅 2026-11-06"
+        }
+      ],
+      "next_checks": [
+        "分析列表页脚本或接口以确定最新政策条目的真实链接来源，确认条目与正文是否可静态获取",
+        "核实条目发布时间文本与精度、时区；不得把页面生成时间当作发布时间",
+        "核实 robots.txt、使用条款与版权后再定 storage_policy",
+        "连续多日增量与去重验证；在此之前不将该源计入已接通清单"
+      ]
+    },
+    {
+      "id": "stooq_daily_csv",
+      "name": "Stooq 日线 CSV（行情候选）",
+      "url": "https://stooq.com/q/d/l/?s=%5Espx&i=d",
+      "source_type": "third_party_market_data_candidate",
+      "source_tier": "secondary",
+      "checked_at_utc": "2026-11-07T14:52:35Z",
+      "access_result": "blocked_by_browser_verification",
+      "http_status": 200,
+      "method": "GET via python-3.13-urllib, User-Agent: WB-01-ReadOnlyProbe/1.0",
+      "list_accessible": false,
+      "body_accessible": false,
+      "timestamp_precision": "not_available",
+      "retention_status": "unknown",
+      "retention_note": "未取得 CSV 数据，未核实条款；按任务边界不绕过浏览器校验，未尝试执行其 JS 挑战、未伪装浏览器重试",
+      "evidence": [
+        {
+          "utc": "2026-11-07T14:52:35Z",
+          "url": "https://stooq.com/q/d/l/?s=%5Espx&i=d",
+          "http_status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "observed": "返回的不是 CSV，而是含 noindex,nofollow 与 noscript『This site requires JavaScript to verify your browser』的校验页（796 字节）。判定为访问受限，未取得任何行情数据。"
+        }
+      ],
+      "market_data_quality": {
+        "standard_instrument_code": "not_evaluated_no_data",
+        "trading_date": "not_evaluated_no_data",
+        "reliable_ohlc": "not_evaluated_no_data",
+        "adjustment_statement": "not_evaluated_no_data"
+      },
+      "next_checks": [
+        "由主控决定是否更换为有明确授权与复权说明的行情源；本包不绕过校验",
+        "若换源，需重新验证标准代码、交易日期、OHLC、复权/价格调整口径、缺失值处理与证券主数据映射"
+      ]
+    },
+    {
+      "id": "fred_sp500_csv",
+      "name": "FRED SP500 CSV（行情候选备用，公开无需密钥）",
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+      "source_type": "official_institution_timeseries_candidate",
+      "source_tier": "primary_institution",
+      "checked_at_utc": "2026-11-07T14:53:31Z",
+      "access_result": "partial_single_sample",
+      "http_status": 200,
+      "method": "GET via python-3.13-urllib, User-Agent: WB-01-ReadOnlyProbe/1.0",
+      "list_accessible": true,
+      "body_accessible": true,
+      "timestamp_precision": "observation_date 为 YYYY-MM-DD 日期级；仅读取前 600 字节，未验证日期是否覆盖完整交易日历、是否存在非交易日或缺失日",
+      "retention_status": "unknown",
+      "retention_note": "未核实 FRED 使用条款、SP500 序列口径与许可；仅保留表头与少量数值片段，未下载完整序列",
+      "evidence": [
+        {
+          "utc": "2026-11-07T14:53:31Z",
+          "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=SP500",
+          "http_status": 200,
+          "content_type": "application/csv",
+          "last_modified": "Fri, 06 Nov 2026 16:26:49 GMT",
+          "observed": "表头 observation_date,SP500；样本 2016-11-07,2131.52 / 2016-11-08,2139.56 / 2016-11-09,2163.26；存在空值行 2016-11-24, 与 2016-11-30,"
+        }
+      ],
+      "market_data_quality": {
+        "standard_instrument_code": "not_satisfied：SP500 是 FRED series id，不是交易所标准证券代码，未见证券主数据映射",
+        "trading_date": "partial：有 YYYY-MM-DD 日期列，但含空值，未验证交易日/节假日/供应商修订语义",
+        "reliable_ohlc": "not_satisfied：仅单列数值（指数点位/收盘），无 Open / High / Low / Volume，无法构造 OHLC bar",
+        "adjustment_statement": "unverified：CSV 中无复权或价格调整字段；指数点位通常不涉及个股复权，但序列口径、来源与修订政策未核实",
+        "stability": "not_verified：仅单次请求、前 600 字节样本，按任务要求不得标记稳定运行通过"
+      },
+      "next_checks": [
+        "核实 FRED 使用条款、SP500 序列来源/口径/时间范围限制与修订政策后再定 storage_policy",
+        "取得完整序列并统计缺失率、更新延迟、非交易日处理，连续多日重复访问验证稳定性",
+        "若 M2 需要 OHLC 与复权口径，另找具备明确复权说明与标准证券代码的行情源；本候选不足以支撑事件研究法评价",
+        "独立验证 A 股与美股交易日历、提前收市与 DST（本包未实测交易日历）"
+      ]
+    }
+  ],
+  "limitations": [
+    "环境：两个可用解释器均无法解析 IANA 时区（3.13 缺 tzdata 且 TZPATH 为空；3.8 无 zoneinfo），契约 v0.1 要求的 Asia/Shanghai 等展示时区与跨市场 DST 处理未就绪；未安装任何依赖",
+    "环境：py -0p 实测显示已注册 Python 3.8-64，与任务前置说明『无注册 Python』不一致；差异原因未查明，未改动注册状态",
+    "环境：目录名 3.13.12 与解释器实测版本 3.13.14 不一致，按实测值记录",
+    "通道：本机 curl 8.14.1 Schannel 因 CRYPT_E_REVOCATION_OFFLINE 无法完成 TLS 握手，两次请求 HTTP 状态不可得；改用 Python urllib 完成来源实测，未修改系统设置",
+    "来源：Stooq 行情 CSV 被 JavaScript 浏览器校验拦截，未取得任何数据，未绕过限制",
+    "来源：中国政府网列表页可达，但最新政策条目链接与发布时间未从静态 HTML 验证，正文未访问",
+    "来源：国家统计局正文 meta PubDate 未标注时区，未核实其为发布时点还是页面生成/更新时点",
+    "来源：全部 5 个候选源的 robots/ToS/版权/许可条件均未核实，retention_status 一律为 unknown，不宣称可全文存档",
+    "行情：FRED CSV 仅提供日期与单列点位，无 OHLC 与复权说明；Stooq 无数据；交易日历候选未实测，行情质量不足以支撑 M2 评价协议",
+    "稳定性：全部为单日、单客户端、低频少量样本，未做连续多日运行、重跑幂等、修订检测、频率限制观察或失败重试验证",
+    "范围：未验证任何模型调用、预算、Git 状态、依赖清单或 CI 命令；未使用付费 API、密钥、登录账户或外发消息",
+    "隔离：除 collaboration/workbuddy/results/ 下两个文件及该目录本身外，未写入任何路径；未写入工作区记忆或其他目录"
+  ],
+  "next_checks_global": [
+    "由主控决定 IANA 时区依赖方案（显式引入 tzdata 或以固定偏移 + 独立 DST 规则实现），并在 M0 冻结前验证 Asia/Shanghai 与 America/New_York 及跨市场对齐",
+    "在确认授权条件后，为两个官方来源确定 storage_policy，并据此设计 RawItem 的 content_ref 与哈希策略",
+    "对两个官方来源做至少连续数日的增量抓取，验证去重、正文修订、发布时间解析与信息截点语义",
+    "为行情与交易日历另行选定有明确复权说明、标准证券代码和 OHLC 的数据源，并按 contracts-v0.1 的 MarketSnapshot 字段核对",
+    "将本包结果作为 charter-v3 中 M0『至少两个官方来源有真实样本』的输入之一，但不得据此宣称 M0 或 G0/G3 通过"
+  ],
+  "artifacts": [
+    "collaboration/workbuddy/results/WB-01-report.md",
+    "collaboration/workbuddy/results/WB-01-results.json"
+  ]
+}

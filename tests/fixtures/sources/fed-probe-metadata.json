@@ -1,0 +1,12 @@
+{
+  "probe_kind": "single_low_frequency_development_request",
+  "is_synthetic": false,
+  "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+  "attempted_at": "2026-11-07T15:12:22.738295Z",
+  "full_feed_retained": false,
+  "source_terms_reviewed": false,
+  "formal_source_gate_passed": false,
+  "result": "failed",
+  "error_type": "HTTPError",
+  "error": "HTTP Error 404: Not Found"
+}

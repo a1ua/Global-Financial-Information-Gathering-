@@ -1,0 +1,186 @@
+{
+  "task_id": "DOMESTIC-PROBE-01",
+  "status": "partial",
+  "observation_window_utc": {
+    "start": "2026-11-07T23:40:16.809792+08:00",
+    "end": "2026-11-07T15:41:34Z"
+  },
+  "scope": {
+    "written_files": [
+      "docs/sources/domestic-probe.md",
+      "docs/sources/domestic-probe.json"
+    ],
+    "full_article_saved": false,
+    "full_html_saved": false,
+    "code_modified": false,
+    "git_modified": false,
+    "packages_installed": false,
+    "workbuddy_restarted": false
+  },
+  "source": {
+    "proposed_source_id": "nbs_latest_release",
+    "url": "https://www.stats.gov.cn/sj/zxfb/",
+    "source_tier": "primary",
+    "source_type": "official_domestic_macro_html",
+    "onboarding_status": "not_approved"
+  },
+  "requests": [
+    {
+      "channel": "local_venv_urllib",
+      "request_utc": "2026-11-07T23:40:16.809792+08:00",
+      "url": "https://www.stats.gov.cn/sj/zxfb/",
+      "method": "GET",
+      "user_agent": "MarketIntel-ReadOnlyProbe/0.1 (single-request research metadata check)",
+      "timeout_seconds": 20,
+      "read_limit_bytes": 300001,
+      "http_status": null,
+      "result": "failed_before_http_response",
+      "error_type": "URLError",
+      "error": "[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)",
+      "tls_verification_disabled": false,
+      "retry_count": 0
+    },
+    {
+      "channel": "web_reader",
+      "url": "https://www.stats.gov.cn/sj/zxfb/",
+      "http_status": null,
+      "result": "readable_extracted_page",
+      "tool_exposed_status": false,
+      "reader_reported_crawl": "today",
+      "note": "Not evidence of successful local adapter GET or raw DOM parsing"
+    },
+    {
+      "channel": "web_reader",
+      "url": "https://www.stats.gov.cn/wzgl/202302/t20230217_1912857.html",
+      "discovered_from": "official_list_footer_service_terms_link",
+      "http_status": null,
+      "result": "readable_official_terms",
+      "displayed_date_text": "2022/09/02 17:13"
+    },
+    {
+      "channel": "web_reader",
+      "url": "https://www.stats.gov.cn/sj/zxfb/202611/t20261103_1965738.html",
+      "discovered_from": "first_visible_article_link_in_official_list",
+      "http_status": null,
+      "result": "timeout_fetching",
+      "note": "Link target confirmed; article body not obtained in this probe"
+    },
+    {
+      "request_utc": "2026-11-08T04:51:49.152Z",
+      "bytes": 73203,
+      "full_html_saved": false,
+      "channel": "local_bundled_node_https_to_python_parser",
+      "parsed_items": 15,
+      "result": "success_current_list_parsed",
+      "tls_verification_disabled": false,
+      "redirect_policy": "error",
+      "url": "https://www.stats.gov.cn/sj/zxfb/",
+      "final_url": "https://www.stats.gov.cn/sj/zxfb/",
+      "http_status": 200
+    }
+  ],
+  "list_observations": {
+    "channel": "web_reader",
+    "distinct_article_references_visible": 15,
+    "raw_dom_link_count": null,
+    "date_format": "YYYY-MM-DD",
+    "date_samples": [
+      "2026-11-04",
+      "2026-10-31",
+      "2026-10-30",
+      "2026-10-27"
+    ],
+    "first_article": {
+      "url": "https://www.stats.gov.cn/sj/zxfb/202611/t20261103_1965738.html",
+      "list_date": "2026-11-04",
+      "url_date_token": "20261103",
+      "url_date_must_not_be_publication_time": true
+    },
+    "duplicate_links_visible": true,
+    "same_date_multiple_items_visible": true,
+    "suggested_time_contract": {
+      "source_time_precision": "date",
+      "time_parse_status": "date_only",
+      "source_published_at": null,
+      "source_timezone": null
+    },
+    "pagination": {
+      "status": "unknown",
+      "confirmed_next_page_url": null,
+      "confirmed_total_pages": null,
+      "raw_script_examined": false,
+      "reason": "Local TLS failed and web extraction did not establish pagination links; do not infer index_N.html"
+    }
+  },
+  "retention": {
+    "official_terms_found": true,
+    "terms_url": "https://www.stats.gov.cn/wzgl/202302/t20230217_1912857.html",
+    "summary": "Official terms require attribution and specify conditions and exceptions for reuse and statistical data use; they do not establish unconditional permission for all articles or automated full mirroring.",
+    "status": "conditional_terms_found_applicability_pending",
+    "proposed_storage_policy": "metadata_only",
+    "automatic_full_text_permission_confirmed": false,
+    "robots_checked": false,
+    "rate_policy_checked": false,
+    "article_specific_restrictions_checked": false,
+    "production_activation_requires_coordinator_review": true
+  },
+  "static_review": [
+    {
+      "id": "DOM-R01",
+      "priority": "high",
+      "file": "src/market_intel/capture.py",
+      "line": 106,
+      "observation": "items[:limit] always selects the first unchanged entries; later feed entries can starve forever across reruns.",
+      "proof_kind": "static_control_flow",
+      "persisted_reproduction_executed": false,
+      "recommendation": "Separate scan/write/display limits; persist fair pending work or a cursor, count unchanged separately, expose remaining backlog.",
+      "regression": "7 items, limit=2, unchanged head, reruns eventually process all; include perpetual failures and new head arrivals"
+    },
+    {
+      "id": "DOM-R02",
+      "priority": "high",
+      "file": "src/market_intel/capture.py",
+      "line": 40,
+      "observation": "source_id/config/markets and redirect/log source values are Fed-specific, not safe as a generic NBS builder.",
+      "proof_kind": "static_source_constants",
+      "recommendation": "Explicit per-source descriptor and allowed hosts; independent NBS HTML parser; domestic market mapping; retain Fed redirect restrictions."
+    },
+    {
+      "id": "DOM-R03",
+      "priority": "medium",
+      "file": "src/market_intel/offline.py",
+      "line": 108,
+      "observation": "Non-synthetic renderer labels all data official RSS and uses RSS reason codes, which would mislabel future HTML data.",
+      "proof_kind": "static_source_strings",
+      "recommendation": "Show source institution/type and actual storage policy; bump renderer/template version when changing historical output."
+    }
+  ],
+  "source_hashes": {},
+  "not_verified": [
+    "continuous incremental capture",
+    "raw pagination URLs or scripts",
+    "article body content or metadata",
+    "source-specific robots or rate limits",
+    "article exceptions",
+    "production permission decision",
+    "end-to-end NBS persistence and report integration"
+  ],
+  "delivery_verdict": "Current official HTML fetched via bounded Node HTTPS and parsed in memory: 15 items. 18 parser tests passed. Historic Python TLS failure preserved; complete source onboarding remains partial.",
+  "current_verification": {
+    "raw_html_compatibility_verified": true,
+    "unit_test_seconds": 0.013,
+    "checked_at_utc": "2026-11-08T04:51:49.152Z",
+    "source_onboarding": "partial_current_list_only",
+    "unit_tests_passed": 18,
+    "first_item": {
+      "url": "https://www.stats.gov.cn/sj/zxfb/202611/t20261103_1965738.html",
+      "source_time_text": "2026-11-04",
+      "source_published_at": null,
+      "time_parse_status": "date_only",
+      "source_time_precision": "date",
+      "source_timezone": null,
+      "title": "2026年10月下旬流通领域重要生产资料市场价格变动情况"
+    },
+    "parser": "market_intel.adapters.news.nbs.parse_nbs_list"
+  }
+}

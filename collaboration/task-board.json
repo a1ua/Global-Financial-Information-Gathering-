@@ -1,0 +1,770 @@
+{
+  "version": "3.0",
+  "updated_at": "2026-11-08",
+  "status_note": "Batch04 complete in evidence/report scope: structured report validation and SQLite-consistent backup/restore verified independently on 35 records/2 reports; 158 tests run,157 pass,1 OS symlink test skipped (mock protection covered). Full research/model/operations gates remain incomplete. GitHub target confirmed; upload verified separately after local commit.",
+  "tasks": [
+    {
+      "id": "ENG-01",
+      "title": "定位并验证Python、SQLite与时区环境",
+      "owner": "coordinator",
+      "depends_on": [],
+      "write_paths": [
+        "docs/environment-baseline.md"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        2,
+        4
+      ],
+      "gate": "G0",
+      "acceptance": [
+        "记录实际Python执行路径及版本，不能仅依据py启动器判断",
+        "执行sqlite3与zoneinfo检查并保存命令和结果",
+        "无可用解释器时记录阻塞，不声称测试通过"
+      ],
+      "evidence": [
+        "docs/environment-baseline.md",
+        "docs/verification/session-20261107.md"
+      ]
+    },
+    {
+      "id": "ENG-02",
+      "title": "建立可安装项目脚手架和Git基线",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-01"
+      ],
+      "write_paths": [
+        "pyproject.toml",
+        "requirements.lock",
+        "README.md",
+        ".gitignore",
+        "src/market_intel/__init__.py",
+        "src/market_intel/cli.py",
+        "tests/conftest.py"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G0",
+      "acceptance": [
+        "新隔离环境按文档安装并运行CLI help",
+        "密钥与运行数据不纳入版本库",
+        "保存公共开发基线并保留已有文件"
+      ],
+      "progress_note": "Ordinary isolated install, package fixture, outside-project CLI and tests verified; local Git baseline a4d0ba6.",
+      "evidence": [
+        "docs/setup-verification.md",
+        "docs/verification/batch-02.md"
+      ]
+    },
+    {
+      "id": "ENG-03",
+      "title": "冻结公共契约与样例v0",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-02"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/",
+        "docs/contracts/",
+        "tests/contracts/"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        4,
+        6
+      ],
+      "gate": "G1",
+      "acceptance": [
+        "定义ID、UTC、证据、事件、判断、错误及状态语义",
+        "有效与无效输入测试通过",
+        "实现者确认接口与版本，禁止猜测共享字段"
+      ],
+      "progress_note": "MVP single raw/event/evidence contract accepted; downstream model/manifest classes remain explicitly deferred.",
+      "evidence": [
+        "docs/contracts-implementation.md",
+        "tests/test_contracts.py",
+        "docs/verification/batch-02.md"
+      ]
+    },
+    {
+      "id": "ENG-04",
+      "title": "实现存储、迁移与不可变保护",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "write_paths": [
+        "src/market_intel/store/",
+        "tests/store/"
+      ],
+      "status": "in_progress",
+      "estimate_hours": [
+        5,
+        8
+      ],
+      "gate": "G1",
+      "acceptance": [
+        "外键与唯一键检查通过",
+        "历史判断普通修改被拒绝，更正使用追加",
+        "副本迁移、事务回滚及引用完整性通过"
+      ],
+      "progress_note": "Evidence schema0->4 and durable queue migrations verified; immutable records and receipts protected; prediction persistence and production backup/recovery still pending.",
+      "evidence": [
+        "tests/test_workflow.py",
+        "docs/verification/batch-02.md"
+      ]
+    },
+    {
+      "id": "ENG-05",
+      "title": "打通离线证据到简报的最小链路",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-04"
+      ],
+      "write_paths": [
+        "src/market_intel/demo/",
+        "tests/fixtures/demo/",
+        "tests/e2e/test_offline_demo.py",
+        "docs/offline-demo.md"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G2",
+      "acceptance": [
+        "单命令离线生成带引用报告",
+        "固定输入重跑无重复记录",
+        "记录输入清单及未启用的真实功能"
+      ],
+      "progress_note": "Exact input closure, timestamp/receipt/hash checks and new/old renderer replay accepted; prediction/evaluation functions not included.",
+      "evidence": [
+        "docs/verification/batch-03.md",
+        "docs/verification/batch-04.md"
+      ],
+      "accepted_scope": "Evidence-only offline/live snapshots and strict manifest replay"
+    },
+    {
+      "id": "SRC-01",
+      "title": "验证首批真实新闻来源",
+      "owner": "capture-agent",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "write_paths": [
+        "docs/sources/",
+        "tests/fixtures/sources/",
+        "config/sources.yaml"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "候选逐项记录真实请求与解析字段",
+        "验证时间、正文、增量能力及内容保留条件",
+        "明确通过、不通过和待确认，不用候选数量冒充覆盖"
+      ],
+      "evidence": [
+        "docs/sources/domestic-probe.md",
+        "docs/sources/rss-adapter.md",
+        "docs/verification/batch-03.md"
+      ],
+      "progress_note": "Both actual endpoints and date precision verified, source failures retained. Full body and long-term retention remain explicitly unapproved/unknown.",
+      "validation_outcome": "bounded_metadata_verified",
+      "accepted_scope": "Fed RSS + NBS visible list; title/date/link metadata only"
+    },
+    {
+      "id": "SRC-02",
+      "title": "实现RSS及首个页面或API适配器",
+      "owner": "capture-agent",
+      "depends_on": [
+        "SRC-01",
+        "ENG-05"
+      ],
+      "write_paths": [
+        "src/market_intel/adapters/news/",
+        "tests/adapters/",
+        "tests/fixtures/sources/"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        5,
+        8
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "真实样本离线解析通过",
+        "覆盖空页、编码、缺失正文及异常格式",
+        "联网探测结果与日常离线测试分开记录"
+      ],
+      "evidence": [
+        "tests/test_rss.py",
+        "tests/test_nbs.py",
+        "docs/verification/batch-03.md"
+      ],
+      "progress_note": "Both pure parsers have synthetic regressions and real in-memory input validation; NBS optional explicit verified Node transport. No article body fetch.",
+      "accepted_scope": "RSS2 and NBS current HTML list metadata adapters"
+    },
+    {
+      "id": "SRC-03",
+      "title": "实现增量、幂等与失败恢复",
+      "owner": "capture-agent",
+      "depends_on": [
+        "SRC-02"
+      ],
+      "write_paths": [
+        "src/market_intel/pipeline/capture/",
+        "tests/capture/"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        4,
+        6
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "失败不推进检查点",
+        "重跑无重复，乱序及同时间戳不漏项",
+        "正文修订保留新版本，单源故障可隔离"
+      ],
+      "evidence": [
+        "docs/capture-recovery.md",
+        "tests/test_capture_integration.py",
+        "tests/test_capture_state.py",
+        "docs/verification/batch-03.md"
+      ],
+      "progress_note": "Complete parsed lists queued before limit; resume, FIFO revisions/reversions, fair retry, contiguous checkpoint and single-source isolation verified. No historical pagination or multiwriter claim.",
+      "accepted_scope": "Single-writer current-list overlap discovery and durable title queue"
+    },
+    {
+      "id": "MKT-01",
+      "title": "验证标的、基准、行情与交易会话来源",
+      "owner": "data-review-agent",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "write_paths": [
+        "docs/market/",
+        "config/instruments.yaml",
+        "config/calendars.yaml",
+        "tests/fixtures/market/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G4",
+      "acceptance": [
+        "代码、币种、OHLC和调整口径可解释",
+        "日历来源及可回溯范围有证据",
+        "不合格来源对应协议保持关闭"
+      ]
+    },
+    {
+      "id": "MKT-02",
+      "title": "实现行情与日历的版本化同步",
+      "owner": "data-review-agent",
+      "depends_on": [
+        "MKT-01",
+        "ENG-04"
+      ],
+      "write_paths": [
+        "src/market_intel/market/",
+        "tests/market/",
+        "tests/fixtures/market/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        5,
+        8
+      ],
+      "gate": "G4",
+      "acceptance": [
+        "假期、DST与提前收市测试通过",
+        "缺失、异常价格与公司行动触发明确状态",
+        "修订新增版本，旧快照仍可查询"
+      ]
+    },
+    {
+      "id": "NLP-01",
+      "title": "实现模型客户端、预算与缓存",
+      "owner": "model-report-agent",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "write_paths": [
+        "src/market_intel/llm/",
+        "tests/llm/",
+        "config/llm.example.yaml"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        4,
+        6
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "超时、错误JSON、重试及超额mock测试通过",
+        "真实调用前明确限额与凭证配置",
+        "缓存键包含输入和模型、提示词及规则版本"
+      ]
+    },
+    {
+      "id": "NLP-02",
+      "title": "实现抽取分类与证据绑定",
+      "owner": "model-report-agent",
+      "depends_on": [
+        "NLP-01",
+        "SRC-03"
+      ],
+      "write_paths": [
+        "src/market_intel/pipeline/process/extract.py",
+        "src/market_intel/pipeline/process/evidence.py",
+        "tests/process/",
+        "tests/evaluation/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        5,
+        8
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "缺失信息保留空值而非补造",
+        "每个事实绑定有效证据片段",
+        "验证集独立，来源正文指令不能改变系统行为"
+      ]
+    },
+    {
+      "id": "NLP-03",
+      "title": "实现规则聚类、歧义裁决与冲突保留",
+      "owner": "model-report-agent",
+      "depends_on": [
+        "NLP-02"
+      ],
+      "write_paths": [
+        "src/market_intel/pipeline/process/cluster.py",
+        "tests/clustering/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        4,
+        6
+      ],
+      "gate": "G4",
+      "acceptance": [
+        "精确去重先由代码处理",
+        "误合并与漏合并分别报告",
+        "后续进展与矛盾证据不覆盖历史"
+      ]
+    },
+    {
+      "id": "RPT-01",
+      "title": "实现报告截点与引用检查",
+      "owner": "model-report-agent",
+      "depends_on": [
+        "NLP-02",
+        "ENG-05"
+      ],
+      "write_paths": [
+        "src/market_intel/report/selection.py",
+        "src/market_intel/report/validation.py",
+        "tests/report/test_selection.py",
+        "tests/report/test_validation.py"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        4,
+        6
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "截点后的首次观察数据不进入截点版",
+        "无效引用拒绝发布",
+        "事实、解释及观察事项明确区分，无主题不强填"
+      ]
+    },
+    {
+      "id": "RPT-02",
+      "title": "实现双模板、降级与原子归档",
+      "owner": "model-report-agent",
+      "depends_on": [
+        "RPT-01"
+      ],
+      "write_paths": [
+        "src/market_intel/report/templates/",
+        "src/market_intel/report/render.py",
+        "tests/report/test_render.py",
+        "docs/report-samples/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "HTML与Markdown包含截点、行情时点、run_id与状态",
+        "模型或行情缺失时生成明确降级版",
+        "发布失败不覆盖旧版，补版有独立版本"
+      ]
+    },
+    {
+      "id": "REV-01",
+      "title": "冻结判断与评价协议",
+      "owner": "data-review-agent",
+      "depends_on": [
+        "MKT-02",
+        "NLP-03"
+      ],
+      "write_paths": [
+        "src/market_intel/review/protocol.py",
+        "src/market_intel/review/predictions.py",
+        "tests/review/test_protocol.py",
+        "docs/review-protocol.md"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        5,
+        8
+      ],
+      "gate": "G4",
+      "acceptance": [
+        "固定方向语义、标的、基准、阈值和时间窗口",
+        "价格起点严格晚于校验提交成功的committed_at",
+        "缺字段拒收，历史更正追加"
+      ]
+    },
+    {
+      "id": "REV-02",
+      "title": "实现成熟队列与AR/CAR核对",
+      "owner": "data-review-agent",
+      "depends_on": [
+        "REV-01"
+      ],
+      "write_paths": [
+        "src/market_intel/review/calculate.py",
+        "src/market_intel/review/maturity.py",
+        "tests/review/test_calculate.py",
+        "tests/review/test_maturity.py"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G4",
+      "acceptance": [
+        "手算价格样例一致",
+        "未成熟不评分，缺失不当作零收益",
+        "同快照、协议与算法版本重算数值一致"
+      ]
+    },
+    {
+      "id": "REV-03",
+      "title": "实现周度样本与结果报告",
+      "owner": "data-review-agent",
+      "depends_on": [
+        "REV-02"
+      ],
+      "write_paths": [
+        "src/market_intel/review/summary.py",
+        "tests/review/test_summary.py",
+        "docs/review-samples/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        5,
+        8
+      ],
+      "gate": "G4",
+      "acceptance": [
+        "分母可逐条追溯，弃权与完整率单列",
+        "同事件多个标的和窗口不扩大独立事件数",
+        "不将描述性表现写成因果或研究有效性证明"
+      ]
+    },
+    {
+      "id": "OPS-01",
+      "title": "实现调度、锁与漏跑恢复",
+      "owner": "coordinator",
+      "depends_on": [
+        "RPT-02",
+        "SRC-03"
+      ],
+      "write_paths": [
+        "src/market_intel/ops/jobs.py",
+        "src/market_intel/ops/status.py",
+        "scripts/windows/",
+        "tests/ops/test_jobs.py",
+        "docs/operations.md"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        4,
+        6
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "提供可检查的Windows任务模板",
+        "重复触发、进程退出及过期锁行为明确",
+        "离线与断网缺口有记录，不能静默报告成功"
+      ]
+    },
+    {
+      "id": "OPS-02",
+      "title": "实现一致备份及副本恢复",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-04",
+        "ENG-05"
+      ],
+      "write_paths": [
+        "src/market_intel/ops/backup.py",
+        "tests/ops/test_backup.py",
+        "docs/backup-restore.md"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G5",
+      "acceptance": [
+        "数据库与所引用证据一同备份",
+        "独立副本恢复与完整性检查通过",
+        "不覆盖当前工作库"
+      ],
+      "accepted_scope": "Current evidence schema4, referenced raw and published renderer0.2/0.3 reports",
+      "dependency_scope": "Accepted evidence-store/snapshot interfaces; broader ENG-04 prediction work remains deferred.",
+      "evidence": [
+        "docs/backup-restore.md",
+        "docs/verification/backup-independent.md",
+        "docs/verification/batch-04.md"
+      ],
+      "progress_note": "Consistent SQLite backup, WAL handling, manifests, corruption rejection, fresh-directory restore and real-library report replay verified; no production overwrite."
+    },
+    {
+      "id": "QA-01",
+      "title": "独立集成、故障与时间边界回归",
+      "owner": "qa-agent",
+      "depends_on": [
+        "OPS-01",
+        "OPS-02",
+        "REV-03"
+      ],
+      "write_paths": [
+        "tests/integration/",
+        "tests/e2e/",
+        "docs/verification/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        5,
+        8
+      ],
+      "gate": "G5",
+      "acceptance": [
+        "必需离线回归通过且记录原始命令结果",
+        "联网探测单列，不冒充稳定性证明",
+        "故障、未来数据隔离及阻断问题有独立审查记录"
+      ]
+    },
+    {
+      "id": "QA-02",
+      "title": "运行观察、手册与最终交付验收",
+      "owner": "coordinator",
+      "depends_on": [
+        "QA-01"
+      ],
+      "write_paths": [
+        "docs/trial-run/",
+        "docs/delivery-report.md",
+        "README.md"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        3,
+        5
+      ],
+      "gate": "G5",
+      "acceptance": [
+        "至少7交易日，完整、降级、迟到与失败均计入",
+        "未解决阻断项不得标完成",
+        "交付手册、限制及DoD证据，不保证研究有效性"
+      ]
+    },
+    {
+      "id": "WB-01",
+      "title": "WorkBuddy环境与来源只读探测",
+      "owner": "workbuddy",
+      "depends_on": [],
+      "write_paths": [
+        "collaboration/workbuddy/results/"
+      ],
+      "status": "done",
+      "estimate_hours": [
+        1,
+        3
+      ],
+      "gate": "G0",
+      "acceptance": [
+        "仅写结果目录，不安装或修改产品配置",
+        "记录实际命令、请求、时间、观察及失败",
+        "py启动器无注册解释器不等同电脑无其他Python",
+        "由主控核实实际派发及回收状态"
+      ],
+      "probe_result": "partial",
+      "source_onboarding": "pending",
+      "evidence": [
+        "collaboration/workbuddy/results/WB-01-report.md",
+        "collaboration/workbuddy/results/WB-01-results.json",
+        "docs/verification/session-20261107.md"
+      ]
+    },
+    {
+      "id": "WB-02",
+      "title": "WorkBuddy时间与收益黑盒复核",
+      "owner": "workbuddy",
+      "depends_on": [
+        "REV-02"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        2,
+        4
+      ],
+      "gate": "G4",
+      "acceptance": [
+        "独立预期结果与产品逐条对比",
+        "覆盖盘前中后、假期、未成熟及缺失",
+        "返回差异报告，不直接修改核心计算"
+      ]
+    },
+    {
+      "id": "WB-03",
+      "title": "WorkBuddy报告阅读与证据抽检",
+      "owner": "workbuddy",
+      "depends_on": [
+        "RPT-02"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/"
+      ],
+      "status": "planned",
+      "estimate_hours": [
+        2,
+        4
+      ],
+      "gate": "G3",
+      "acceptance": [
+        "检查事实支持、截点、数字和缺失标记",
+        "实际观察宽窄屏后才记录视觉结论",
+        "报告包含样例ID、定位及未验证项"
+      ]
+    },
+    {
+      "title": "WorkBuddy官方RSS使用条件与字段核验",
+      "acceptance": [
+        "官方页面引用与真实访问记录",
+        "区分RSS摘要与全文留存",
+        "不改核心代码或系统"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-04-report.md",
+        "collaboration/workbuddy/results/WB-04-results.json"
+      ],
+      "id": "WB-04",
+      "gate": "G3",
+      "owner": "workbuddy",
+      "evidence": [
+        "docs/verification/batch-02.md"
+      ],
+      "depends_on": [
+        "WB-01"
+      ],
+      "status": "cancelled",
+      "progress_note": "Dispatched and later observed user-cancelled in WorkBuddy; no formal output artifacts; not restarted.",
+      "estimate_hours": [
+        1,
+        2
+      ]
+    }
+  ],
+  "experiments": [
+    {
+      "evidence": "docs/verification/session-20261107.md",
+      "id": "OFFLINE-PROTOTYPE",
+      "status": "verified_subset",
+      "note": "Not equivalent to completing ENG-04/05 or production gates.",
+      "tests_passed": 15
+    },
+    {
+      "status": "verified_metadata_subset",
+      "tests_passed": 65,
+      "report_sha256": "390366b8f9fab4e8344c733f9eca877c26e471746fad6e5ddf7515930a2b0373",
+      "id": "LIVE-RSS-SNAPSHOT",
+      "repeat_inserted": 0,
+      "repeat_unchanged": 5,
+      "evidence": "docs/verification/batch-02.md",
+      "inserted": 5
+    },
+    {
+      "report_sha256": "a367c7550ee2ea530301577b4cf3ac2ade88caa7dc5851ffbc8df360c8e68525",
+      "event_count": 35,
+      "evidence": "docs/verification/batch-03.md",
+      "nbs_count": 15,
+      "status": "verified_metadata_subset",
+      "repeat_new_events": 0,
+      "tests_passed": 118,
+      "id": "BATCH03-DUAL-SOURCE-RECOVERY",
+      "queue_pending": 0,
+      "fed_count": 20
+    },
+    {
+      "status": "verified_current_evidence_scope",
+      "source_unchanged": true,
+      "tests_passed": 157,
+      "tests_run": 158,
+      "backup_files": 40,
+      "raw_records": 35,
+      "evidence": "docs/verification/batch-04.md",
+      "reports": 2,
+      "tests_skipped": 1,
+      "id": "BATCH04-BACKUP-AND-MANIFEST"
+    }
+  ],
+  "gates": {
+    "G2": "partial",
+    "G4": "not_started",
+    "G0": "passed_local",
+    "G3": "not_accepted",
+    "G5": "not_started",
+    "G1": "partial"
+  },
+  "deferred_source_requirements": [
+    "Article body retention/use permission and semantic extraction",
+    "Historical pagination/full backfill",
+    "Changes to date/URL/description without title change",
+    "Concurrent workers or durable job leases",
+    "Long-term stability and seven-trading-day operation"
+  ],
+  "release": {
+    "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
+    "target_repository": "a1ua/Global-Financial-Information-Gathering-",
+    "state": "prepared",
+    "includes": "Tracked source, synthetic fixtures, plans and verification docs"
+  }
+}

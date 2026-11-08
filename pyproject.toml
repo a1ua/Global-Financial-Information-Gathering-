@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools==84.2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "market-intel-agent"
+version = "0.1.0"
+description = "Evidence-first market intelligence with a bounded RSS workflow"
+requires-python = ">=3.11"
+dependencies = ["tzdata==2026.6"]
+
+[project.scripts]
+market-intel = "market_intel.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+market_intel = ["fixtures/*.json", "transport/*.mjs"]
