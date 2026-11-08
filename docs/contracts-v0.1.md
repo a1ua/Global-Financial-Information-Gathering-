@@ -232,6 +232,8 @@ evaluation_kind为first_evaluation或revision_recalculation；旧首次评价不
 
 后续版本说明：本节保留 Batch05 历史基线。Batch06 币种/传输契约见 `contracts/deepseek-budget-v0.2.md`；Batch07 账本 schema3、固定入口身份与路径绑定以及备份0.2契约见 `contracts/ledger-binding-v0.1.md`。身份绑定代码不代表真实调用、人工对账或同身份回退防护已验收。
 
+Batch08对账/恢复前置契约见`contracts/reconciliation-v0.1.md`：仅只读声明比对与快照预检，不修改schema、调用状态或预算；外部声明未认证，预检结果不授予生产切换许可。不可变审计与真实结算仍为后续工作包。
+
 本节由主控整合，限定 `market_intel.llm` 的独立账本 schema 1，不改变证据库 schema 4 或既有对象格式。示例见 `config/llm.example.json`，合成输入输出及反例见 `tests/test_llm.py`。这不是云端供应商或 R08 完整上线验收。
 
 - 预算池以应用明确配置的单一 `state_path` 为范围，多个模型共享同账本额度；它不是跨任意文件、账户或机器的全局费用控制。调用方不能新建、删除、切换或回滚账本规避额度。生产入口尚未实现固定账本绑定，真实 provider 保持关闭。

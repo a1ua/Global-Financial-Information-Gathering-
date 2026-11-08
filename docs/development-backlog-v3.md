@@ -8,6 +8,8 @@
 
 ## 1. 立项后仍需先解决的工程缺口
 
+2026-11-09 Batch08以`development-status-plan-20261109.md`和对话归档为输入，先完成独立设计审查，再实施只读对账/恢复预检，分工见`../collaboration/batch-08-plan.md`。不将预检视为账单认证、pending终态或同身份回退防护；可信高水位与不可变审计未完成前禁止生产恢复切换。NLP-01保持in_progress，后续先解决这些前置，再进入Batch09真实小样本及候选数量集成。
+
 - 当前已观察到的仓库内容为 V2 计划、HTML 与渲染脚本；未看到产品实现。检查时 Git 尚无提交。
 - `py --list-paths` 未发现注册的 Python。此结果仅说明启动器未找到解释器，不能证明电脑其他位置不存在 Python。主控随后通过 `load_workspace_dependencies` 找到Codex捆绑解释器，并实际验证 Python 3.12.14、SQLite 3.53.1与 America/New_York 时区可用；完整G0仍需安装/启动文档、项目依赖及CLI验证，不能据此标记全闸门通过。
 - 多 Agent 和 WorkBuddy 是开发协作工具；产品运行继续使用确定性流水线。首版不额外引入运行时多 Agent 框架。

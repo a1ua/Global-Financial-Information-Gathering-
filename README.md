@@ -91,6 +91,17 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
+Batch08新增两项只读预检。`ledger-reconcile-preview`比较人工或合成声明与单个UTC日、provider的本地估算；声明文件严格格式见`docs/contracts/reconciliation-v0.1.md`。数值相同不认证账单，缺项或pending为incomplete，预检不会释放预留。`ledger-recovery-preflight`比较当前绑定账本与schema3备份的全部业务行；结果相同也不授权切换生产，始终`switch_allowed=false`。未提供结算、覆盖生产库或强制切换参数。
+
+```powershell
+./.venv/Scripts/market-intel.exe ledger-reconcile-preview --workspace data/live --statement out/statement.json
+./.venv/Scripts/market-intel.exe ledger-recovery-preflight --workspace data/live --backup out/ledger-backups/new-snapshot
+```
+
+声明是真实凭证的手工描述也不会被自动认证；当前call_id与供应商请求尚未建立可信关联。高水位、不可变对账审计、终态结算和生产恢复仍待实现。命令合法时即使differences/incomplete/not_equivalent也返回0，必须读取JSON状态及禁止操作标志；结构或账本错误返回1。详情见`docs/reconciliation.md`及`docs/recovery-preflight.md`。
+
+预检不执行SQL业务写或预算/绑定修改；SQLite读取WAL模式仍可能创建或更新`-wal`/`-shm`协调文件，不能承诺文件系统完全零变化。保留正常WAL读取，不用immutable模式忽略未检查点数据。
+
 尚未实现历史分页/完整回溯、正式行情/日历同步、收益评价、定时任务与7交易日运行验收。批次06增加DeepSeek传输和人民币每日10元的单账本估算上限，但真实模型连通、tokenizer和账单尚未验证；传输模拟不代表云端接通。证据采集仍为单进程/单写入者，没有并发租约验收；已验证当前证据库的一致备份与副本恢复，尚未实现预测库及全生产运维流程。独立模型账本使用单独的ledger-backup命令，不在证据backup范围内，不能通过回滚或删除它重置预算。发现范围限当前可见列表，已经在下次扫描前消失的条目无法保证补齐。标题以外的发布时间/URL/摘要更正本批不作为新版本。标题级快照不等于盘前/盘后研究简报。
 
 ## DeepSeek人民币预算与显式单次验证

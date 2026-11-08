@@ -16,6 +16,8 @@ from .llm import ModelClient, ModelError, Policy
 from .llm.deepseek import DeepSeekTransport
 from .llm.binding import check_workspace_ledger, ensure_workspace_ledger
 from .ops.llm_backup import create_ledger_backup, restore_ledger_backup, verify_ledger_backup
+from .ops.reconciliation import preview_reconciliation
+from .ops.recovery_preflight import preflight_ledger_recovery
 
 
 def _deepseek_policy(*, enabled=False):
@@ -114,8 +116,20 @@ def main(argv=None):
     ledger_restore = sub.add_parser("restore-ledger", help="Restore a ledger snapshot as a new isolated copy")
     ledger_restore.add_argument("--backup", type=Path, required=True)
     ledger_restore.add_argument("--destination", type=Path, required=True)
+    reconciliation = sub.add_parser("ledger-reconcile-preview", help="Compare an unverified statement read-only; never settle fees")
+    reconciliation.add_argument("--workspace", type=Path, default=Path("data/live"))
+    reconciliation.add_argument("--statement", type=Path, required=True)
+    preflight = sub.add_parser("ledger-recovery-preflight", help="Compare a recovery candidate read-only; never switch production")
+    preflight.add_argument("--workspace", type=Path, default=Path("data/live"))
+    preflight.add_argument("--backup", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command in ("ledger-reconcile-preview", "ledger-recovery-preflight"):
+            result = (preview_reconciliation(args.workspace, args.statement)
+                      if args.command == "ledger-reconcile-preview"
+                      else preflight_ledger_recovery(args.workspace, args.backup))
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
         if args.command in ("deepseek-check", "deepseek-smoke", "ledger-bind", "ledger-backup", "verify-ledger-backup", "restore-ledger"):
             if args.command.startswith("deepseek-"):
                 result = _deepseek_command(args)

@@ -34,7 +34,17 @@ Python 包位于 `src/market_intel/`。已实现：
 
 CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief`、`replay`、`status`、`validate-report`、`backup`、`verify-backup`、`restore`，以及批次06的`deepseek-check`、`deepseek-smoke`、`ledger-backup`、`verify-ledger-backup`、`restore-ledger`。参数见README与`--help`。
 
-## 最新开发批次 07
+## 最新开发批次08（2026-11-09）
+
+本轮读取并校验`out/市场信息Agent-开发计划与对话归档-20261109.zip`的逐文件SHA-256，确认20轮100条可见消息及既有用户约定。压缩包、对话正文和运行数据继续仅留本地，不上传GitHub；当前开发计划文档可随代码提交。
+
+分工见`collaboration/batch-08-plan.md`，冻结契约见`docs/contracts/reconciliation-v0.1.md`。独立设计通过后两个实现Agent交付`ops/reconciliation.py`和`ops/recovery_preflight.py`；主控接CLI。新入口只读比较单日/provider外部声明与估算，及schema3备份与当前绑定账本的逐行业务差异；金额相等不认证，pending不释放，切换始终禁止。不改schema，不读真实密钥或付费调用。
+
+独立审计、终态结算、可信外部高水位和生产恢复切换未实现。下一项为Batch08-C审计与高水位方案，真实供应商请求关联/账单仍需核实。NLP-01与完整闸门状态不因只读预检完成升级。实际测试及WorkBuddy状态见`docs/verification/batch-08.md`。
+
+本轮普通安装与全套335项，333通过、2权限跳过；独立目标110项，109通过、1跳过，实际junction通过。QA另复现SQLite只读WAL读取可建立协调侧文件，已明确read_only为无SQL业务写/预算/绑定/schema修改，不保证零文件系统变化；不使用immutable绕过WAL。WB-08正文已收、工具原始日志未独立认证，保持review。
+
+## 已交付批次07详情
 
 基线本地199d8ec、远程84fbcac，工作包见 `collaboration/batch-07-plan.md`，冻结契约见 `docs/contracts/ledger-binding-v0.1.md`。
 
