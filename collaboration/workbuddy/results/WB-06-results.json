@@ -1,0 +1,62 @@
+{
+  "task_id": "WB-06",
+  "status": "blocked",
+  "subagent_used": true,
+  "subagent_evidence": {
+    "dispatched": 2,
+    "agents": [
+      {
+        "name": "wb06-recovery",
+        "agent_id": "wb06-recovery@_auto_511dde95-43de-49f4-883a-00639fd4b9dd",
+        "task_id": "agent-fc13a5e8-150d-4dd4-a697-c7a99ad96c9e",
+        "focus": "旧账本恢复导致预算回退的边界、币种及pending保留",
+        "dispatch_receipt": "Spawned successfully",
+        "completion_evidence": "TaskOutput: Status=completed, Duration=10m10s, stdout/stderr 均 (no output)",
+        "full_result_recovered": false
+      },
+      {
+        "name": "wb06-budget",
+        "agent_id": "wb06-budget@_auto_511dde95-43de-49f4-883a-00639fd4b9dd",
+        "task_id": "agent-b758cc7c-650f-4b8e-8b7f-f1f5003363bb",
+        "focus": "人民币每日10元、向上取整、未知费用、HTTP密钥/时限/响应与显式启用边界",
+        "dispatch_receipt": "Spawned successfully",
+        "completion_evidence": "框架自动通知 completed successfully；后续 TaskOutput 返回 No task found（任务已清理）",
+        "full_result_recovered": false
+      }
+    ],
+    "full_complete_results_recovered": false,
+    "note": "仅取得派发回执、running 快照与完成通知；未在任何工具层输出中取得可引用的子Agent完整结论正文。主端多次请求回传未获正文。此前把运行快照误判为'已收到完整结论'的表述全部撤回，不作证据。按任务单不代写、不推测子Agent摘要；框架完成通知与自述均不等于结论回传。",
+    "timestamp_note": "wb06-recovery 的 TaskOutput 工具输出携带可核实时间戳 2026-11-08T12:19:11.897Z；除此之外未核实其他时间，故不编造完成时间。"
+  },
+  "checks_run": {
+    "tests_run": 0,
+    "commands_run": 0,
+    "documents_read": 3,
+    "writes": 2
+  },
+  "read_only_documents": [
+    "collaboration/batch-06-plan.md",
+    "docs/contracts/deepseek-budget-v0.2.md",
+    "docs/contracts-v0.1.md 第10节(231-244行)"
+  ],
+  "findings": {
+    "subagent_raw_findings": [],
+    "primary_inference": [
+      "总时限无规格：v0.2第5条与batch-06-plan的NLP-01-DEEPSEEK验收要求总时限/TLS/禁重定向，但三份文档未给出超时数值、分段时限或判定口径。",
+      "币种写入期衔接缺口：v0.2第1条days.currency默认'USD'与第2条'CNY不得使用USD默认值'并存，未规定新建CNY日强制显式币种及同UTC日跨币种冲突的拒绝规则。",
+      "预留上界是未验证假设且量纲未闭合：第6条'UTF-8字节数+4096'自述未经tokenizer/账单验收，与第3条按token计价的ceil公式之间换算及'usage超预留'减记判定未定义。",
+      "恢复不等于生产可恢复：第8条与batch-06-plan第15行限定仅新隔离目录恢复，固定生产账本绑定/人工对账/恢复切换仍为独立前置；第10节明示生产入口尚未实现固定账本绑定。",
+      "pending终态未定义：第8条与第10节要求pending在重启与一致备份中保留，但不提供未经对账的自动释放/人工结算入口，恢复副本内pending终态与快照时点闭包无可执行规则。"
+    ],
+    "basis": "主端基于三份固定文档原文的静态核对，明确为主端推断，非子Agent回传结论"
+  },
+  "limitations": [
+    "两类边界审查的子Agent独立结论未回收，全部未验证。",
+    "未读取任何实现代码，契约是否落地（schema2迁移、CLI显式--live、传输实现）未验证。",
+    "tests_run=0；未运行命令/测试，未调用付费API、未实网；费率与usage为配置费率估算，未与真实账单对账。",
+    "用户未提供密钥配置，--live smoke未发生；10元为单工作区上限，不约束账户其他程序累计支出（v0.2第2条）。",
+    "固定生产账本绑定、人工对账、恢复切换、真实供应商验收前置均未完成。",
+    "结果按blocked定稿：无真实完整子Agent回传，故不产出代替子Agent的摘要；本报告不等同于设计审查完成。"
+  ],
+  "finalized": true
+}

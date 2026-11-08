@@ -10,3 +10,11 @@
 6. 真实输入预留上界使用精确HTTP JSON body的UTF8字节数加4096的消息格式余量；这属于保守工程假设，未经过实际tokenizer或账单验收，不声称数学保证。实际usage超预留时不自动减账，保留失败并阻断该输出。每次重试重新预留。
 7. transport版本进入缓存键；密钥通过构造参数传入，只允许CLI显式--live时读取DEEPSEEK_API_KEY环境变量，不保存、打印或发送至其他host。未配置时先失败，不预留或请求。SDK/账户/任务计划不自动安装。
 8. 一致备份保留所有pending、days币种、费率依据和费用占用，支持schema1/2；只恢复新隔离目录，不能覆盖当前账本或把旧备份当最新额度。固定生产账本绑定、人工对账及恢复切换仍为独立验收前置，不因隔离恢复演练而宣称完成。
+
+## 实现验收补充（WB-06主端静态疑问澄清）
+
+- CLI配置timeout_seconds=30，Policy只允许1–300整数秒；HTTP发送/响应头/正文共享monotonic截止时点，连接返回后检查已消耗时间。同步DNS、多地址TCP与底层TLS不能强制硬墙钟终止，不宣称绝对总墙钟上限。
+- 迁移默认USD仅用于schema1已有记录。预留事务对每个新日显式写入policy.budget_currency；同日currency、token_cap或cost_cap不同均返回daily_budget_policy_changed，不能进入transport或默默换汇。
+- input_bound的单位为token：将精确HTTP body的UTF8字节数按每字节1 token的保守假设取数值，再加4096 token消息余量；不是把未经转换的字节费用当token结算。该上界尚未通过真实tokenizer认证。通用max_input_bytes限制内部固定请求JSON，实际HTTP体另有限制；DeepSeek token预留使用上述实际HTTP体上界。
+- 完整usage的input_tokens不得大于记录的input_bound，output_tokens不得大于本次max_output_tokens；不可信或超界则拒绝输出、保留原预留，不据未知实际费用补零或自动释放。上述规则可在本地验证，实际供应商计费一致性仍未验证。
+- 第10节旧mock约定为批次05历史范围；本v0.2新增的是显式、单次、合成smoke入口，未自动启用生产模型处理。人工对账和生产恢复前置保持未完成。

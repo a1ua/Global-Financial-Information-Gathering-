@@ -64,10 +64,20 @@ python -m unittest discover -s tests -p test_deepseek.py -v
 | tests/test_batch06_cli.py | 2d5c8cd0169229d7a4723ff648014e09fdb8b0f7e1304f02d045f7ba474829bb |
 | tests/test_llm_backup.py | c1fcd0eb3c65a64b9764b315ef065d84f79682974f845b8233240cc015ae0acc |
 
+## WB-06 最终回收边界
+
+QA已只读核对`WB-06-report.md`和可解析的`WB-06-results.json`：两者以`blocked`定稿，JSON的`finalized=true`、`subagent_used=true`，但`full_complete_results_recovered=false`，两位子Agent的`full_result_recovered`均为false，`subagent_raw_findings=[]`，`tests_run=0`、`commands_run=0`。主端明确撤回此前“已取得完整结论”的表述，没有代写子Agent摘要。
+
+因此本轮只接收“尝试派发、框架状态回执及阻塞情况”的记录，**不将派发成功、completed状态、完成通知或任务已清理当成独立结论回收，更不当成审查或测试pass**。文档中的agent/task ID及回执摘录仍是其提供的材料，不代替QA独立运行的代码证据。WB-06设计审查未完成，但不推翻本报告已实际执行并通过的63项定向测试及独立负向场景；代码验收与WorkBuddy结果回收分别给出结论。
+
+主端仅给出5项固定文档的静态推断，明确不是子Agent回传：超时数值缺规格、CNY显式写入/冲突衔接、字节到token的工程假设、隔离恢复不是生产恢复、pending没有对账终态。前3项由主控补充契约说明已有实现的默认30秒/最大300秒、显式币种及同日冲突拒绝码、每UTF-8字节按1个token加格式余量的保守假设；这些代码行为已在本轮验证范围内，不因文档澄清重复测试。后2项继续保留为生产启用与恢复切换前置，不通过增加未核实的结算声明将其改为完成。
+
+本次回收没有代码改动，审查快照中4份产品代码的SHA-256再次核对均未变；63项实际结果和上述哈希保持不变。未改写WorkBuddy文件，也未声称其独立子Agent结论已回收。
+
 ## 未验证与交付限制
 
 - 未真实调用DeepSeek、未验证当前运行机证书链、DNS、真实tokenizer上界、服务端模型版本或账单；官方文档核实与注入HTTP不等于实网通过。
 - 10元是同一受控账本、UTC自然日、配置费率估算上限，非DeepSeek账户的全局硬限额；其他应用、换账本、备份回退和供应商价格变动仍是边界。
 - 仅新目录隔离恢复；不自动接管生产账本、不释放未知pending、不提供未经账单核对的人工结算。固定账本绑定、恢复切换、对账和真实usage核对仍待完成。
-- WB-06固定文档审查尚未由QA回收，本报告不宣称其子Agent结果已返回或已通过；后续若发现影响代码的事项，须交文件负责人处理并复核。
+- WB-06两份最终阻塞记录已由QA回收；完整子Agent结论未回收，设计审查未完成，不宣称其通过。后续如取得新发现且影响代码，须交文件负责人处理并复核。
 - NLP-02语义抽取、正式报告、行情评价和运行观察仍未交付。本报告不替代主控全量回归、安装验证或最终GitHub发布核对。

@@ -736,7 +736,7 @@
     {"id": "NLP-01-DEEPSEEK", "owner": "deepseek-transport-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/llm/deepseek.py", "tests/test_deepseek.py", "docs/deepseek-provider.md", "config/deepseek.example.json"], "acceptance": "Fixed endpoint TLS, safe errors, response limits and synthetic HTTP tests; actual API unverified"},
     {"id": "NLP-01-RECOVERY", "owner": "ledger-recovery-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/ops/llm_backup.py", "tests/test_llm_backup.py", "docs/llm-backup.md"], "acceptance": "schema1/2 consistent snapshot, currency/pending preservation and isolated restore; no production rollback"},
     {"id": "QA-B06", "owner": "independent-qa-agent", "depends_on": ["NLP-01-CNY", "NLP-01-DEEPSEEK", "NLP-01-RECOVERY"], "status": "done", "write_paths": ["docs/verification/batch-06-review.md"], "acceptance": "Independent tests, negative ledger business cases, CLI and correction review"},
-    {"id": "WB-06", "owner": "workbuddy-subagent", "depends_on": ["ENG-03"], "status": "in_progress", "write_paths": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json"], "acceptance": "Actual complete child-agent results, fixed-doc design review, finalized=true and no test claims", "dispatch_evidence": "WorkBuddy task 执行WB-06审查任务 submitted and processing observed 2026-11-08T12:03:51Z"}
+    {"id": "WB-06", "owner": "workbuddy-subagent", "depends_on": ["ENG-03"], "status": "blocked", "finalized": true, "blocked_reason": "Child-agent dispatch/completion receipts exist but complete result bodies were not recovered; no independent findings or test pass", "unblock_condition": "Recover verifiable original results and independently review them, or explicitly dispatch a new review task", "evidence": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json", "docs/verification/batch-06-workbuddy-triage.md"], "write_paths": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json"], "acceptance": "Actual complete child-agent results, fixed-doc design review, finalized=true and no test claims", "dispatch_evidence": "WorkBuddy task 执行WB-06审查任务 submitted and processing observed 2026-11-08T12:03:51Z"}
   ],
   "user_model_configuration": {
     "provider": "deepseek",
@@ -834,10 +834,10 @@
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
     "state": "uploaded",
-    "verified_source_commit": "5a2a9a40833c7204ff3affaeb36d1bce5a974d6d",
-    "verified_remote_commit": "e4cd2272ebd47bc7c4c03395ef67399074618733",
-    "verified_tree": "69caed45751665e73ff3bc08e9fbd1d2558d1f63",
-    "verification_scope": "Batch05 source snapshot; publication records archived in a following documentation commit",
+    "verified_source_commit": "0a2ad279aef6cba164c2241bd5b084d0bacc2ba8",
+    "verified_remote_commit": "95abae0e4a8f795ebea615704d2f4b7b650f64cf",
+    "verified_tree": "27fbe6ec271650bc371a9225b73aef27088ee9b9",
+    "verification_scope": "Batch06 independently verified code; WB06 finalized blocked because raw child results were not recovered. Publication and review records archived in a following documentation commit",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }
