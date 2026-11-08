@@ -44,6 +44,8 @@ CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief
 
 本轮普通安装与全套335项，333通过、2权限跳过；独立目标110项，109通过、1跳过，实际junction通过。QA另复现SQLite只读WAL读取可建立协调侧文件，已明确read_only为无SQL业务写/预算/绑定/schema修改，不保证零文件系统变化；不使用immutable绕过WAL。WB-08正文已收、工具原始日志未独立认证，保持review。
 
+Batch08代码上传已核验：本地`54616f66deed0a88537eb3351c34b8f207a8db3b`、GitHub`2003240183803eedf7ea009ac98ce48697fd0446`、相同tree`d01f4d55b4cfcb9834aa9301476e119cd4cb29c6`；最终发布归档在后续文档提交中。对话包仍未上传。
+
 ## 已交付批次07详情
 
 基线本地199d8ec、远程84fbcac，工作包见 `collaboration/batch-07-plan.md`，冻结契约见 `docs/contracts/ledger-binding-v0.1.md`。

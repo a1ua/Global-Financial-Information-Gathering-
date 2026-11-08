@@ -1011,11 +1011,11 @@
   "release": {
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
-    "state": "pending_batch08_publication",
-    "verified_source_commit": "7be55d7a3e2a492b57c5594eaadc2f4c50802937",
-    "verified_remote_commit": "14045db15c4139ea057d377bbac4f112e3b1a4a5",
-    "verified_tree": "1b59b434032d0e36c9d2753c009b22d03205b9f3",
-    "verification_scope": "Batch07 independently verified binding/schema3 code, remote exact-tree confirmed; following archive records WorkBuddy review and publication. WB07 full body received but original tool logs not independently authenticated; review, not test proof.",
+    "state": "uploaded",
+    "verified_source_commit": "54616f66deed0a88537eb3351c34b8f207a8db3b",
+    "verified_remote_commit": "2003240183803eedf7ea009ac98ce48697fd0446",
+    "verified_tree": "d01f4d55b4cfcb9834aa9301476e119cd4cb29c6",
+    "verification_scope": "Batch08 code and documents verified as exact remote tree;335 tests333 passed2 skipped, independent110 tests109 passed1 skipped. WAL coordination-file effects documented. WB08 review only; audit/high-water/settlement/switch not implemented. Publication archive follows.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }

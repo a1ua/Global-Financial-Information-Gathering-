@@ -2,6 +2,8 @@
 
 日期2026-11-09。基线本地2817ba2、GitHub8c5e23a。任务B08-CONTRACT、B08-RECONCILE、B08-RECOVERY、B08-INTEGRATION、QA-B08；分工见`collaboration/batch-08-plan.md`，输入契约`docs/contracts/reconciliation-v0.1.md`。
 
+发布核验：本地代码提交`54616f66deed0a88537eb3351c34b8f207a8db3b`对应GitHub main快照`2003240183803eedf7ea009ac98ce48697fd0446`，Git tree均为`d01f4d55b4cfcb9834aa9301476e119cd4cb29c6`。随后另提交发布归档；不强推、不替换本地开发历史。
+
 ## 交付范围
 
 先核验本地对话归档ZIP及其manifest逐文件SHA-256，20轮100条可见消息；确认DeepSeek每日人民币10元、保持未知占用、用户取消任务不重启和不停止WB-06等既有约定。对话/ZIP仍仅本地，不上传仓库。
