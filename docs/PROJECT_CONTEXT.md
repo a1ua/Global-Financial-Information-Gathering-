@@ -44,6 +44,8 @@ CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief
 - NLP-01、MKT-01 原始完整工作包继续 in_progress；本轮只验收明确子集。真实供应商、候选数筛选、模型账本备份/对账、行情快照和完整 G3–G5 仍待完成。
 - 模型账本 `llm-state.db` 与证据库分离，不在现有 backup 范围内，不得通过删除或回滚账本重置预算。配置样例和测试值不是服务价格或真实账单。
 
+批次05代码发布已验证：本地 `5a2a9a40833c7204ff3affaeb36d1bce5a974d6d`，GitHub main `e4cd2272ebd47bc7c4c03395ef67399074618733`，两者 Git tree 均为 `69caed45751665e73ff3bc08e9fbd1d2558d1f63`。通过授权 GitHub 连接以非强制更新上传，89个追踪文件不含运行库/凭证。原本地提交历史保留；本段与发布状态随后作为文档归档提交，其最终文件树由交付消息核验。
+
 ## 批次 04 与既有真实验证
 
 批次 04 完成报告 manifest 校验与一致备份恢复。证据：

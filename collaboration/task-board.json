@@ -805,9 +805,10 @@
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
     "state": "uploaded",
-    "verified_source_commit": "c02944980b97352ca46f61e2f29100832be1599e",
-    "verified_remote_commit": "fef3c175d104903be04f9dd0e3e4122197194a4f",
-    "verified_tree": "f111d6ff0c65dee7a9ced5df98c0c53b186e87ce",
+    "verified_source_commit": "5a2a9a40833c7204ff3affaeb36d1bce5a974d6d",
+    "verified_remote_commit": "e4cd2272ebd47bc7c4c03395ef67399074618733",
+    "verified_tree": "69caed45751665e73ff3bc08e9fbd1d2558d1f63",
+    "verification_scope": "Batch05 source snapshot; publication records archived in a following documentation commit",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }
