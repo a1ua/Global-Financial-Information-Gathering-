@@ -19,6 +19,9 @@
 - `docs/llm-client.md`：离线注入传输、持久预算、调用记录与缓存接口。
 - `docs/market/capability-review-20261108.md`：行情、标的及交易日历的部分验证与阻断项。
 - `docs/verification/batch-05.md`：本轮实现、独立审查、安装回归及 WorkBuddy 协作记录。
+- `docs/deepseek-provider.md`：DeepSeek固定端点、人民币预算口径与传输边界。
+- `docs/llm-backup.md`：模型账本schema1/2的一致备份和隔离恢复。
+- `collaboration/batch-06-plan.md`：当前批次的目录分工与依赖。
 
 ## 本地验证
 
@@ -88,7 +91,26 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
-尚未实现历史分页/完整回溯、真实模型供应商接入、正式行情/日历同步、收益评价、定时任务与7交易日运行验收。批次05已实现模型预算节点的离线子集，默认关闭且仅允许mock启用；预算并发测试不代表云端模型接通或采集支持并发。证据采集仍为单进程/单写入者，没有并发租约验收；已验证当前证据库的一致备份与副本恢复，尚未实现预测库及全生产运维流程。独立模型账本不在证据backup范围内，不能通过回滚或删除它重置预算。发现范围限当前可见列表，已经在下次扫描前消失的条目无法保证补齐。标题以外的发布时间/URL/摘要更正本批不作为新版本。标题级快照不等于盘前/盘后研究简报。
+尚未实现历史分页/完整回溯、正式行情/日历同步、收益评价、定时任务与7交易日运行验收。批次06增加DeepSeek传输和人民币每日10元的单账本估算上限，但真实模型连通、tokenizer和账单尚未验证；传输模拟不代表云端接通。证据采集仍为单进程/单写入者，没有并发租约验收；已验证当前证据库的一致备份与副本恢复，尚未实现预测库及全生产运维流程。独立模型账本使用单独的ledger-backup命令，不在证据backup范围内，不能通过回滚或删除它重置预算。发现范围限当前可见列表，已经在下次扫描前消失的条目无法保证补齐。标题以外的发布时间/URL/摘要更正本批不作为新版本。标题级快照不等于盘前/盘后研究简报。
+
+## DeepSeek人民币预算与显式单次验证
+
+用户配置为DeepSeek每日人民币10元。当前CLI固定采用该用户策略，config/deepseek.example.json仅为字段样例，不自动加载任意配置文件。默认deepseek-flash非思考模式，采用已核实的人民币高峰缓存未命中费率估算，不换汇、不把估算当账单。日预算按UTC自然日和固定工作区中的`llm-state.db`累计；不是DeepSeek账户全局硬限额，其他程序和其他账本不受此控制。默认命令不会调用模型：
+
+```powershell
+./.venv/Scripts/market-intel.exe deepseek-check --workspace data/live
+./.venv/Scripts/market-intel.exe ledger-backup --ledger data/live/llm-state.db --destination out/ledger-backups/new-snapshot
+./.venv/Scripts/market-intel.exe verify-ledger-backup --backup out/ledger-backups/new-snapshot
+./.venv/Scripts/market-intel.exe restore-ledger --backup out/ledger-backups/new-snapshot --destination out/ledger-restored/new-copy
+```
+
+首次真实验证需用户在本地环境安全配置`DEEPSEEK_API_KEY`，无需把密钥发送到聊天或存进仓库。下面命令会显式尝试一次付费的合成输入调用；未加`--live`或未配置密钥会先失败，不创建账本或发请求。重复相同请求可能读取已验证缓存，结果会显示cache_hit。
+
+```powershell
+./.venv/Scripts/market-intel.exe deepseek-smoke --workspace data/live --live
+```
+
+本轮安装和回归只使用合成HTTP响应，没有执行上述真实调用。备份保留pending和币种/费用占用，恢复只能建立新隔离目录；CLI拒绝将带隔离恢复清单的目录直接用于live。人工账单对账、固定生产身份及正式恢复切换仍待完成，不据此宣称全生产可用。NLP-02抽取与正式解读尚未接入简报。
 
 最新真实验证：国家统计局15条、美联储20条，共35条标题级事件；限量消费后均可resume清空队列，重复完整扫描新增0条。此前Python TLS失败和RSS404记录保留，少量成功请求不证明长期稳定性。长期留存条件待确认，不开启全文存档；WorkBuddy的WB-04已取消，本批未重启。
 

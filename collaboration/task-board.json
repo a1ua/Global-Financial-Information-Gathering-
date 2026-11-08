@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-08",
-  "status_note": "Batch05 offline model budget/cache node accepted independently; MKT01 official source capability partially verified, evaluation off. Final normal-install suite:196 run,195 pass,1 existing OS symlink skip. NLP01/MKT01 full scope remains in_progress; full model/research/operations gates incomplete. WorkBuddy WB05 used two real child agents; 12 findings triaged separately. Release upload verified after local commit.",
+  "status_note": "Batch06 CNY budget, restricted DeepSeek transport and isolated ledger recovery accepted as offline/code scope. Final normal-install suite:259 run,258 pass,1 existing OS symlink skip; independent63 targeted tests pass. No actual API/key/billing verification. NLP01/MKT01 remain in_progress; NLP02 not started. WB05 final correction retained; WB06 fixed-document child-agent review tracked separately. Publication verified after local commit.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -314,9 +314,9 @@
         6
       ],
       "gate": "G3",
-      "accepted_scope": "Batch05 offline injected mock transport, atomic persistent budget, bounded retry, version cache and safe call records; independent review accepted this subset",
-      "progress_note": "Live provider/HTTP, tokenizer and usage billing validation, candidate count integration and independent ledger recovery remain pending. Non-mock activation is explicitly rejected.",
-      "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md"],
+      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently",
+      "progress_note": "User selected DeepSeek at10 CNY/day per UTC ledger. API/tokenizer/usage/invoice not verified; explicit --live and local key needed for one synthetic smoke. Global account binding, manual reconciliation, production recovery switching and candidate count integration remain pending.",
+      "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
         "真实调用前明确限额与凭证配置",
@@ -714,7 +714,7 @@
       "owner": "workbuddy-subagent",
       "depends_on": ["ENG-03"],
       "status": "done",
-      "accepted_scope": "Two actual WorkBuddy child-agent design reviews, main-agent static follow-up, seven checkpoints and twelve findings returned and triaged; no WorkBuddy test execution claimed",
+      "accepted_scope": "Child-agent dispatch observed; final WorkBuddy correction retained and reviewed. Initial prematurely written summaries do not prove child results. Reported static review is separate from independent product tests; WorkBuddy tests_run=0",
       "probe_result": "partial",
       "subagent_count": 2,
       "evidence": ["collaboration/workbuddy/results/WB-05-report.md", "collaboration/workbuddy/results/WB-05-results.json", "docs/verification/batch-05-workbuddy-triage.md"],
@@ -731,7 +731,36 @@
       "acceptance": "Independent review and adversarial budget/cache verification"
     }
   ],
+  "batch06_work_packages": [
+    {"id": "NLP-01-CNY", "owner": "coordinator", "depends_on": ["ENG-03", "NLP-01"], "status": "done", "write_paths": ["src/market_intel/llm/client.py", "src/market_intel/cli.py", "tests/test_llm_cny.py", "tests/test_batch06_cli.py"], "acceptance": "CNY integer ceiling, schema1 migration without reset, explicit CLI and no-key rejection"},
+    {"id": "NLP-01-DEEPSEEK", "owner": "deepseek-transport-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/llm/deepseek.py", "tests/test_deepseek.py", "docs/deepseek-provider.md", "config/deepseek.example.json"], "acceptance": "Fixed endpoint TLS, safe errors, response limits and synthetic HTTP tests; actual API unverified"},
+    {"id": "NLP-01-RECOVERY", "owner": "ledger-recovery-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/ops/llm_backup.py", "tests/test_llm_backup.py", "docs/llm-backup.md"], "acceptance": "schema1/2 consistent snapshot, currency/pending preservation and isolated restore; no production rollback"},
+    {"id": "QA-B06", "owner": "independent-qa-agent", "depends_on": ["NLP-01-CNY", "NLP-01-DEEPSEEK", "NLP-01-RECOVERY"], "status": "done", "write_paths": ["docs/verification/batch-06-review.md"], "acceptance": "Independent tests, negative ledger business cases, CLI and correction review"},
+    {"id": "WB-06", "owner": "workbuddy-subagent", "depends_on": ["ENG-03"], "status": "in_progress", "write_paths": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json"], "acceptance": "Actual complete child-agent results, fixed-doc design review, finalized=true and no test claims", "dispatch_evidence": "WorkBuddy task 执行WB-06审查任务 submitted and processing observed 2026-11-08T12:03:51Z"}
+  ],
+  "user_model_configuration": {
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "model_selection": "Default from current official API documentation, non-thinking mode",
+    "currency": "CNY",
+    "daily_limit_micro_cny": 10000000,
+    "budget_day_timezone": "UTC",
+    "live_call_policy": "Explicit CLI --live and local DEEPSEEK_API_KEY required; no actual API call verified",
+    "account_wide_limit": false
+  },
   "experiments": [
+    {
+      "id": "BATCH06-DEEPSEEK-CNY-LEDGER-RECOVERY",
+      "status": "verified_code_and_synthetic_http_subset",
+      "tests_run": 259,
+      "tests_passed": 258,
+      "tests_skipped": 1,
+      "independent_targeted_tests_passed": 63,
+      "independent_scenario_groups": 4,
+      "live_api_called": false,
+      "market_evaluation_enabled": false,
+      "evidence": "docs/verification/batch-06.md"
+    },
     {
       "id": "BATCH05-OFFLINE-MODEL-AND-MARKET-PROBE",
       "status": "verified_offline_model_subset_market_partial",

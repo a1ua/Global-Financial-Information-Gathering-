@@ -2,11 +2,13 @@
 
 日期：2026-11-08。输入基线：docs/contracts-v0.1.md、Batch 05。状态：离线子集已通过独立38项定向及主控最终安装回归验收，详见batch-05-review.md与batch-05.md。本轮不接通任何云模型，不代表模型抽取质量、供应商计费或 G3 已通过。
 
+批次06更新：新增DeepSeek固定端点适配、CNY通用micro单位和schema1→2迁移，详见 `deepseek-provider.md` 与 `contracts/deepseek-budget-v0.2.md`。用户指定每日人民币10元；仅显式`deepseek-smoke --live`且本地已配置密钥时允许一次合成验证，本轮没有执行实网。本文下述mock例子及批次05测试数保留为历史基线，最新验收另见batch-06。
+
 ## 实现范围
 
 `market_intel.llm` 提供 `Policy`、`ModelClient`、`ModelResponse`、`CallResult`、`ModelError` 和 `TransientTransportError`，无新依赖。产品仍为确定性流程；transport 只接收固定请求，不拥有工具、浏览器、文件或调度接口。
 
-`Policy()` 默认 `enabled=False`。即使注入 transport，也必须显式启用；本版仅允许启用 `provider="mock"`，其他 provider 返回 `live_provider_not_implemented`。不读取 API key、环境变量或账户文件，不发送网络请求。将来供应商适配必须独立实现和验收，核实实际 tokenizer 上界、请求包开销、超时、输出限制和 usage 可信度，不能将此 mock 接口直接改名冒充接通。
+`Policy()` 默认 `enabled=False`。即使注入 transport，也必须显式启用；支持mock，批次06另支持仅配套`DeepSeekTransport`的deepseek-flash/CNY策略，其他未实现provider拒绝启用。通用客户端不自行读取API key或环境变量；CLI只在显式--live分支读取指定密钥环境变量，不读取账户文件。供应商适配已有离线测试，但实际tokenizer、请求包开销、网络和usage可信度仍须少量真实样本验证，不能把mock接口改名当作连通证据。
 
 示例配置是 Python API 的配置字段说明，不由 CLI 自动加载；金额和费率是合成测试值，不是任何服务的报价。金额均为整数 microUSD（1 USD = 1,000,000 microUSD），本版费率单位为 microUSD/token，无法精确表达的供应商小数费率需后续契约升级或保守向上取整。本轮没有产生真实账单。
 
@@ -47,7 +49,7 @@ print(result.value, result.cache_hit)
 
 ## 预算与失败语义
 
-独立 SQLite 账本 schema 1，不修改证据库 schema 4。每次 transport 尝试之前使用 `BEGIN IMMEDIATE` 原子预留：
+独立 SQLite 账本现为schema 2，不修改证据库 schema 4；旧schema1追加day.currency=USD迁移，calls/cache/额度不换汇、不重置。每次 transport 尝试之前使用 `BEGIN IMMEDIATE` 原子预留：
 
 - 输入 token 上界取整个固定请求 JSON 的 UTF-8 字节数，包含提示词、schema 和参数；同时检查 `max_input_bytes`、`max_input_tokens`。此为 mock transport 契约，不是实际供应商 tokenizer 的已验证保证。
 - 每次预留输入上界加 `max_output_tokens`，费用按输入/输出上界分别乘配置的整数费率。每日汇总包含所有未决和已失败尝试，不能通过重试绕过上限。
@@ -74,7 +76,7 @@ transport 是受信任的应用代码，必须自己履行传入的 timeout 和�
 
 凭证只应属于未来的传输实现，不得放入 input、prompt、schema、parameters 或模型输出。常见凭证字段名被拒绝，但这不是任意文本秘密检测器；调用方必须保证文本中不含凭证。调试时不得打印请求、响应和环境变量。
 
-账本必须放在被忽略的 `out/` 或 `data/` 下。现有证据 `backup` 命令不备份这个独立模型账本；它不能随证据快照回滚，否则预算会被重置。当前仅本地持久化和重启保护，模型账本的一致备份、异地恢复和真实账单对账尚未实现，真实调用因此保持关闭。
+账本必须放在被忽略的 `out/` 或 `data/` 下。现有证据 `backup` 命令不备份这个独立模型账本，批次06独立ledger-backup/verify-ledger-backup/restore-ledger支持schema1/2的一致备份与隔离恢复。不能随证据快照回滚模型账本，否则预算会重置。人工对账、生产身份绑定、异地切换仍未验收；隔离恢复不代表可以回滚现用账本释放额度。CNY策略采用每日daily_micro_units和每百万token整数费率，输入/输出分项向上取整；usage使用micro_cny字段而非micro_usd，metadata保存当次币种和费率。
 
 ## 验证与未完成项
 

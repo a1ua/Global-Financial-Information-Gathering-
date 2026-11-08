@@ -1,0 +1,27 @@
+{
+  "is_example": true,
+  "state_path": "data/live/llm-state.db",
+  "key_env": "DEEPSEEK_API_KEY",
+  "policy": {
+    "provider": "deepseek",
+    "model": "deepseek-flash",
+    "enabled": false,
+    "budget_currency": "CNY",
+    "daily_micro_units": 10000000,
+    "daily_tokens": 100000,
+    "input_micro_units_per_million_tokens": 2000000,
+    "output_micro_units_per_million_tokens": 8000000,
+    "max_input_bytes": 8192,
+    "max_input_tokens": 16384,
+    "max_output_tokens": 512,
+    "max_output_bytes": 8192,
+    "max_retries": 0,
+    "timeout_seconds": 30
+  },
+  "pricing_reference": {
+    "url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+    "checked_on": "2026-11-08",
+    "basis": "peak_cache_miss_without_discounts",
+    "note": "Local configured-rate estimate, not a provider invoice or account-wide spending limit"
+  }
+}

@@ -184,6 +184,10 @@ class Policy:
     output_micro_usd_per_token: int = 1
     max_retries: int = 1
     timeout_seconds: int = 30
+    budget_currency: str = "USD"
+    daily_micro_units: int | None = None
+    input_micro_units_per_million_tokens: int | None = None
+    output_micro_units_per_million_tokens: int | None = None
 
     def __post_init__(self):
         for key in ("provider", "model"):
@@ -192,8 +196,17 @@ class Policy:
                 _fail("invalid_policy")
         if type(self.enabled) is not bool:
             _fail("invalid_policy")
-        if self.enabled and self.provider != "mock":
+        if self.enabled and self.provider not in {"mock", "deepseek"}:
             _fail("live_provider_not_implemented")
+        if type(self.budget_currency) is not str or self.budget_currency not in {"USD", "CNY"}:
+            _fail("invalid_budget_currency")
+        generic = (self.daily_micro_units, self.input_micro_units_per_million_tokens,
+                   self.output_micro_units_per_million_tokens)
+        if any(value is not None for value in generic):
+            if not all(_integer(value, 1) for value in generic):
+                _fail("invalid_budget_units")
+        elif self.budget_currency != "USD":
+            _fail("explicit_currency_budget_required")
         for key in ("daily_tokens", "daily_micro_usd", "max_input_bytes", "max_input_tokens",
                     "max_output_tokens", "max_output_bytes", "timeout_seconds"):
             if not _integer(getattr(self, key), 1):
@@ -205,6 +218,33 @@ class Policy:
             _fail("invalid_policy")
         if self.max_input_tokens * self.input_micro_usd_per_token + self.max_output_tokens * self.output_micro_usd_per_token > 10**15:
             _fail("invalid_policy")
+        if self.provider == "deepseek":
+            if self.model != "deepseek-flash" or self.budget_currency != "CNY":
+                _fail("invalid_deepseek_policy")
+            if self.daily_limit > 10_000_000:
+                _fail("deepseek_budget_exceeds_authorized_limit")
+            if self.input_rate < 2_000_000 or self.output_rate < 8_000_000:
+                _fail("deepseek_rate_below_verified_upper_bound")
+
+    @property
+    def daily_limit(self):
+        return self.daily_micro_units if self.daily_micro_units is not None else self.daily_micro_usd
+
+    @property
+    def input_rate(self):
+        return (self.input_micro_units_per_million_tokens if self.input_micro_units_per_million_tokens is not None
+                else self.input_micro_usd_per_token * 1_000_000)
+
+    @property
+    def output_rate(self):
+        return (self.output_micro_units_per_million_tokens if self.output_micro_units_per_million_tokens is not None
+                else self.output_micro_usd_per_token * 1_000_000)
+
+
+def estimate_cost(input_tokens, output_tokens, input_rate, output_rate):
+    """Integer currency micro-units; round each token direction upwards."""
+    return ((input_tokens * input_rate + 999_999) // 1_000_000
+            + (output_tokens * output_rate + 999_999) // 1_000_000)
 
 
 @dataclass(frozen=True)
@@ -238,11 +278,13 @@ class ModelClient:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as db:
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1):
+            if version not in (0, 1, 2):
                 _fail("unsupported_ledger_schema")
-            db.executescript("""
+            if version == 0:
+                db.executescript("""
                 CREATE TABLE IF NOT EXISTS days (
-                    day TEXT PRIMARY KEY, token_cap INTEGER NOT NULL, cost_cap INTEGER NOT NULL);
+                    day TEXT PRIMARY KEY, token_cap INTEGER NOT NULL, cost_cap INTEGER NOT NULL,
+                    currency TEXT NOT NULL DEFAULT 'USD');
                 CREATE TABLE IF NOT EXISTS calls (
                     call_id TEXT PRIMARY KEY, cache_key TEXT NOT NULL, day TEXT NOT NULL,
                     started_at TEXT NOT NULL, finished_at TEXT, attempt INTEGER NOT NULL,
@@ -254,8 +296,13 @@ class ModelClient:
                 CREATE INDEX IF NOT EXISTS calls_day ON calls(day);
                 CREATE TABLE IF NOT EXISTS cache (
                     cache_key TEXT PRIMARY KEY, call_id TEXT NOT NULL REFERENCES calls(call_id));
-                PRAGMA user_version=1;
-            """)
+                PRAGMA user_version=2;
+                """)
+            elif version == 1:
+                db.execute("BEGIN IMMEDIATE")
+                if db.execute("PRAGMA user_version").fetchone()[0] == 1:
+                    db.execute("ALTER TABLE days ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'")
+                    db.execute("PRAGMA user_version=2")
 
     @contextmanager
     def _connect(self):
@@ -288,7 +335,7 @@ class ModelClient:
         day = stamp[:10]
         policy = self.policy
         tokens = input_bound + policy.max_output_tokens
-        cost = input_bound * policy.input_micro_usd_per_token + policy.max_output_tokens * policy.output_micro_usd_per_token
+        cost = estimate_cost(input_bound, policy.max_output_tokens, policy.input_rate, policy.output_rate)
         call_id = "call_" + uuid.uuid4().hex
         with self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -299,9 +346,10 @@ class ModelClient:
                 _fail("ledger_time_invalid")
             if stored_days and current_day < max(stored_days):
                 _fail("clock_regression")
-            db.execute("INSERT OR IGNORE INTO days VALUES(?,?,?)", (day, policy.daily_tokens, policy.daily_micro_usd))
-            caps = db.execute("SELECT token_cap,cost_cap FROM days WHERE day=?", (day,)).fetchone()
-            if tuple(caps) != (policy.daily_tokens, policy.daily_micro_usd):
+            db.execute("INSERT OR IGNORE INTO days(day,token_cap,cost_cap,currency) VALUES(?,?,?,?)",
+                       (day, policy.daily_tokens, policy.daily_limit, policy.budget_currency))
+            caps = db.execute("SELECT token_cap,cost_cap,currency FROM days WHERE day=?", (day,)).fetchone()
+            if tuple(caps) != (policy.daily_tokens, policy.daily_limit, policy.budget_currency):
                 _fail("daily_budget_policy_changed")
             used = db.execute("SELECT COALESCE(SUM(charged_tokens),0),COALESCE(SUM(charged_cost),0) FROM calls WHERE day=?", (day,)).fetchone()
             if used[0] + tokens > caps[0] or used[1] + cost > caps[1]:
@@ -327,11 +375,17 @@ class ModelClient:
             if finished < started:
                 _fail("clock_regression")
             tokens, cost = row["reserved_tokens"], row["reserved_cost"]
+            metadata = _strict_loads(row["request_metadata"])
+            max_output = metadata["max_output_tokens"]
+            input_rate = metadata.get("input_micro_units_per_million_tokens",
+                                      metadata["input_micro_usd_per_token"] * 1_000_000)
+            output_rate = metadata.get("output_micro_units_per_million_tokens",
+                                       metadata["output_micro_usd_per_token"] * 1_000_000)
             incoming = outgoing = None
             if response and _integer(response.input_tokens, 1) and _integer(response.output_tokens, 1):
                 incoming, outgoing = response.input_tokens, response.output_tokens
-                actual_cost = incoming * self.policy.input_micro_usd_per_token + outgoing * self.policy.output_micro_usd_per_token
-                if incoming <= row["reserved_tokens"] - self.policy.max_output_tokens and incoming + outgoing <= tokens and actual_cost <= cost and outgoing <= self.policy.max_output_tokens:
+                actual_cost = estimate_cost(incoming, outgoing, input_rate, output_rate)
+                if incoming <= metadata["input_bound"] and incoming + outgoing <= tokens and actual_cost <= cost and outgoing <= max_output:
                     tokens, cost = incoming + outgoing, actual_cost
                 else:
                     incoming = outgoing = None
@@ -366,11 +420,16 @@ class ModelClient:
                    "output_schema": output_schema, "schema_version": schema_version,
                    "parameters": parameters or {}, "max_output_tokens": policy.max_output_tokens,
                    "max_output_bytes": policy.max_output_bytes}
+        if policy.provider == "deepseek":
+            from .deepseek import DeepSeekTransport
+            if not isinstance(self.transport, DeepSeekTransport):
+                _fail("deepseek_transport_required")
+            request["transport_version"] = self.transport.version
         _safe_json(request)
         encoded = _json(request).encode("utf-8")
         # One token per UTF-8 byte is a deliberately conservative transport contract.
-        input_bound = len(encoded)
-        if input_bound > policy.max_input_bytes or input_bound > policy.max_input_tokens:
+        input_bound = self.transport.input_token_bound(request) if policy.provider == "deepseek" else len(encoded)
+        if len(encoded) > policy.max_input_bytes or not _integer(input_bound, 1) or input_bound > policy.max_input_tokens:
             _fail("input_limit_exceeded")
         key = hashlib.sha256(b"model-request/0.1\0" + encoded).hexdigest()
         metadata = {"prompt_version": prompt_version, "rules_version": rules_version,
@@ -381,6 +440,9 @@ class ModelClient:
                     "max_output_bytes": policy.max_output_bytes, "input_bound": input_bound,
                     "input_micro_usd_per_token": policy.input_micro_usd_per_token,
                     "output_micro_usd_per_token": policy.output_micro_usd_per_token,
+                    "budget_currency": policy.budget_currency,
+                    "input_micro_units_per_million_tokens": policy.input_rate,
+                    "output_micro_units_per_million_tokens": policy.output_rate,
                     "accounting_basis": "configured_rate_estimate"}
         with self._connect() as db:
             cached = db.execute("SELECT calls.* FROM cache JOIN calls USING(call_id) WHERE cache.cache_key=?", (key,)).fetchone()
@@ -404,6 +466,13 @@ class ModelClient:
                 last_error = "transport_timeout"
             except TransientTransportError:
                 last_error = "transport_transient_error"
+            except ModelError as error:
+                last_error = "transport_error"
+                if policy.provider == "deepseek":
+                    from .deepseek import ERROR_CODES
+                    if str(error) in ERROR_CODES:
+                        last_error = str(error)
+                retryable = False
             except Exception:
                 last_error = "transport_error"
                 retryable = False
@@ -419,7 +488,7 @@ class ModelClient:
                         _fail("output_limit_exceeded")
                     if response.output_tokens is not None and (not _integer(response.output_tokens) or response.output_tokens > policy.max_output_tokens):
                         _fail("output_token_limit_exceeded")
-                    if response.output_tokens is None and len(response.text.encode("utf-8")) > policy.max_output_tokens:
+                    if not (_integer(response.input_tokens, 1) and _integer(response.output_tokens, 1)) and len(response.text.encode("utf-8")) > policy.max_output_tokens:
                         _fail("output_token_bound_exceeded")
                     value = _strict_loads(response.text)
                     _safe_json(value)
@@ -445,6 +514,8 @@ class ModelClient:
         except (ValueError, TypeError):
             _fail("invalid_day")
         with self._connect() as db:
+            bucket = db.execute("SELECT currency FROM days WHERE day=?", (day,)).fetchone()
+            currency = bucket[0] if bucket else self.policy.budget_currency
             row = db.execute("""SELECT COUNT(*),COALESCE(SUM(charged_tokens),0),COALESCE(SUM(charged_cost),0),
                              COALESCE(SUM(status='pending'),0),
                              COALESCE(SUM(CASE WHEN input_tokens IS NULL THEN charged_tokens ELSE 0 END),0),
@@ -452,7 +523,11 @@ class ModelClient:
                              COALESCE(SUM(CASE WHEN input_tokens IS NULL THEN charged_cost ELSE 0 END),0),
                              COALESCE(SUM(CASE WHEN input_tokens IS NOT NULL THEN charged_cost ELSE 0 END),0)
                              FROM calls WHERE day=?""", (day,)).fetchone()
-        return {"calls": row[0], "charged_tokens": row[1], "charged_micro_usd": row[2], "pending_calls": row[3],
+        suffix = "micro_usd" if currency == "USD" else "micro_cny"
+        result = {"calls": row[0], "charged_tokens": row[1], f"charged_{suffix}": row[2], "pending_calls": row[3],
                 "accounting_basis": "configured_rate_estimate", "reserved_or_unknown_tokens": row[4],
-                "usage_reported_tokens": row[5], "reserved_or_unknown_micro_usd": row[6],
-                "usage_reported_micro_usd": row[7]}
+                "usage_reported_tokens": row[5], f"reserved_or_unknown_{suffix}": row[6],
+                f"usage_reported_{suffix}": row[7]}
+        if currency != "USD":
+            result["currency"] = currency
+        return result

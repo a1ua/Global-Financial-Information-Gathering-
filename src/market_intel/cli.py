@@ -1,6 +1,7 @@
 import argparse
 from importlib.resources import files
 import json
+import os
 from pathlib import Path
 import sqlite3
 import sys
@@ -11,6 +12,49 @@ from .offline import connect, ingest_fixture, render, replay_report
 from .pipeline.capture_state import checkpoint
 from .ops.backup import create_backup, restore_backup, verify_backup
 from .report.verify import verify_report
+from .llm import ModelClient, ModelError, Policy
+from .llm.deepseek import DeepSeekTransport
+from .ops.llm_backup import create_ledger_backup, restore_ledger_backup, verify_ledger_backup
+
+
+def _deepseek_policy(*, enabled=False):
+    return Policy(provider="deepseek", model="deepseek-flash", enabled=enabled,
+                  budget_currency="CNY", daily_micro_units=10_000_000, daily_tokens=100_000,
+                  input_micro_units_per_million_tokens=2_000_000,
+                  output_micro_units_per_million_tokens=8_000_000,
+                  max_input_tokens=16384, max_retries=0)
+
+
+def _deepseek_command(args):
+    ledger = args.workspace / "llm-state.db"
+    if args.command == "deepseek-check":
+        return {"status": "configured_not_called", "provider": "deepseek", "model": "deepseek-flash",
+                "currency": "CNY", "daily_limit_micro_cny": 10_000_000, "daily_tokens": 100_000,
+                "budget_day_timezone": "UTC", "live_enabled": False,
+                "ledger": str(ledger), "ledger_exists": ledger.is_file(),
+                "key_env": "DEEPSEEK_API_KEY", "key_checked": False,
+                "account_wide_limit": False}
+    if not args.live:
+        raise ModelError("explicit_live_flag_required")
+    if (args.workspace / "ledger-backup-manifest.json").exists():
+        raise ModelError("isolated_ledger_not_live")
+    key = os.environ.get("DEEPSEEK_API_KEY")
+    if not key:
+        raise ModelError("deepseek_key_not_configured")
+    transport = DeepSeekTransport(key)
+    client = ModelClient(ledger, _deepseek_policy(enabled=True), transport)
+    started_day = now()[:10]
+    result = client.generate(
+        {"title": "Synthetic integration check; no market fact.", "is_synthetic": True},
+        system_prompt='Return JSON {"category":"other"} for this synthetic integration check only.',
+        prompt_version="deepseek-smoke/0.1", rules_version="synthetic-only/0.1",
+        output_schema={"type": "object", "properties": {"category": {"type": "string", "enum": ["other"]}},
+                       "required": ["category"], "additionalProperties": False},
+        schema_version="synthetic-category/0.1", parameters={"temperature": 0})
+    return {"status": "validated_synthetic_smoke", "synthetic": True, "provider": "deepseek",
+            "model": "deepseek-flash", "call_id": result.call_id, "cache_hit": result.cache_hit,
+            "output": result.value,
+            "budget_by_utc_day": {day: client.usage(day) for day in sorted({started_day, now()[:10]})}}
 
 
 def main(argv=None):
@@ -49,8 +93,32 @@ def main(argv=None):
     restore = sub.add_parser("restore", help="Restore a verified backup into a new workspace only")
     restore.add_argument("--backup", type=Path, required=True)
     restore.add_argument("--destination", type=Path, required=True)
+    for command in ("deepseek-check", "deepseek-smoke"):
+        model = sub.add_parser(command, help="Inspect configuration or explicitly run one synthetic DeepSeek call")
+        model.add_argument("--workspace", type=Path, default=Path("data/live"))
+        if command == "deepseek-smoke":
+            model.add_argument("--live", action="store_true", help="Explicitly allow the configured paid API call")
+    ledger_backup = sub.add_parser("ledger-backup", help="Snapshot a model budget ledger to a new directory")
+    ledger_backup.add_argument("--ledger", type=Path, required=True)
+    ledger_backup.add_argument("--destination", type=Path, required=True)
+    ledger_verify = sub.add_parser("verify-ledger-backup", help="Verify a budget ledger snapshot read-only")
+    ledger_verify.add_argument("--backup", type=Path, required=True)
+    ledger_restore = sub.add_parser("restore-ledger", help="Restore a ledger snapshot as a new isolated copy")
+    ledger_restore.add_argument("--backup", type=Path, required=True)
+    ledger_restore.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command in ("deepseek-check", "deepseek-smoke", "ledger-backup", "verify-ledger-backup", "restore-ledger"):
+            if args.command.startswith("deepseek-"):
+                result = _deepseek_command(args)
+            elif args.command == "ledger-backup":
+                result = create_ledger_backup(args.ledger, args.destination)
+            elif args.command == "verify-ledger-backup":
+                result = verify_ledger_backup(args.backup)
+            else:
+                result = restore_ledger_backup(args.backup, args.destination)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
         if args.command in ("backup", "verify-backup", "restore"):
             if args.command == "backup":
                 result = create_backup(args.workspace, args.destination)
