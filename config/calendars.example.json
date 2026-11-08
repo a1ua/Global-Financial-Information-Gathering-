@@ -1,0 +1,34 @@
+{
+  "schema_version": "calendar-candidates/0.1",
+  "is_example": true,
+  "evaluation_enabled": false,
+  "status": "rules_only_not_session_snapshot",
+  "checked_at_utc": "2026-11-08T06:02:10Z",
+  "timezone": "Asia/Shanghai",
+  "year": 2026,
+  "calendar_snapshot_id": null,
+  "sources": {
+    "sse_annual_holidays": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+    "sse_rule_publication": "https://www.sse.com.cn/lawandrules/sselawsrules2025/trade/universal/c/c_20260424_10816492.shtml",
+    "szse_rule_text": "https://docs.static.szse.cn/www/lawrules/rule/trade/W020260424690713155663.pdf"
+  },
+  "szse_equity_regular_phases_local": [
+    {"phase": "opening_auction", "start": "09:15:00", "end": "09:25:00"},
+    {"phase": "continuous_morning", "start": "09:30:00", "end": "11:30:00"},
+    {"phase": "continuous_afternoon", "start": "13:00:00", "end": "14:57:00"},
+    {"phase": "closing_auction", "start": "14:57:00", "end": "15:00:00"}
+  ],
+  "sse_notice_examples_not_full_calendar": [
+    {"session_date": "2026-02-23", "state": "closed", "reason": "annual_holiday_notice"},
+    {"session_date": "2026-02-24", "state": "scheduled_open", "reason": "annual_notice_resumption"},
+    {"session_date": "2026-02-28", "state": "closed", "reason": "weekend_explicit_in_annual_notice"},
+    {"session_date": "2026-10-07", "state": "closed", "reason": "annual_holiday_notice"},
+    {"session_date": "2026-10-08", "state": "scheduled_open", "reason": "annual_notice_resumption"}
+  ],
+  "blocking_reasons": [
+    "full_versioned_sessions_not_generated",
+    "temporary_closure_and_amendment_processing_not_implemented",
+    "daily_bar_open_definition_and_timestamp_not_verified",
+    "historical_announcements_not_backfilled"
+  ]
+}

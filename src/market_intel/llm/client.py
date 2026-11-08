@@ -1,0 +1,458 @@
+"""Provider-neutral model node; all transport attempts reserve budget first."""
+
+from dataclasses import dataclass
+from datetime import date, datetime, timezone
+from contextlib import contextmanager
+import hashlib
+import json
+import math
+from pathlib import Path
+import sqlite3
+import uuid
+
+from market_intel.contracts import ContractError, instant
+
+
+class ModelError(ValueError):
+    """Stable error code, without provider payloads or exception text."""
+
+
+class TransientTransportError(Exception):
+    """Transport explicitly reports a retryable error; payload is never logged."""
+
+
+def _fail(code):
+    raise ModelError(code)
+
+
+def _integer(value, minimum=0):
+    return type(value) is int and minimum <= value <= 10**12
+
+
+def _json(value):
+    try:
+        return json.dumps(value, ensure_ascii=False, sort_keys=True,
+                          separators=(",", ":"), allow_nan=False)
+    except (TypeError, ValueError, UnicodeError, RecursionError):
+        _fail("invalid_json_input")
+
+
+def _strict_loads(text):
+    def pairs(values):
+        result = {}
+        for key, value in values:
+            if key in result:
+                _fail("duplicate_json_key")
+            result[key] = value
+        return result
+    try:
+        return json.loads(text, object_pairs_hook=pairs,
+                          parse_constant=lambda _: _fail("nonfinite_json"))
+    except ModelError:
+        raise
+    except (ValueError, TypeError, RecursionError):
+        _fail("invalid_output_json")
+
+
+def _safe_json(value, depth=0):
+    """Reject non-JSON values and credential-bearing config keys before storage."""
+    if depth > 40:
+        _fail("json_depth_exceeded")
+    if value is None or type(value) in (str, bool, int):
+        if type(value) is str:
+            try:
+                value.encode("utf-8")
+            except UnicodeError:
+                _fail("invalid_unicode")
+        return
+    if type(value) is float and math.isfinite(value):
+        return
+    if type(value) is list:
+        for item in value:
+            _safe_json(item, depth + 1)
+        return
+    if type(value) is dict:
+        for key, item in value.items():
+            if type(key) is not str:
+                _fail("invalid_json_input")
+            # Credentials belong to the injected transport, never request/config data.
+            if key.lower().replace("-", "_") in {
+                "api_key", "authorization", "access_token", "refresh_token",
+                "password", "secret", "credential", "credentials",
+            }:
+                _fail("credential_field_forbidden")
+            _safe_json(key)
+            _safe_json(item, depth + 1)
+        return
+    _fail("invalid_json_input")
+
+
+_SCHEMA_KEYS = {"type", "properties", "required", "additionalProperties", "items",
+                "enum", "minLength", "maxLength", "minimum", "maximum",
+                "minItems", "maxItems", "description"}
+_TYPES = {"object", "array", "string", "integer", "number", "boolean", "null"}
+
+
+def _schema(schema, depth=0):
+    if depth > 20 or type(schema) is not dict or set(schema) - _SCHEMA_KEYS:
+        _fail("unsupported_output_schema")
+    if type(schema.get("type")) is not str or schema["type"] not in _TYPES:
+        _fail("unsupported_output_schema")
+    typ = schema["type"]
+    allowed = {"type", "enum", "description"}
+    allowed |= {"object": {"properties", "required", "additionalProperties"},
+                "array": {"items", "minItems", "maxItems"},
+                "string": {"minLength", "maxLength"},
+                "integer": {"minimum", "maximum"},
+                "number": {"minimum", "maximum"}}.get(typ, set())
+    if set(schema) - allowed:
+        _fail("unsupported_output_schema")
+    if "description" in schema and type(schema["description"]) is not str:
+        _fail("unsupported_output_schema")
+    if "enum" in schema and (type(schema["enum"]) is not list or not schema["enum"]):
+        _fail("unsupported_output_schema")
+    if typ == "object":
+        properties = schema.get("properties", {})
+        required = schema.get("required", [])
+        if type(properties) is not dict or type(required) is not list:
+            _fail("unsupported_output_schema")
+        if any(type(k) is not str for k in required) or len(set(required)) != len(required):
+            _fail("unsupported_output_schema")
+        if not set(required) <= set(properties) or type(schema.get("additionalProperties", False)) is not bool:
+            _fail("unsupported_output_schema")
+        for child in properties.values():
+            _schema(child, depth + 1)
+    if typ == "array":
+        if "items" not in schema:
+            _fail("unsupported_output_schema")
+        _schema(schema["items"], depth + 1)
+    for low, high in (("minLength", "maxLength"), ("minItems", "maxItems")):
+        for key in (low, high):
+            if key in schema and not _integer(schema[key]):
+                _fail("unsupported_output_schema")
+        if low in schema and high in schema and schema[low] > schema[high]:
+            _fail("unsupported_output_schema")
+    for key in ("minimum", "maximum"):
+        if key in schema and (type(schema[key]) not in (int, float) or (type(schema[key]) is float and not math.isfinite(schema[key]))):
+            _fail("unsupported_output_schema")
+    if "minimum" in schema and "maximum" in schema and schema["minimum"] > schema["maximum"]:
+        _fail("unsupported_output_schema")
+
+
+def _matches(value, schema):
+    typ = schema["type"]
+    kinds = {"object": dict, "array": list, "string": str, "integer": int,
+             "boolean": bool, "null": type(None)}
+    if typ == "number":
+        valid = type(value) is int or (type(value) is float and math.isfinite(value))
+    else:
+        valid = type(value) is kinds[typ]
+    if not valid:
+        return False
+    if "enum" in schema and not any(type(value) is type(v) and value == v for v in schema["enum"]):
+        return False
+    if typ == "object":
+        props = schema.get("properties", {})
+        if not set(schema.get("required", [])) <= value.keys():
+            return False
+        if not schema.get("additionalProperties", False) and set(value) - props.keys():
+            return False
+        return all(_matches(v, props[k]) for k, v in value.items() if k in props)
+    if typ == "array":
+        if not all(_matches(v, schema["items"]) for v in value):
+            return False
+        return schema.get("minItems", 0) <= len(value) <= schema.get("maxItems", 10**12)
+    if typ == "string":
+        return schema.get("minLength", 0) <= len(value) <= schema.get("maxLength", 10**12)
+    if typ in {"number", "integer"}:
+        return schema.get("minimum", -math.inf) <= value <= schema.get("maximum", math.inf)
+    return True
+
+
+@dataclass(frozen=True)
+class Policy:
+    provider: str = "mock"
+    model: str = "mock-structured-v1"
+    enabled: bool = False
+    daily_tokens: int = 100_000
+    daily_micro_usd: int = 100_000
+    max_input_bytes: int = 8192
+    max_input_tokens: int = 8192
+    max_output_tokens: int = 512
+    max_output_bytes: int = 8192
+    input_micro_usd_per_token: int = 1
+    output_micro_usd_per_token: int = 1
+    max_retries: int = 1
+    timeout_seconds: int = 30
+
+    def __post_init__(self):
+        for key in ("provider", "model"):
+            value = getattr(self, key)
+            if type(value) is not str or not value or len(value) > 128 or not all(c.isalnum() or c in "_.-/" for c in value):
+                _fail("invalid_policy")
+        if type(self.enabled) is not bool:
+            _fail("invalid_policy")
+        if self.enabled and self.provider != "mock":
+            _fail("live_provider_not_implemented")
+        for key in ("daily_tokens", "daily_micro_usd", "max_input_bytes", "max_input_tokens",
+                    "max_output_tokens", "max_output_bytes", "timeout_seconds"):
+            if not _integer(getattr(self, key), 1):
+                _fail("invalid_policy")
+        for key in ("input_micro_usd_per_token", "output_micro_usd_per_token", "max_retries"):
+            if not _integer(getattr(self, key)):
+                _fail("invalid_policy")
+        if self.max_retries > 5 or self.timeout_seconds > 300:
+            _fail("invalid_policy")
+        if self.max_input_tokens * self.input_micro_usd_per_token + self.max_output_tokens * self.output_micro_usd_per_token > 10**15:
+            _fail("invalid_policy")
+
+
+@dataclass(frozen=True)
+class ModelResponse:
+    text: str
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+
+
+@dataclass(frozen=True)
+class CallResult:
+    value: dict
+    call_id: str
+    cache_hit: bool
+
+
+class ModelClient:
+    """transport(request: dict, timeout_seconds: int) -> ModelResponse.
+
+    Transport must enforce timeout/output-token limits, and report trusted usage
+    only when its provider guarantees it. It must not log credentials/payloads.
+    """
+
+    def __init__(self, state_path, policy=None, transport=None, *, clock=None):
+        self.policy = policy if policy is not None else Policy()
+        if type(self.policy) is not Policy:
+            _fail("invalid_policy")
+        self.transport = transport
+        self.clock = clock or (lambda: datetime.now(timezone.utc))
+        self.path = Path(state_path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with self._connect() as db:
+            version = db.execute("PRAGMA user_version").fetchone()[0]
+            if version not in (0, 1):
+                _fail("unsupported_ledger_schema")
+            db.executescript("""
+                CREATE TABLE IF NOT EXISTS days (
+                    day TEXT PRIMARY KEY, token_cap INTEGER NOT NULL, cost_cap INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS calls (
+                    call_id TEXT PRIMARY KEY, cache_key TEXT NOT NULL, day TEXT NOT NULL,
+                    started_at TEXT NOT NULL, finished_at TEXT, attempt INTEGER NOT NULL,
+                    provider TEXT NOT NULL, model TEXT NOT NULL, status TEXT NOT NULL,
+                    reserved_tokens INTEGER NOT NULL, reserved_cost INTEGER NOT NULL,
+                    charged_tokens INTEGER NOT NULL, charged_cost INTEGER NOT NULL,
+                    input_tokens INTEGER, output_tokens INTEGER, output_text TEXT,
+                    output_sha256 TEXT, error_code TEXT, request_metadata TEXT NOT NULL);
+                CREATE INDEX IF NOT EXISTS calls_day ON calls(day);
+                CREATE TABLE IF NOT EXISTS cache (
+                    cache_key TEXT PRIMARY KEY, call_id TEXT NOT NULL REFERENCES calls(call_id));
+                PRAGMA user_version=1;
+            """)
+
+    @contextmanager
+    def _connect(self):
+        db = None
+        try:
+            db = sqlite3.connect(self.path, timeout=10)
+            db.row_factory = sqlite3.Row
+            db.execute("PRAGMA foreign_keys=ON")
+            with db:
+                yield db
+        except sqlite3.Error as error:
+            code = getattr(error, "sqlite_errorcode", 0)
+            busy = (code & 0xff) in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
+            raise ModelError("ledger_busy" if busy else "ledger_error") from None
+        finally:
+            if db is not None:
+                try:
+                    db.close()
+                except sqlite3.Error:
+                    raise ModelError("ledger_error") from None
+
+    def _now(self):
+        moment = self.clock()
+        if type(moment) is not datetime or moment.tzinfo is None or moment.utcoffset() != timezone.utc.utcoffset(moment):
+            _fail("utc_clock_required")
+        return moment.isoformat(timespec="microseconds").replace("+00:00", "Z")
+
+    def _reserve(self, key, attempt, input_bound, metadata):
+        stamp = self._now()
+        day = stamp[:10]
+        policy = self.policy
+        tokens = input_bound + policy.max_output_tokens
+        cost = input_bound * policy.input_micro_usd_per_token + policy.max_output_tokens * policy.output_micro_usd_per_token
+        call_id = "call_" + uuid.uuid4().hex
+        with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            try:
+                stored_days = [date.fromisoformat(row[0]) for row in db.execute("SELECT day FROM days")]
+                current_day = date.fromisoformat(day)
+            except (ValueError, TypeError):
+                _fail("ledger_time_invalid")
+            if stored_days and current_day < max(stored_days):
+                _fail("clock_regression")
+            db.execute("INSERT OR IGNORE INTO days VALUES(?,?,?)", (day, policy.daily_tokens, policy.daily_micro_usd))
+            caps = db.execute("SELECT token_cap,cost_cap FROM days WHERE day=?", (day,)).fetchone()
+            if tuple(caps) != (policy.daily_tokens, policy.daily_micro_usd):
+                _fail("daily_budget_policy_changed")
+            used = db.execute("SELECT COALESCE(SUM(charged_tokens),0),COALESCE(SUM(charged_cost),0) FROM calls WHERE day=?", (day,)).fetchone()
+            if used[0] + tokens > caps[0] or used[1] + cost > caps[1]:
+                _fail("budget_exceeded")
+            db.execute("""INSERT INTO calls(call_id,cache_key,day,started_at,attempt,provider,model,status,
+                       reserved_tokens,reserved_cost,charged_tokens,charged_cost,request_metadata)
+                       VALUES(?,?,?,?,?,?,?,'pending',?,?,?,?,?)""",
+                       (call_id, key, day, stamp, attempt, policy.provider, policy.model, tokens, cost, tokens, cost, _json(metadata)))
+        return call_id
+
+    def _finish(self, call_id, status, *, response=None, output=None, error=None):
+        stamp = self._now()
+        with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT * FROM calls WHERE call_id=?", (call_id,)).fetchone()
+            if not row or row["status"] != "pending":
+                _fail("invalid_call_state")
+            try:
+                finished = instant(stamp, "ledger.finished_at")
+                started = instant(row["started_at"], "ledger.started_at")
+            except ContractError:
+                _fail("ledger_time_invalid")
+            if finished < started:
+                _fail("clock_regression")
+            tokens, cost = row["reserved_tokens"], row["reserved_cost"]
+            incoming = outgoing = None
+            if response and _integer(response.input_tokens, 1) and _integer(response.output_tokens, 1):
+                incoming, outgoing = response.input_tokens, response.output_tokens
+                actual_cost = incoming * self.policy.input_micro_usd_per_token + outgoing * self.policy.output_micro_usd_per_token
+                if incoming <= row["reserved_tokens"] - self.policy.max_output_tokens and incoming + outgoing <= tokens and actual_cost <= cost and outgoing <= self.policy.max_output_tokens:
+                    tokens, cost = incoming + outgoing, actual_cost
+                else:
+                    incoming = outgoing = None
+            output_hash = hashlib.sha256(output.encode("utf-8")).hexdigest() if output is not None else None
+            db.execute("""UPDATE calls SET status=?,finished_at=?,charged_tokens=?,charged_cost=?,
+                       input_tokens=?,output_tokens=?,output_text=?,output_sha256=?,error_code=? WHERE call_id=?""",
+                       (status, stamp, tokens, cost, incoming, outgoing, output, output_hash, error, call_id))
+            if status == "succeeded":
+                db.execute("INSERT OR IGNORE INTO cache VALUES(?,?)", (row["cache_key"], call_id))
+
+    def generate(self, input_data, *, system_prompt, prompt_version, rules_version,
+                 output_schema, schema_version, parameters=None):
+        policy = self.policy
+        if not policy.enabled:
+            _fail("model_disabled")
+        if not callable(self.transport):
+            _fail("transport_required")
+        for value in (system_prompt, prompt_version, rules_version, schema_version):
+            if type(value) is not str or not value.strip():
+                _fail("invalid_request")
+        if type(parameters if parameters is not None else {}) is not dict:
+            _fail("invalid_request")
+        _safe_json(input_data)
+        _safe_json(output_schema)
+        _safe_json(parameters)
+        _schema(output_schema)
+        if output_schema["type"] != "object":
+            _fail("object_output_required")
+        request = {"provider": policy.provider, "model": policy.model,
+                   "input": input_data, "system_prompt": system_prompt,
+                   "prompt_version": prompt_version, "rules_version": rules_version,
+                   "output_schema": output_schema, "schema_version": schema_version,
+                   "parameters": parameters or {}, "max_output_tokens": policy.max_output_tokens,
+                   "max_output_bytes": policy.max_output_bytes}
+        _safe_json(request)
+        encoded = _json(request).encode("utf-8")
+        # One token per UTF-8 byte is a deliberately conservative transport contract.
+        input_bound = len(encoded)
+        if input_bound > policy.max_input_bytes or input_bound > policy.max_input_tokens:
+            _fail("input_limit_exceeded")
+        key = hashlib.sha256(b"model-request/0.1\0" + encoded).hexdigest()
+        metadata = {"prompt_version": prompt_version, "rules_version": rules_version,
+                    "schema_version": schema_version, "parameters": parameters or {},
+                    "input_sha256": hashlib.sha256(_json(input_data).encode("utf-8")).hexdigest(),
+                    "prompt_sha256": hashlib.sha256(system_prompt.encode("utf-8")).hexdigest(),
+                    "output_schema": output_schema, "max_output_tokens": policy.max_output_tokens,
+                    "max_output_bytes": policy.max_output_bytes, "input_bound": input_bound,
+                    "input_micro_usd_per_token": policy.input_micro_usd_per_token,
+                    "output_micro_usd_per_token": policy.output_micro_usd_per_token,
+                    "accounting_basis": "configured_rate_estimate"}
+        with self._connect() as db:
+            cached = db.execute("SELECT calls.* FROM cache JOIN calls USING(call_id) WHERE cache.cache_key=?", (key,)).fetchone()
+        if cached:
+            text = cached["output_text"]
+            if cached["cache_key"] != key or cached["status"] != "succeeded" or type(text) is not str or hashlib.sha256(text.encode("utf-8")).hexdigest() != cached["output_sha256"]:
+                _fail("cache_integrity_error")
+            value = _strict_loads(text)
+            if not _matches(value, output_schema):
+                _fail("cache_integrity_error")
+            return CallResult(value, cached["call_id"], True)
+        last_error = "transport_error"
+        for attempt in range(policy.max_retries + 1):
+            call_id = self._reserve(key, attempt + 1, input_bound, metadata)
+            response = None
+            retryable = True
+            try:
+                # A new deep copy prevents transport mutation from changing future retries.
+                response = self.transport(json.loads(encoded), policy.timeout_seconds)
+            except TimeoutError:
+                last_error = "transport_timeout"
+            except TransientTransportError:
+                last_error = "transport_transient_error"
+            except Exception:
+                last_error = "transport_error"
+                retryable = False
+            else:
+                try:
+                    if type(response) is not ModelResponse or type(response.text) is not str:
+                        _fail("invalid_transport_response")
+                    if (response.input_tokens is None) != (response.output_tokens is None):
+                        _fail("invalid_usage")
+                    if response.input_tokens is not None and (not _integer(response.input_tokens) or response.input_tokens > input_bound):
+                        _fail("invalid_usage")
+                    if len(response.text.encode("utf-8")) > policy.max_output_bytes:
+                        _fail("output_limit_exceeded")
+                    if response.output_tokens is not None and (not _integer(response.output_tokens) or response.output_tokens > policy.max_output_tokens):
+                        _fail("output_token_limit_exceeded")
+                    if response.output_tokens is None and len(response.text.encode("utf-8")) > policy.max_output_tokens:
+                        _fail("output_token_bound_exceeded")
+                    value = _strict_loads(response.text)
+                    _safe_json(value)
+                    if not _matches(value, output_schema):
+                        _fail("output_schema_mismatch")
+                    _json(value)
+                except (ModelError, UnicodeError, RecursionError) as error:
+                    last_error = str(error) if type(error) is ModelError else "invalid_output_json"
+                else:
+                    self._finish(call_id, "succeeded", response=response, output=response.text)
+                    return CallResult(value, call_id, False)
+            # Failed/malformed output is not retained. Unknown spend stays reserved.
+            self._finish(call_id, "failed", error=last_error)
+            if not retryable:
+                break
+        _fail(last_error)
+
+    def usage(self, day):
+        """Return consumed plus unresolved reservations for an explicit UTC date."""
+        try:
+            if type(day) is not str or datetime.strptime(day, "%Y-%m-%d").date().isoformat() != day:
+                _fail("invalid_day")
+        except (ValueError, TypeError):
+            _fail("invalid_day")
+        with self._connect() as db:
+            row = db.execute("""SELECT COUNT(*),COALESCE(SUM(charged_tokens),0),COALESCE(SUM(charged_cost),0),
+                             COALESCE(SUM(status='pending'),0),
+                             COALESCE(SUM(CASE WHEN input_tokens IS NULL THEN charged_tokens ELSE 0 END),0),
+                             COALESCE(SUM(CASE WHEN input_tokens IS NOT NULL THEN charged_tokens ELSE 0 END),0),
+                             COALESCE(SUM(CASE WHEN input_tokens IS NULL THEN charged_cost ELSE 0 END),0),
+                             COALESCE(SUM(CASE WHEN input_tokens IS NOT NULL THEN charged_cost ELSE 0 END),0)
+                             FROM calls WHERE day=?""", (day,)).fetchone()
+        return {"calls": row[0], "charged_tokens": row[1], "charged_micro_usd": row[2], "pending_calls": row[3],
+                "accounting_basis": "configured_rate_estimate", "reserved_or_unknown_tokens": row[4],
+                "usage_reported_tokens": row[5], "reserved_or_unknown_micro_usd": row[6],
+                "usage_reported_micro_usd": row[7]}

@@ -1,0 +1,18 @@
+{
+  "state_path": "out/llm-demo/llm-state.db",
+  "policy": {
+    "provider": "mock",
+    "model": "mock-structured-v1",
+    "enabled": false,
+    "daily_tokens": 100000,
+    "daily_micro_usd": 100000,
+    "max_input_bytes": 8192,
+    "max_input_tokens": 8192,
+    "max_output_tokens": 512,
+    "max_output_bytes": 8192,
+    "input_micro_usd_per_token": 1,
+    "output_micro_usd_per_token": 1,
+    "max_retries": 1,
+    "timeout_seconds": 30
+  }
+}

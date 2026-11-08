@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-08",
-  "status_note": "Batch04 complete in evidence/report scope: structured report validation and SQLite-consistent backup/restore verified independently on 35 records/2 reports; 158 tests run,157 pass,1 OS symlink test skipped (mock protection covered). Full research/model/operations gates remain incomplete. GitHub target confirmed; upload verified separately after local commit.",
+  "status_note": "Batch05 offline model budget/cache node accepted independently; MKT01 official source capability partially verified, evaluation off. Final normal-install suite:196 run,195 pass,1 existing OS symlink skip. NLP01/MKT01 full scope remains in_progress; full model/research/operations gates incomplete. WorkBuddy WB05 used two real child agents; 12 findings triaged separately. Release upload verified after local commit.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -112,7 +112,7 @@
         "历史判断普通修改被拒绝，更正使用追加",
         "副本迁移、事务回滚及引用完整性通过"
       ],
-      "progress_note": "Evidence schema0->4 and durable queue migrations verified; immutable records and receipts protected; prediction persistence and production backup/recovery still pending.",
+      "progress_note": "Evidence schema0->4, immutable records, durable queue and receipts verified; current evidence backup/restore accepted under OPS-02 in Batch04. Prediction persistence and broader production operations remain pending.",
       "evidence": [
         "tests/test_workflow.py",
         "docs/verification/batch-02.md"
@@ -257,12 +257,14 @@
         "config/calendars.yaml",
         "tests/fixtures/market/"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "estimate_hours": [
         3,
         5
       ],
       "gate": "G4",
+      "progress_note": "Batch05 official index identity and exchange session rules partially verified; Python TLS failures retained and three bounded Node GETs returned 200. No production OHLC provider, open timestamp definition, retention scope or versioned calendar accepted; evaluation remains disabled.",
+      "evidence": ["docs/market/capability-review-20261108.md", "docs/market/probe-results-20261108.json"],
       "acceptance": [
         "代码、币种、OHLC和调整口径可解释",
         "日历来源及可回溯范围有证据",
@@ -306,16 +308,19 @@
         "tests/llm/",
         "config/llm.example.yaml"
       ],
-      "status": "planned",
+      "status": "in_progress",
       "estimate_hours": [
         4,
         6
       ],
       "gate": "G3",
+      "accepted_scope": "Batch05 offline injected mock transport, atomic persistent budget, bounded retry, version cache and safe call records; independent review accepted this subset",
+      "progress_note": "Live provider/HTTP, tokenizer and usage billing validation, candidate count integration and independent ledger recovery remain pending. Non-mock activation is explicitly rejected.",
+      "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md"],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
         "真实调用前明确限额与凭证配置",
-        "缓存键包含输入和模型、提示词及规则版本"
+        "缓存键包含输入内容、provider/model、完整提示词、提示词/规则/输出模式及schema版本、schema内容、参数和输出限制；核对缓存归属及输出hash"
       ]
     },
     {
@@ -703,7 +708,42 @@
       ]
     }
   ],
+  "batch05_work_packages": [
+    {
+      "id": "WB-05",
+      "owner": "workbuddy-subagent",
+      "depends_on": ["ENG-03"],
+      "status": "done",
+      "accepted_scope": "Two actual WorkBuddy child-agent design reviews, main-agent static follow-up, seven checkpoints and twelve findings returned and triaged; no WorkBuddy test execution claimed",
+      "probe_result": "partial",
+      "subagent_count": 2,
+      "evidence": ["collaboration/workbuddy/results/WB-05-report.md", "collaboration/workbuddy/results/WB-05-results.json", "docs/verification/batch-05-workbuddy-triage.md"],
+      "write_paths": ["collaboration/workbuddy/results/WB-05-report.md", "collaboration/workbuddy/results/WB-05-results.json"],
+      "acceptance": "Actual child-agent evidence, independent budget failure cases and truthful unverified items",
+      "dispatch_evidence": "WorkBuddy desktop task: 执行WB-05独立任务并委派子代理审查; submitted and processing observed 2026-11-08"
+    },
+    {
+      "id": "QA-B05",
+      "owner": "independent-review-agent",
+      "depends_on": ["NLP-01"],
+      "status": "done",
+      "write_paths": ["docs/verification/batch-05-review.md"],
+      "acceptance": "Independent review and adversarial budget/cache verification"
+    }
+  ],
   "experiments": [
+    {
+      "id": "BATCH05-OFFLINE-MODEL-AND-MARKET-PROBE",
+      "status": "verified_offline_model_subset_market_partial",
+      "tests_run": 196,
+      "tests_passed": 195,
+      "tests_skipped": 1,
+      "llm_targeted_tests_passed": 38,
+      "independent_budget_process_cases": 3,
+      "live_provider_enabled": false,
+      "market_evaluation_enabled": false,
+      "evidence": "docs/verification/batch-05.md"
+    },
     {
       "evidence": "docs/verification/session-20261107.md",
       "id": "OFFLINE-PROTOTYPE",

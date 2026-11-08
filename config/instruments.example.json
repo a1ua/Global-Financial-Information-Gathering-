@@ -1,0 +1,33 @@
+{
+  "schema_version": "instrument-candidates/0.1",
+  "is_example": true,
+  "evaluation_enabled": false,
+  "status": "candidate_not_approved",
+  "checked_at_utc": "2026-11-08T06:02:10Z",
+  "instruments": [
+    {
+      "instrument_id": "csi:000300:price:cny",
+      "name": "沪深300指数",
+      "asset_type": "benchmark_index",
+      "directly_tradable": false,
+      "index_administrator": "China Securities Index Co., Ltd.",
+      "index_code": "000300",
+      "publication_aliases": {"SSE": "000300", "SZSE": "399300"},
+      "currency": "CNY",
+      "value_unit": "index_point",
+      "price_return_type": "price_index",
+      "adjustment_method": null,
+      "provider_id": null,
+      "provider_symbol": null,
+      "calendar_snapshot_id": null,
+      "factsheet_url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/000300factsheet.pdf",
+      "non_interchangeable_variants": {"total_return": "H00300", "net_return": "N00300"},
+      "blocking_reasons": [
+        "ohlc_provider_not_verified",
+        "provider_adjustment_and_open_timestamp_unknown",
+        "retention_and_redistribution_scope_unconfirmed",
+        "versioned_calendar_not_implemented"
+      ]
+    }
+  ]
+}

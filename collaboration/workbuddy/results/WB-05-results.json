@@ -1,0 +1,452 @@
+{
+  "task_id": "WB-05",
+  "status": "partial",
+  "status_reason": "任务单要求的 7 项检查点设计审查、真实子 Agent 委派与执行证据、两份交付文件均已完整产出。标记 partial 仅因为存在未验证依赖项：本包按边界未运行任何测试或构建（tests_run=0），实现者自述的 30 项定向测试未经独立复跑，R08 的『并发真实调用前』门槛未验收，且审查对象在本次执行期间由其他执行者并行生成、快照为 06:09Z 左右状态。按 WB-05-task.md 第 15 行，最终完成状态由主控与独立审查者 QA-B05 回收验收后决定，本包不自行标记 completed。无工具不可用或额度不足，故不是 blocked。",
+  "started_at_utc": "2026-11-08T06:03:05Z",
+  "finished_at_utc": "2026-11-08T06:13:13Z",
+  "subagent_used": true,
+  "subagent_evidence": {
+    "delegation_supported": true,
+    "delegation_mechanism": "WorkBuddy Agent 工具，subagent_type=Explore，两个独立任务在同一消息中并行派发；随后经消息通道回传结论",
+    "dispatched_at_utc": "2026-11-08T06:04:45Z",
+    "spawn_receipt": "两次均返回 Spawned successfully 及 agent_id / name / team_name / task_id",
+    "agents": [
+      {
+        "name": "wb05-budget-auditor",
+        "subagent_type": "Explore",
+        "agent_id": "wb05-budget-auditor@_auto_5ee6109e-42eb-46eb-90e8-c88a23d3ca25",
+        "task_id": "agent-5fd5bdd1-95f8-4c67-a797-71da8d8c3c71",
+        "team_name": "_auto_5ee6109e-42eb-46eb-90e8-c88a23d3ca25",
+        "assigned_checkpoints": ["C1 预算原子预留", "C2 超时后不确定费用", "C3 失败重试上限", "C4 进程重启后的保留额度"],
+        "result_returned": true,
+        "signature_line": "SUBAGENT_SIGNATURE: wb05-budget-auditor",
+        "key_conclusions": [
+          "contracts-v0.1.md:219 是 R08 唯一定义；:180 把预算预留状态列为可变运行状态；:176 禁止删除账本重置",
+          "V2:139 定义 5 类预算字段、预留、降级与『估算值及依据』；charged_cost 缺 estimated/unknown/settled 三态标记，与 :22-23 不得把 null 当 0 相关",
+          "V3:156『不自动无限重试』只约束次数，未定义每次重预留；重试必须同样先预留",
+          "契约 :180 未要求重启 reconciliation；batch-05-plan.md:7 与 task-board.json:318 验收清单均未列重启/pending",
+          "给出 23:59:58Z 双任务并发、剩余 100 token/100 microUSD、各需 100 的离线用例，期望仅一笔预留成功",
+          "向主控提出 6 个待决问题：预算单位与固定精度十进制落地、三态字段设计、重预留计入当日上限、重启 reconciliation 归属、R08 验收命令与证据格式、并发真实调用前与离线并发预留的口径"
+        ]
+      },
+      {
+        "name": "wb05-state-auditor",
+        "subagent_type": "Explore",
+        "agent_id": "wb05-state-auditor@_auto_5ee6109e-42eb-46eb-90e8-c88a23d3ca25",
+        "task_id": "agent-9b5fdeb2-edc6-4358-895e-5ee3eff46678",
+        "team_name": "_auto_5ee6109e-42eb-46eb-90e8-c88a23d3ca25",
+        "assigned_checkpoints": ["C5 UTC 跨日", "C6 缓存键版本覆盖", "C7 输出无效 JSON", "契约一致性核对"],
+        "result_returned": true,
+        "signature_line": "SUBAGENT_SIGNATURE: wb05-state-auditor",
+        "key_conclusions": [
+          "contracts-v0.1.md:17 要求比较前解析为时间；额度按『每日』隐含 UTC 自然日，:133/:190 明确不以模型开始时间作评价起点",
+          "发现缓存键版本清单口径不一致：V2:137 为五类含输出模式版本，task-board.json:318 与 V3 仅四类且漏输出模式版本，batch-05-plan.md:7 仅写版本缓存；以任务板为权威状态源会漏验收，须补进验收清单并同步 contracts-v0.1.md:178",
+          "contracts-v0.1.md:23 未知枚举需显式 unknown/null 或契约升级；:91/:229 与 V2:129 要求保存原始输出与校验结果、原文没有的字段留空、无证据事实拒收",
+          "R08 在 :219 标『并发真实调用前』、:208 规定 MVP 先 R01-R03/R09-R10，而 batch-05 要求离线并发预留测试：属层次差异而非矛盾，但不得把 mock 并发写成 R08 通过（AGENTS.md:10、protocol.md:45）",
+          "建议本包按 WB-05-task.md:13 明确标注未运行测试，按 llm-client.md 的定向命令由 QA-B05 复跑，status 建议 partial"
+        ]
+      }
+    ],
+    "send_message_receipts": [
+      "发送给 wb05-budget-auditor：要求回传完整结论作为证据 -> {\"success\":true}",
+      "发送给 wb05-state-auditor：要求回传完整结论作为证据 -> {\"success\":true}",
+      "发送给 wb05-budget-auditor：告知代码已生成并纳入只读复核 -> {\"success\":true}",
+      "发送给 wb05-state-auditor：告知代码已生成并纳入只读复核 -> {\"success\":true}",
+      "发送给 wb05-state-auditor：催促立即回传当前结论 -> {\"success\":true}"
+    ],
+    "taskoutput_observations": "派发后多次返回 Status: running / This is a team member task (status: running). TaskOutput does not wait for teammates. Inbox notifies when they finish. 随后两个子 Agent 的完整结论经消息通道实际送达并被引用。",
+    "honesty_note": "两个子 Agent 的初始任务书基于『代码尚未生成』的时点事实，因此其结论为设计审查级，并如实报告按边界未读代码；代码于审查期间生成后的实现只读复核由主 Agent 追加完成，未冒充子 Agent 执行。消息通道未在回传内容中附加 UTC 时间戳，故不编造精确回传时刻，可核验区间为 06:04:45Z 派发至 06:13:13Z 交付之间。",
+    "not_impersonated": true
+  },
+  "scope": {
+    "project_root": "C:/Users/user/Documents/ChatGPT/市场信息抓取",
+    "baseline": "68e4702",
+    "task_file": "collaboration/workbuddy/WB-05-task.md",
+    "plan_file": "collaboration/batch-05-plan.md",
+    "write_scope": [
+      "collaboration/workbuddy/results/WB-05-report.md",
+      "collaboration/workbuddy/results/WB-05-results.json"
+    ],
+    "results_dir_state_before_write": ["WB-01-report.md", "WB-01-results.json"],
+    "constraints_observed": [
+      "未修改产品代码、测试、Git、依赖、系统设置或其他任务文件",
+      "未写入工作区记忆或任何其他路径",
+      "未读取或输出凭证、环境变量、账户或令牌文件",
+      "未使用付费 API、未调用真实模型、未联网、未外发消息、未上传 GitHub",
+      "未运行任何测试、构建、安装或 CI 命令",
+      "未把设计用例、mock 或合成 fixture 标记为真实接口/真实调用通过"
+    ]
+  },
+  "files_read": [
+    "collaboration/workbuddy/WB-05-task.md",
+    "collaboration/batch-05-plan.md",
+    "docs/contracts-v0.1.md",
+    "collaboration/protocol.md",
+    "collaboration/workbuddy/results/WB-01-report.md",
+    "collaboration/workbuddy/results/WB-01-results.json",
+    "collaboration/task-board.json (第 292-336、700-731 行)",
+    "docs/PROJECT_CONTEXT.md",
+    "docs/charter-v3.md (第 70-97 行)",
+    "docs/contracts-implementation.md (第 95-104 行)",
+    "docs/environment-baseline.md",
+    "docs/backup-restore.md (经 Grep)",
+    "docs/development-backlog-v3.md (经 Grep)",
+    "AGENTS.md",
+    "README.md (经 Grep)",
+    "market-intel-agent-dev-plan-v2-20261107.md (第 122-145 行)",
+    "market-intel-agent-dev-plan-v3-20261107.md (经 Grep)",
+    "src/market_intel/llm/__init__.py",
+    "src/market_intel/llm/client.py",
+    "tests/test_llm.py",
+    "docs/llm-client.md"
+  ],
+  "files_deliberately_not_read": [
+    "config/llm.example.json（已生成，为规避凭证相关字段未读取）",
+    "docs/verification/batch-05-review.md（QA-B05 独占产物，06:09Z 已存在，为避免锚定、保持独立性未读取）",
+    "任何 .env、账户、令牌、凭证或环境变量文件"
+  ],
+  "evidence_commands": [
+    {
+      "utc": "2026-11-08T06:03:05Z",
+      "command": "date -u +\"%Y-%m-%dT%H:%M:%SZ\" && date +\"%Y-%m-%dT%H:%M:%S%z\"",
+      "output": "2026-11-08T06:03:05Z / 2026-11-08T14:03:05+0800"
+    },
+    {
+      "utc": "2026-11-08T06:04:45Z",
+      "command": "date -u +\"%Y-%m-%dT%H:%M:%SZ\"",
+      "output": "2026-11-08T06:04:45Z",
+      "note": "子 Agent 派发时刻"
+    },
+    {
+      "utc": "约 2026-11-08T06:07Z",
+      "command": "python -B - <<'PY' ... PY （纯内存语言级语义核验，仅标准库 json，未导入 market_intel、未运行测试、未写盘）",
+      "output": "input='{\"category\":\"macro\",\"category\":\"other\"}' -> raised=invalid_output_json; input='{\"category\":NaN}' -> raised=invalid_output_json; input='not-json' -> raised=invalid_output_json",
+      "note": "复现 _strict_loads 的异常继承关系，见 F-04"
+    },
+    {
+      "utc": "2026-11-08T06:09:14Z",
+      "command": "date -u +\"%Y-%m-%dT%H:%M:%SZ\"",
+      "output": "2026-11-08T06:09:14Z"
+    },
+    {
+      "utc": "2026-11-08T06:10:54Z",
+      "command": "date -u +\"%Y-%m-%dT%H:%M:%SZ\" && ls -1 \"C:/Users/user/Documents/ChatGPT/市场信息抓取/collaboration/workbuddy/results/\"",
+      "output": "2026-11-08T06:10:54Z / WB-01-report.md / WB-01-results.json"
+    },
+    {
+      "utc": "2026-11-08T06:13:13Z",
+      "command": "date -u +\"%Y-%m-%dT%H:%M:%SZ\"",
+      "output": "2026-11-08T06:13:13Z"
+    }
+  ],
+  "timeline_utc": [
+    "06:01:10Z 会话上下文时间（系统注入，非实测命令）",
+    "06:03:05Z 首个实测 UTC；读取任务单、计划、契约与 WB-01 格式参考",
+    "06:04:45Z 真实并行派发 2 个 Explore 子 Agent，取得 agent_id / task_id 回执",
+    "约 06:06-06:09Z 其他执行者并行生成 src/market_intel/llm/client.py、__init__.py、tests/test_llm.py、config/llm.example.json、docs/llm-client.md",
+    "约 06:07Z 纯内存语言级语义核验（F-04）",
+    "06:09:14Z 主 Agent 只读复核阶段；发现设计文档已落地",
+    "06:10:54Z 结果目录现状确认",
+    "06:04:45Z-06:13:13Z 之间两个子 Agent 陆续回传带签名的完整结论",
+    "06:13:13Z 交付两份结果文件"
+  ],
+  "checkpoints": [
+    {
+      "id": "C1",
+      "name": "预算原子预留（R08）",
+      "actionable_input": "固定 UTC 时钟 23:59:58Z，当日剩余 100 token / 100 microUSD，两线程同时各请求 60 输入 + 40 输出上限",
+      "expected": "BEGIN IMMEDIATE 串行化，仅一笔预留成功，另一笔 budget_exceeded 且不调用 transport；失败可释放或结算",
+      "locations": ["docs/contracts-v0.1.md:219", "docs/contracts-v0.1.md:180", "src/market_intel/llm/client.py:281-296", "tests/test_llm.py:210-238", "docs/llm-client.md:50-59"],
+      "suggested_assertion": "test_atomic_reservations_with_true_concurrent_barrier（建议，未运行）"
+    },
+    {
+      "id": "C2",
+      "name": "超时后不确定费用",
+      "actionable_input": "transport 抛 TimeoutError，max_retries=1，返回无 usage",
+      "expected": "每笔 status=failed、charged_cost == reserved_cost，标记 estimated/unknown 并附依据，不得写成真实结算值、不得记 0",
+      "locations": ["market-intel-agent-dev-plan-v2-20261107.md:139", "docs/contracts-v0.1.md:22-23", "docs/contracts-v0.1.md:229", "src/market_intel/llm/client.py:378-379", "src/market_intel/llm/client.py:409-410", "tests/test_llm.py:130-140"],
+      "suggested_assertion": "test_timeout_cost_marked_estimated_with_basis（建议，未运行）"
+    },
+    {
+      "id": "C3",
+      "name": "失败重试上限",
+      "actionable_input": "max_retries=5 + 恒定超时，daily_tokens=1800，输入上界约 900",
+      "expected": "重试次数不超过上限且每次重新预留；耗尽时 budget_exceeded；error_code 保留原始超时原因而非被预算错误掩盖",
+      "locations": ["market-intel-agent-dev-plan-v3-20261107.md:156", "src/market_intel/llm/client.py:371-413", "tests/test_llm.py:204-208", "docs/llm-client.md:53-56"],
+      "suggested_assertion": "test_retry_budget_exhaustion_preserves_root_cause（建议，未运行）"
+    },
+    {
+      "id": "C4",
+      "name": "进程重启后的保留额度",
+      "actionable_input": "transport 抛 KeyboardInterrupt 模拟崩溃 → 新建 ModelClient 指向同一账本 → usage(day)",
+      "expected": "pending_calls=1、后续调用被拒；且存在人工结算/释放终态使 R08『失败可释放或结算』闭环",
+      "locations": ["docs/contracts-v0.1.md:180", "docs/contracts-v0.1.md:219", "src/market_intel/llm/client.py:296", "src/market_intel/llm/client.py:300-321", "src/market_intel/llm/client.py:417-426", "tests/test_llm.py:240-249", "docs/llm-client.md:57", "docs/llm-client.md:88"],
+      "suggested_assertion": "test_pending_reservation_has_reconcile_path（建议，未运行）"
+    },
+    {
+      "id": "C5",
+      "name": "UTC 跨日",
+      "actionable_input": "23:59:58Z 预留、00:00:02Z 结算；另测 Asia/Shanghai naive datetime 与时钟回退",
+      "expected": "按开始 UTC 日归属、跨午夜仍结算原日；naive 或非零偏移时钟被拒；时钟回退 clock_regression；不得按交易日/滚动 24h 分桶",
+      "locations": ["docs/contracts-v0.1.md:17", "docs/contracts-v0.1.md:21", "src/market_intel/llm/client.py:267-271", "src/market_intel/llm/client.py:275", "src/market_intel/llm/client.py:283-284", "src/market_intel/llm/client.py:305", "tests/test_llm.py:256-270", "docs/llm-client.md:58"],
+      "suggested_assertion": "test_reserve_and_finish_across_utc_midnight（建议，未运行）"
+    },
+    {
+      "id": "C6",
+      "name": "缓存键版本覆盖",
+      "actionable_input": "逐一改 system_prompt / prompt_version / rules_version / schema_version / parameters / output_schema / model / max_output_tokens / max_output_bytes 后重放同一输入",
+      "expected": "每次变更均 cache_hit=False；旧版本缓存不得复用；缓存命中不预留但不构成预算绕过；缓存内容哈希与 schema 复核通过",
+      "locations": ["market-intel-agent-dev-plan-v2-20261107.md:137", "collaboration/task-board.json:318", "src/market_intel/llm/client.py:341-369", "tests/test_llm.py:86-99", "docs/llm-client.md:46"],
+      "suggested_assertion": "test_output_schema_version_in_cache_identity_in_acceptance_list（建议，未运行）"
+    },
+    {
+      "id": "C7",
+      "name": "输出无效 JSON",
+      "actionable_input": "not-json、数组顶层、枚举外值、额外字段、重复键、NaN、布尔充当字符串、尾随第二对象",
+      "expected": "全部 ModelError、status=failed、output_text IS NULL、不写缓存、不静默升级枚举、不无限重试；保存原始输出与校验结果",
+      "locations": ["docs/contracts-v0.1.md:23", "docs/contracts-v0.1.md:91", "docs/contracts-v0.1.md:229", "src/market_intel/llm/client.py:38-50", "src/market_intel/llm/client.py:399-410", "tests/test_llm.py:165-172"],
+      "suggested_assertion": "test_strict_loads_preserves_specific_error_codes（建议，未运行）"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-01",
+      "checkpoints": ["C1", "C4"],
+      "severity": "high",
+      "title": "换一个新账本文件即可重置当日预算额度",
+      "kind": "static_readonly_review",
+      "source": "main_agent",
+      "location": ["src/market_intel/llm/client.py:229-234", "src/market_intel/llm/client.py:285", "docs/llm-client.md:59", "docs/llm-client.md:73"],
+      "actionable_input": "同一 UTC 日先用 ModelClient('out/a.db') 耗尽额度，再用 ModelClient('out/b.db') 发起相同调用",
+      "expected": "应有单一账本绑定或跨账本对账，第二客户端不应获得全新额度",
+      "observed_or_note": "静态只读复核：__init__ 接受任意 state_path 且仅做 mkdir，days 表按账本文件本地；文档『不应换一个空账本规避累计预算』为声明，代码无强制绑定，账本须放 out/ 或 data/ 亦未校验。未运行验证。",
+      "suggested_assertion": "test_new_ledger_path_cannot_reset_daily_budget（建议，未运行）",
+      "related_review": "QA-B05 预算绕过"
+    },
+    {
+      "id": "F-02",
+      "checkpoints": ["C1", "C4"],
+      "severity": "high",
+      "title": "崩溃遗留 pending 预留无释放/结算终态入口，R08 在崩溃场景未闭环",
+      "kind": "known_incomplete_confirmed_by_readonly_review",
+      "source": "main_agent + subagent_budget",
+      "location": ["src/market_intel/llm/client.py:296", "src/market_intel/llm/client.py:300-321", "src/market_intel/llm/client.py:417-426", "tests/test_llm.py:240-249", "docs/llm-client.md:57", "docs/llm-client.md:88", "docs/contracts-v0.1.md:219"],
+      "actionable_input": "transport 抛 KeyboardInterrupt → 重启 → usage(day).pending_calls == 1 → 后续调用 budget_exceeded",
+      "expected": "契约 R08『失败可释放或结算』应有人工结算/释放入口与状态字段",
+      "observed_or_note": "Grep 确认 client.py 无任何 release/reconcile/settle 方法；_finish 只接受 pending→终态且仅由 generate 内部调用；usage() 仅能查询。设计文档已明示『无后台任务自动释放；需后续人工结算』并列为待完成，故属已知缺口而非隐藏缺陷；单次崩溃会锁死当日剩余额度至 UTC 日切。",
+      "suggested_assertion": "test_pending_reservation_has_reconcile_path（建议，未运行）"
+    },
+    {
+      "id": "F-03",
+      "checkpoints": ["C3", "C7"],
+      "severity": "medium",
+      "title": "无效 JSON / schema 违规也触发有界重试，重复消耗全额预留",
+      "kind": "static_readonly_review",
+      "source": "main_agent",
+      "location": ["src/market_intel/llm/client.py:371-413", "docs/llm-client.md:56", "tests/test_llm.py:165-172"],
+      "actionable_input": "Policy(enabled=True, max_retries=2) + transport 恒定返回 category 不在枚举内的 JSON",
+      "expected": "应区分可重试传输错误与确定性结构校验失败；若保持重试须明示预算成本并留档错误码",
+      "observed_or_note": "except ModelError 之后 retryable 仍为 True，循环继续；每次重新预留且保留全额。文档已明示该设计，独立审查认为对确定性失败重试缺乏收益且放大预算消耗；现有定向测试用 max_retries=0，未覆盖重试路径。",
+      "suggested_assertion": "test_invalid_output_retry_policy_and_budget_cost（建议，未运行）"
+    },
+    {
+      "id": "F-04",
+      "checkpoints": ["C7"],
+      "severity": "medium",
+      "title": "duplicate_json_key / nonfinite_json 专用错误码被 except ValueError 吞并成 invalid_output_json",
+      "kind": "verified_by_in_memory_language_probe_not_project_test",
+      "source": "main_agent",
+      "location": ["src/market_intel/llm/client.py:14", "src/market_intel/llm/client.py:38-50", "tests/test_llm.py:165-172", "docs/llm-client.md:67", "docs/contracts-v0.1.md:229"],
+      "actionable_input": "重复键 JSON 与含 NaN 的 JSON 各一次",
+      "expected": "按代码意图应分别返回 duplicate_json_key / nonfinite_json",
+      "observed_or_note": "ModelError 继承 ValueError；pairs() 与 parse_constant 内的 _fail 抛出的 ModelError 被外层 except (ValueError, TypeError, RecursionError) 捕获后统一改为 invalid_output_json。纯内存语言级语义核验（python -B，未导入项目模块、未运行测试、未写盘）三例均输出 raised=invalid_output_json。现有测试仅 assertRaises(ModelError)，未断言错误码，故未暴露。影响失败原因留档粒度。",
+      "suggested_assertion": "test_strict_loads_preserves_specific_error_codes（建议，未运行）"
+    },
+    {
+      "id": "F-05",
+      "checkpoints": ["C4"],
+      "severity": "medium",
+      "title": "模型预算账本不在现有备份/恢复范围，R10 / G5 恢复演练存在预算被重置风险",
+      "kind": "design_review",
+      "source": "main_agent",
+      "location": ["docs/llm-client.md:73", "docs/llm-client.md:88", "docs/contracts-v0.1.md:221", "docs/contracts-v0.1.md:176", "docs/backup-restore.md:37", "docs/PROJECT_CONTEXT.md:48"],
+      "actionable_input": "执行 backup → verify-backup → restore 后比对恢复目录的 usage(day) 与源账本",
+      "expected": "恢复演练应把模型账本纳入一致性范围，或明确列为不覆盖且不得宣称整体可恢复",
+      "observed_or_note": "文档自述『现有证据 backup 命令不备份这个独立模型账本；它不能随证据快照回滚，否则预算会被重置』，并把账本一致备份/异地恢复/真实账单对账列为待完成；批次 04 恢复演练仅覆盖证据与报告。需澄清 R10 与 G5 验收口径。",
+      "suggested_assertion": "test_backup_scope_declares_ledger_consistency（建议，未运行）"
+    },
+    {
+      "id": "F-06",
+      "checkpoints": ["C1"],
+      "severity": "medium_low",
+      "title": "SQLite 写锁竞争未映射为稳定错误码",
+      "kind": "static_readonly_review",
+      "source": "main_agent",
+      "location": ["src/market_intel/llm/client.py:258", "src/market_intel/llm/client.py:283", "src/market_intel/llm/client.py:14-23"],
+      "actionable_input": "两进程/线程并发且持写锁超过 connect 的 10 秒 timeout",
+      "expected": "应映射为稳定 ModelError（如 ledger_busy）并进入降级，不泄漏底层异常文本",
+      "observed_or_note": "generate 未捕获 sqlite3.OperationalError，可能以非 ModelError 冒泡。静态推断，未做并发实测。",
+      "suggested_assertion": "test_ledger_lock_timeout_maps_to_stable_error（建议，未运行）"
+    },
+    {
+      "id": "F-07",
+      "checkpoints": ["C5"],
+      "severity": "medium_low",
+      "title": "时间比较使用受控格式字符串而非解析为时间对象，与契约 :17 字面要求存在符合性争议",
+      "kind": "contract_conformance_question",
+      "source": "main_agent + subagent_state",
+      "location": ["src/market_intel/llm/client.py:270-271", "src/market_intel/llm/client.py:283-284", "src/market_intel/llm/client.py:305", "docs/contracts-v0.1.md:17"],
+      "actionable_input": "比较 2026-11-08T23:59:59.999999Z 与 2026-11-09T00:00:00.000000Z",
+      "expected": "按契约应解析为时间后比较，或由主控明确裁定受控固定格式的字典序等价可接受",
+      "observed_or_note": "_now() 固定 ISO 微秒 + Z 格式，字典序等价时间序，实用上安全；但字面不符合『比较前解析为时间，不能依靠任意格式字符串排序』。属契约符合性争议，非已证实缺陷。"
+    },
+    {
+      "id": "F-08",
+      "checkpoints": ["C1"],
+      "severity": "medium",
+      "title": "并发预留测试的证据强度不足，且不得据此宣称 R08 通过",
+      "kind": "test_evidence_strength",
+      "source": "main_agent + subagent_state",
+      "location": ["tests/test_llm.py:210-238", "docs/contracts-v0.1.md:219", "docs/contracts-v0.1.md:208", "collaboration/batch-05-plan.md:7", "collaboration/batch-05-plan.md:13", "AGENTS.md:10", "collaboration/protocol.md:45"],
+      "actionable_input": "用 Barrier 让两个 _reserve 同时进入临界区，而非用 Event 等第一个已进入 transport 后再发起第二个",
+      "expected": "真并发下仍仅一笔预留成功；且明确 mock 并发通过不等于 R08『并发真实调用前』门槛通过",
+      "observed_or_note": "现有 test_atomic_reservations_across_two_clients 验证的是『已预留额度阻止后续请求』，未让两个 _reserve 真正同时竞争。R08 在契约标『并发真实调用前』，MVP 阶段只先做 R01-R03/R09-R10；batch-05 的离线并发预留测试属设计验证，层次不同。本包未运行该测试。",
+      "suggested_assertion": "test_reservations_compete_in_same_critical_section（建议，未运行）"
+    },
+    {
+      "id": "F-09",
+      "checkpoints": ["C6"],
+      "severity": "medium",
+      "title": "缓存键版本清单口径不一致：验收清单漏『输出模式/schema 版本』，实现实际已覆盖",
+      "kind": "contract_and_acceptance_mismatch",
+      "source": "subagent_state + main_agent_readonly_review",
+      "location": ["market-intel-agent-dev-plan-v2-20261107.md:137", "collaboration/task-board.json:318", "collaboration/batch-05-plan.md:7", "src/market_intel/llm/client.py:341-359", "tests/test_llm.py:86-99", "docs/llm-client.md:46", "docs/contracts-v0.1.md:178"],
+      "actionable_input": "以 task-board.json 验收第 3 条为准执行一次验收，观察是否检查输出模式版本",
+      "expected": "V2 五类（内容/模型/提示词/规则/输出模式版本）应完整进入验收清单并同步公共契约",
+      "observed_or_note": "V2 列五类；task-board.json:318 与 V3 中文列四类、漏输出模式版本；batch-05-plan.md:7 仅写『版本缓存』。实现把 output_schema、schema_version、parameters、max_output_* 全部纳入 sha256('model-request/0.1\\0' + canonical_json(request))，已强于验收清单、缓解缓存污染；风险在于以任务板为权威状态源会漏验收。建议改验收文本而非改实现。",
+      "suggested_assertion": "test_output_schema_version_explicitly_in_acceptance（建议，未运行）"
+    },
+    {
+      "id": "F-10",
+      "checkpoints": ["C5"],
+      "severity": "medium",
+      "title": "UTC 日桶与跨午夜归属规则仅存在于实现文档，未纳入公共契约",
+      "kind": "contract_gap",
+      "source": "subagent_state + main_agent",
+      "location": ["docs/llm-client.md:58", "src/market_intel/llm/client.py:275", "src/market_intel/llm/client.py:299", "docs/contracts-v0.1.md:9", "docs/contracts-v0.1.md:178", "docs/contracts-v0.1.md:225-229"],
+      "actionable_input": "23:59:58Z 预留、00:00:02Z 结算；另构造按 Asia/Shanghai 交易日或滚动 24 小时分桶的替代实现",
+      "expected": "公共契约应明确 UTC 日桶、跨日归属、时钟回退、费率与取整，避免跨模块错账",
+      "observed_or_note": "契约第 9 节要求跨模块规则由主控单点整合；契约 :9 把『真实预算预留账本』列为后置契约但未展开字段/边界。V2:83 盘前 08:30 北京约对应 UTC 00:00，跨日归属尤其敏感。"
+    },
+    {
+      "id": "F-11",
+      "checkpoints": ["C2"],
+      "severity": "medium_low",
+      "title": "charged_* 把保守估算占位与真实结算混在同一列，未披露估算占比",
+      "kind": "design_review",
+      "source": "subagent_budget + main_agent",
+      "location": ["src/market_intel/llm/client.py:249", "src/market_intel/llm/client.py:294-295", "src/market_intel/llm/client.py:310-319", "src/market_intel/llm/client.py:423-426", "docs/llm-client.md:54", "market-intel-agent-dev-plan-v2-20261107.md:139", "docs/contracts-v0.1.md:22-23"],
+      "actionable_input": "构造 1 笔超时（估算占位）+ 1 笔成功带 usage（结算），调用 usage(day)",
+      "expected": "显示估算值及依据，估算/未知/已结算可区分并能披露占比",
+      "observed_or_note": "文档已声明无 usage 或 0 usage 保留全额估算、不作为真实结算值，故非隐藏缺陷；但字段名与 usage() 混合求和使外部易误读为真实账单。建议增加 settlement_state / charge_basis 三态字段。"
+    },
+    {
+      "id": "F-12",
+      "checkpoints": ["C1", "C2", "C3", "C4", "C5", "C6", "C7"],
+      "severity": "info",
+      "title": "实现者自述 30 项定向测试通过，本包未独立复跑、不据此认定通过",
+      "kind": "unverified_claim",
+      "source": "main_agent",
+      "location": ["docs/llm-client.md:86", "docs/llm-client.md:80-84", "tests/test_llm.py"],
+      "actionable_input": "按 docs/llm-client.md:80-84 的 PowerShell 定向命令由 QA-B05 独立复跑并留证",
+      "expected": "独立复核后方可写入验收记录",
+      "observed_or_note": "文档还自述首次运行因测试辅助数据库连接未关闭导致 Windows 清理文件锁错误、修复后全部通过；本包未验证任何一项。本包 tests_run=0。"
+    },
+    {
+      "id": "F-13",
+      "checkpoints": [],
+      "severity": "info",
+      "title": "WorkBuddy 子 Agent / 跨 Agent 消息能力实测可用，charter 待实测假设可更新",
+      "kind": "process_finding",
+      "source": "main_agent",
+      "location": ["docs/charter-v3.md:93", "collaboration/protocol.md:5", "collaboration/task-board.json:708-714"],
+      "actionable_input": "本包实际派发 2 个 Explore 子 Agent 并经 SendMessage 收取结论",
+      "expected": "主控可更新『不假定存在跨 Agent 消息接口』的待实测假设",
+      "observed_or_note": "仅证明本版本具备子 Agent 并行委派与消息回传能力，不据此推定存在 CLI、后台常驻协作或跨设备调度；也不改变 WB-05 的写入边界。"
+    }
+  ],
+  "contract_consistency": [
+    "R08 阶段口径：contracts-v0.1.md:219『并发真实调用前』与 :208『MVP 先 R01-R03/R09-R10』，对比 batch-05-plan.md:7『并发预留离线测试』与 :13『本轮不自动调用付费模型』——层次差异而非矛盾，但不得把 mock 并发写成 R08 通过（AGENTS.md:10、protocol.md:45）。",
+    "缓存键版本清单：V2:137 五类 / task-board.json:318 四类 / batch-05-plan.md:7 仅『版本缓存』三处不一致；实现已覆盖更全，需同步验收文本与 contracts-v0.1.md:178。",
+    "交付标注：contracts-v0.1.md:229 要求列运行命令、实际测试结果、已知缺口，且『未执行测试不得写成通过』；本包 tests_run=0，已显式标注，定向命令由 QA-B05 复跑。",
+    "预算账本为契约 :9 所列后置契约『真实预算预留账本』，当前仅实现于独立 SQLite 账本（schema 1，不改证据库 schema 4），UTC 日桶、估算三态、费率取整等规则尚未进入公共契约。"
+  ],
+  "checks_run": [
+    {
+      "check": "读取并核对写入边界",
+      "method": "Read WB-05-task.md 与 batch-05-plan.md",
+      "result": "确认唯一允许写入两个结果文件、不改产品/测试/Git/依赖/系统，不读凭证、不用付费 API、不外发上传"
+    },
+    {
+      "check": "确认 NLP-01 代码生成状态",
+      "method": "Glob 全项目一次 + llm 相关路径三次",
+      "result": "首次 Glob 无 llm 代码；约 06:06-06:09Z 陆续出现 client.py、__init__.py、tests/test_llm.py、config/llm.example.json、docs/llm-client.md；docs/verification/batch-05-review.md 亦已存在（未读取）"
+    },
+    {
+      "check": "定位预算/缓存/重试/R08 设计描述",
+      "method": "Grep 全项目关键词一次 + 阅读契约、V2/V3 计划、任务板、协议、AGENTS.md、PROJECT_CONTEXT.md",
+      "result": "定位 R08、预算字段、估算与结算、缓存键版本、可变运行状态、未执行测试不得写通过等依据"
+    },
+    {
+      "check": "真实子 Agent 委派与结果回收",
+      "method": "Agent 工具并行派发 2 个 Explore 子 Agent + 5 次 SendMessage + 多次 TaskOutput 状态查询",
+      "result": "两个子 Agent 均真实运行并回传带 SUBAGENT_SIGNATURE 的完整结论，subagent_used=true"
+    },
+    {
+      "check": "实现只读复核",
+      "method": "Read client.py / __init__.py / tests/test_llm.py / llm-client.md + Grep client.py 函数与事务关键词",
+      "result": "确认无 release/reconcile/settle 方法；形成 F-01 至 F-12 的静态只读复核发现，全部标注未运行测试"
+    },
+    {
+      "check": "纯内存语言级语义核验",
+      "method": "python -B - <<'PY' ... PY（仅标准库 json，未导入项目模块、未写盘）",
+      "result": "三例均 raised=invalid_output_json，支持 F-04 错误码吞并结论；此项不是项目测试"
+    },
+    {
+      "check": "结果与时间证据",
+      "method": "date -u 五次 + ls -1 结果目录一次",
+      "result": "见 evidence_commands 与 timeline_utc"
+    },
+    {
+      "check": "项目测试 / 构建 / 安装 / Git / CI",
+      "method": "未执行",
+      "result": "tests_run=0；按边界不运行，实现者自述的 30 项通过未独立复跑"
+    }
+  ],
+  "tests_run": 0,
+  "limitations": [
+    "本包未运行任何测试、构建、安装或 CI 命令（tests_run=0）。docs/llm-client.md:86 的『30 项定向测试通过』为实现者自述，未经独立复跑，不据此认定通过。",
+    "所有 client.py / tests/test_llm.py 结论均为静态只读复核推断；除 F-04 有纯内存语言级语义核验外，均无运行时验证，且该核验不是项目测试。",
+    "R08 的真实并发验收、真实供应商 HTTP 超时、usage 与费用核实、模型抽取质量、G3 均未验收；docs/llm-client.md:88 亦把这些列为待完成。",
+    "审查对象由其他执行者并行生成并持续变化：首次 Glob 无 llm 代码，约 06:06-06:09Z 陆续出现 5 个新文件。本包快照为 06:09Z 左右内容，之后若有提交需重新核对。",
+    "为规避凭证字段未读 config/llm.example.json，故未核对示例配置字段；为保持独立性未读 docs/verification/batch-05-review.md，未参考 QA-B05 结论。",
+    "未验证 Git 状态、依赖清单、CI 与 Windows 文件系统下的多进程锁行为；F-01、F-06 等为静态推断，未做并发或换账本实测。",
+    "两个子 Agent 的初始任务书基于『代码尚未生成』的时点事实，其结论为设计审查级并如实报告未读代码；实现只读复核由主 Agent 追加，未冒充子 Agent 执行。",
+    "消息通道未在回传内容中附加 UTC 时间戳，精确回传时刻未编造；可核验区间为 06:04:45Z 派发至 06:13:13Z 交付之间。",
+    "仅写入两个结果文件；未修改产品、测试、Git、依赖、系统设置、其他任务文件，也未写入工作区记忆文件。",
+    "最终完成状态按 WB-05-task.md 第 15 行由主控与独立审查者回收验收后决定，本包标记 partial 而非 completed。"
+  ],
+  "blockers": [],
+  "next_checks_global": [
+    "主控裁定 F-01：是否强制单账本绑定或跨账本对账，以关闭 QA-B05 关注的预算绕过后门",
+    "主控裁定 F-02：pending 预留的人工结算/释放终态归属工作包与 R08 闭环时点",
+    "QA-B05 独立复跑 docs/llm-client.md:80-84 定向命令，并补充 F-01、F-03、F-04、F-08 建议的真并发/重试/错误码/换账本断言",
+    "把『输出模式/schema 版本』补进 task-board.json:318 验收清单并同步 contracts-v0.1.md:178；把 UTC 日桶、跨日归属、估算三态、费率取整写入公共契约（第 9 节主控单点整合）",
+    "明确 R08 正式验收口径（mock 并发验证 vs 并发真实调用前门槛），并澄清恢复演练 R10/G5 是否覆盖模型账本（F-05）",
+    "主控可依据本包 subagent_evidence 更新 docs/charter-v3.md:93 的 WorkBuddy 跨 Agent 能力待实测假设"
+  ],
+  "artifacts": [
+    "collaboration/workbuddy/results/WB-05-report.md",
+    "collaboration/workbuddy/results/WB-05-results.json"
+  ]
+}

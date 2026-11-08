@@ -1,0 +1,110 @@
+{
+  "task_id": "MKT-01",
+  "is_synthetic": false,
+  "scope": "Low-frequency capability probes only; response bodies not retained; no price adapter or evaluation enabled",
+  "probes": [
+    {
+      "id": "csi300_factsheet",
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/000300factsheet.pdf",
+      "requested_at_utc": "2026-11-08T06:01:09.848274Z",
+      "method": "Python urllib.request GET; TLS default verification; 20s timeout; 2MiB cap",
+      "outcome": "failed",
+      "exception_type": "URLError",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>",
+      "completed_at_utc": "2026-11-08T06:01:10.352260Z"
+    },
+    {
+      "id": "sse_rules_2026",
+      "url": "https://www.sse.com.cn/lawandrules/sselawsrules2025/trade/universal/c/c_20260424_10816492.shtml",
+      "requested_at_utc": "2026-11-08T06:01:09.849353Z",
+      "method": "Python urllib.request GET; TLS default verification; 20s timeout; 2MiB cap",
+      "outcome": "failed",
+      "exception_type": "URLError",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>",
+      "completed_at_utc": "2026-11-08T06:01:10.309907Z"
+    },
+    {
+      "id": "sse_holidays_2026",
+      "url": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+      "requested_at_utc": "2026-11-08T06:01:09.851602Z",
+      "method": "Python urllib.request GET; TLS default verification; 20s timeout; 2MiB cap",
+      "outcome": "failed",
+      "exception_type": "URLError",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>",
+      "completed_at_utc": "2026-11-08T06:01:10.308826Z"
+    },
+    {
+      "id": "sse_monthly_index",
+      "url": "https://www.sse.com.cn/aboutus/publication/monthly/index/",
+      "requested_at_utc": "2026-11-08T06:01:09.853688Z",
+      "method": "Python urllib.request GET; TLS default verification; 20s timeout; 2MiB cap",
+      "outcome": "failed",
+      "exception_type": "URLError",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>",
+      "completed_at_utc": "2026-11-08T06:01:10.309542Z"
+    },
+    {
+      "id": "szse_holiday_notice",
+      "url": "https://www.szse.cn/www/disclosure/notice/general/t20260917_622911.html",
+      "requested_at_utc": "2026-11-08T06:01:09.853688Z",
+      "method": "Python urllib.request GET; TLS default verification; 20s timeout; 2MiB cap",
+      "outcome": "failed",
+      "exception_type": "URLError",
+      "error": "<urlopen error [SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1010)>",
+      "completed_at_utc": "2026-11-08T06:01:10.325402Z"
+    },
+    {
+      "id": "csi300_factsheet",
+      "url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/000300factsheet.pdf",
+      "requested_at_utc": "2026-11-08T06:01:59.693Z",
+      "method": "Node24 fetch GET; default TLS verification; redirect:error; 20s timeout; 2MiB cap",
+      "http_status": 200,
+      "final_url": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/zh_CN/000300factsheet.pdf",
+      "content_type": "application/pdf",
+      "bytes_read": 451156,
+      "body_sha256": "3eb8fd279126c75ef52608fbdbe4397cc722fb93662b8a13dd9665a7110d1ab8",
+      "outcome": "fetched",
+      "completed_at_utc": "2026-11-08T06:02:00.847Z"
+    },
+    {
+      "id": "sse_holidays_2026",
+      "url": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+      "requested_at_utc": "2026-11-08T06:01:59.791Z",
+      "method": "Node24 fetch GET; default TLS verification; redirect:error; 20s timeout; 2MiB cap",
+      "http_status": 200,
+      "final_url": "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+      "content_type": "text/html",
+      "bytes_read": 28038,
+      "body_sha256": "ff188c710b8904758c185eb955e9eaa2c9bd7c2061af984d4f1d743f899c12a4",
+      "outcome": "fetched",
+      "contains_markers": {
+        "2026": true,
+        "沪深": false,
+        "开盘": false,
+        "收盘": false,
+        "休市": true
+      },
+      "completed_at_utc": "2026-11-08T06:01:59.978Z"
+    },
+    {
+      "id": "sse_monthly_index",
+      "url": "https://www.sse.com.cn/aboutus/publication/monthly/index/",
+      "requested_at_utc": "2026-11-08T06:01:59.793Z",
+      "method": "Node24 fetch GET; default TLS verification; redirect:error; 20s timeout; 2MiB cap",
+      "http_status": 200,
+      "final_url": "https://www.sse.com.cn/aboutus/publication/monthly/index/",
+      "content_type": "text/html",
+      "bytes_read": 32636,
+      "body_sha256": "45a970690f52218facf4b13817fc9cc72b603a5de23ad3abf86d513c804a3e3e",
+      "outcome": "fetched",
+      "contains_markers": {
+        "2026": true,
+        "沪深": true,
+        "开盘": false,
+        "收盘": false,
+        "休市": false
+      },
+      "completed_at_utc": "2026-11-08T06:02:00.190Z"
+    }
+  ]
+}

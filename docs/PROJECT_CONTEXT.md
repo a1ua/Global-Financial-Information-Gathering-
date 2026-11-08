@@ -34,7 +34,17 @@ Python 包位于 `src/market_intel/`。已实现：
 
 CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief`、`replay`、`status`、`validate-report`、`backup`、`verify-backup`、`restore`。具体参数见 README 和各命令 `--help`。
 
-## 最近完成批次与真实验证
+## 最新开发批次 05
+
+在基线 68e4702 后继续开发 NLP-01 离线预算节点和 MKT-01 来源能力验证，目录所有权与验收见 `collaboration/batch-05-plan.md`，完整记录见 `docs/verification/batch-05.md`。
+
+- `src/market_intel/llm/` 新增显式启用且仅支持 mock 的模型接口、独立 SQLite 原子预算预留、UTC 日额度、保守失败占用、有界重试、版本缓存和安全调用留档。产品尚未接云模型，也未接入简报解读流程。
+- 独立 QA 已复核真实双进程竞争、进程退出后 pending 占用、跨午夜重试分日归账及缓存污染拒绝。WorkBuddy 两个真实子 Agent 参与设计审查，其主端追加代码静态复核。根据12项发现修复必要问题并补足契约，模型定向最终38项通过；最终安装回归196项，195通过、1项既有Windows权限跳过，目录 `.venv/setup-runs/20261108-142027-ea8f6d9b/`。WorkBuddy两份原始报告与主控处置、QA验收分开留档。
+- `docs/market/` 和两个配置样例明确官方资料可验证、生产 OHLC 尚未接通；Python TLS 失败保留，3 次受限 Node GET 成功。评价继续关闭，不能假定日线 open 在09:30形成。
+- NLP-01、MKT-01 原始完整工作包继续 in_progress；本轮只验收明确子集。真实供应商、候选数筛选、模型账本备份/对账、行情快照和完整 G3–G5 仍待完成。
+- 模型账本 `llm-state.db` 与证据库分离，不在现有 backup 范围内，不得通过删除或回滚账本重置预算。配置样例和测试值不是服务价格或真实账单。
+
+## 批次 04 与既有真实验证
 
 批次 04 完成报告 manifest 校验与一致备份恢复。证据：
 
