@@ -85,7 +85,7 @@ class Batch06CLITests(unittest.TestCase):
         backup, restored = self.root / "backup", self.root / "restored"
         code, result, _ = self.invoke("ledger-backup", "--ledger", path, "--destination", backup)
         self.assertEqual(code, 0)
-        self.assertEqual(result["database_schema_version"], 2)
+        self.assertEqual(result["database_schema_version"], 3)
         self.assertEqual(self.invoke("verify-ledger-backup", "--backup", backup)[0], 0)
         self.assertEqual(self.invoke("restore-ledger", "--backup", backup, "--destination", restored)[0], 0)
         restored_client = ModelClient(restored / "ledger.db", cny_policy())
@@ -101,6 +101,33 @@ class Batch06CLITests(unittest.TestCase):
             code, result, _ = self.invoke("deepseek-smoke", "--live", "--workspace", self.root)
         self.assertEqual(code, 1)
         self.assertEqual(result["reason"], "isolated_ledger_not_live")
+
+    def test_unbound_requires_explicit_adoption_without_key_read(self):
+        client = ModelClient(self.root / "llm-state.db")
+        with patch("market_intel.cli.os.environ.get", side_effect=self.without_key_read):
+            self.assertEqual(self.invoke("deepseek-check", "--workspace", self.root)[1]["binding"]["status"], "unbound")
+            code, result, _ = self.invoke("ledger-bind", "--workspace", self.root)
+            self.assertEqual((code, result["reason"]), (1, "ledger_binding_required"))
+            code, result, _ = self.invoke("ledger-bind", "--workspace", self.root, "--adopt-existing")
+        self.assertEqual((code, result["status"], result["ledger_id"]), (0, "adopted", client.ledger_id))
+
+    def test_check_rejects_lost_bound_ledger_without_recreation(self):
+        self.assertEqual(self.invoke("ledger-bind", "--workspace", self.root)[0], 0)
+        ledger = self.root / "llm-state.db"
+        ledger.unlink()
+        with patch("market_intel.cli.os.environ.get", side_effect=self.without_key_read):
+            code, result, _ = self.invoke("deepseek-check", "--workspace", self.root)
+        self.assertEqual((code, result["reason"]), (1, "bound_ledger_missing"))
+        self.assertFalse(ledger.exists())
+
+    def test_smoke_rechecks_ensured_identity_before_generation(self):
+        with patch.dict(os.environ, {"DEEPSEEK_API_KEY": "synthetic-cli-key"}), patch(
+                "market_intel.cli.ensure_workspace_ledger", return_value={
+                    "ledger": str(self.root / "llm-state.db"), "ledger_id": "ledger_" + "0" * 32}), patch(
+                "market_intel.cli.ModelClient.generate") as generate:
+            code, result, _ = self.invoke("deepseek-smoke", "--live", "--workspace", self.root)
+        self.assertEqual((code, result["reason"]), (1, "ledger_identity_mismatch"))
+        generate.assert_not_called()
 
 
 if __name__ == "__main__":

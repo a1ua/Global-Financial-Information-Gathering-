@@ -34,7 +34,19 @@ Python 包位于 `src/market_intel/`。已实现：
 
 CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief`、`replay`、`status`、`validate-report`、`backup`、`verify-backup`、`restore`，以及批次06的`deepseek-check`、`deepseek-smoke`、`ledger-backup`、`verify-ledger-backup`、`restore-ledger`。参数见README与`--help`。
 
-## 最新开发批次 06
+## 最新开发批次 07
+
+基线本地199d8ec、远程84fbcac，工作包见 `collaboration/batch-07-plan.md`，冻结契约见 `docs/contracts/ledger-binding-v0.1.md`。
+
+- 模型账本升级schema3，唯一身份随迁移保留原费用、pending和缓存；证据库仍schema4。ModelClient每次重新连接核对已固定身份，删库拒绝重建，不同身份替换拒绝调用。
+- 新增固定工作区`llm-state.db`与`llm-binding.json`身份/路径绑定；`ledger-bind --adopt-existing`显式采用合法无绑定旧账本。check只读，live入口先验证绑定，再核对客户端身份。单边丢失、移动、损坏、符号链接/junction均拒绝。
+- schema3备份使用0.2清单核对身份，schema1/2仍兼容0.1；恢复不生成活动绑定。两文件全删、另建工作区、同身份旧快照回退、人工对账和生产恢复切换仍未覆盖，NLP-01整体保持in_progress。
+- 离线全套及普通安装均291项：289通过、2项Windows符号链接权限跳过，实际junction通过；独立133项目标联验132通过、1跳过，另验证三种迁移逐列保留与换库/删库无调用。安装证据`.venv/setup-runs/20261108-210528-3cfec227/`，详细报告见`docs/verification/batch-07.md`和`batch-07-review.md`。无真实模型调用、密钥检查或实际费用。
+- WB-06在上次发布后追加partial定稿，声称回收recovery一份子任务正文，另一份未收到；主控保留修改及历史blocked记录，独立QA不把其自述当作已核实工具回执。WB-07已按新任务单派发一次普通同步子任务设计审查；实际结果另行记录。
+
+下一项优先处理NLP-01的人工对账契约与受控恢复/回退边界，真实模型smoke仍需用户本地安全配置与显式启用。当前不提前派发NLP-02或宣称G3通过。
+
+## 已交付开发批次 06
 
 基线本地79cafc2、远程518a534。工作包见 `collaboration/batch-06-plan.md`，实际验收见 `docs/verification/batch-06.md` 和 `batch-06-review.md`。
 

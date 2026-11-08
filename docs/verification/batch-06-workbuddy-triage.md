@@ -1,5 +1,11 @@
 # WB-06 最终回收与主控处置
 
+## Batch07 后续更正（保留下文历史）
+
+上次发布后WorkBuddy又更新两份定稿，现为partial，声称回收recovery一份正文并列出3项静态发现，budget仍pending/not_received。主控保留其文件修改；该自述未由QA核对原始工具回执，不将WB-06改成done。下文blocked描述是此前发布时观察，保留以免抹除修订历史。
+
+其身份/恢复边界发现对应Batch07固定入口绑定及明确未覆盖同身份回退；币种衔接已有Batch06契约补充和实测；pending人工对账仍未实现。设计发现不作为独立代码通过证据；独立依据见`batch-07-review.md`。未执行停止WB-06操作，也未重启WB-04。
+
 已实际读取WorkBuddy写入的两份最终文件：`WB-06-report.md`和可解析的`WB-06-results.json`；JSON `finalized=true`，正文有`WB-06 FINALIZED`。原文件保留，不由主控修改。
 
 最终状态为**blocked**：两个子Agent有派发/完成回执，但`full_complete_results_recovered=false`、原始发现为空。主端撤回此前“收到完整结论”的UI表述，并不再编写子Agent摘要。主控对派发工具和团队状态的UI观察，不能独立证明结果正文；WorkBuddy自述和文本标记不能替代原始结果或实际测试。

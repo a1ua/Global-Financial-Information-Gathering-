@@ -154,27 +154,40 @@ def _ledger(db):
     if [row[0] for row in db.execute("PRAGMA integrity_check")] != ["ok"] or list(db.execute("PRAGMA foreign_key_check")):
         _fail("ledger_backup_integrity_failed")
     version = db.execute("PRAGMA user_version").fetchone()[0]
-    if version not in (1, 2):
+    if version not in (1, 2, 3):
         _fail("ledger_backup_schema_unsupported")
+    columns_by_table = dict(_COLUMNS)
+    if version == 3:
+        columns_by_table["ledger_identity"] = {"singleton", "ledger_id", "created_at"}
     objects = list(db.execute("SELECT type,name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'"))
-    if {row["name"] for row in objects if row["type"] == "table"} != set(_COLUMNS):
+    if {row["name"] for row in objects if row["type"] == "table"} != set(columns_by_table):
         _fail("ledger_backup_schema_invalid")
     if any(row["type"] in ("view", "trigger") for row in objects):
         _fail("ledger_backup_schema_invalid")
-    for table, columns in _COLUMNS.items():
-        expected = columns | ({"currency"} if table == "days" and version == 2 else set())
+    for table, columns in columns_by_table.items():
+        expected = columns | ({"currency"} if table == "days" and version >= 2 else set())
         rows = list(db.execute(f"PRAGMA table_info({table})"))
         if {row["name"] for row in rows} != expected:
             _fail("ledger_backup_schema_invalid")
         primary = {row["name"] for row in rows if row["pk"]}
-        if primary != {{"days": "day", "calls": "call_id", "cache": "cache_key"}[table]}:
+        if primary != {{"days": "day", "calls": "call_id", "cache": "cache_key", "ledger_identity": "singleton"}[table]}:
             _fail("ledger_backup_schema_invalid")
+    identity = {}
+    if version == 3:
+        identities = list(db.execute("SELECT * FROM ledger_identity"))
+        if len(identities) != 1 or identities[0]["singleton"] != 1:
+            _fail("ledger_backup_identity_invalid")
+        ledger_id = identities[0]["ledger_id"]
+        if type(ledger_id) is not str or not re.fullmatch(r"ledger_[0-9a-f]{32}", ledger_id):
+            _fail("ledger_backup_identity_invalid")
+        _stamp(identities[0]["created_at"])
+        identity["ledger_id"] = ledger_id
     days = {}
     for row in db.execute("SELECT * FROM days"):
         _day(row["day"])
         if not _integer(row["token_cap"], 1) or not _integer(row["cost_cap"], 1):
             _fail("ledger_backup_day_cap_invalid")
-        currency = row["currency"] if version == 2 else "USD"
+        currency = row["currency"] if version >= 2 else "USD"
         if currency not in ("USD", "CNY"):
             _fail("ledger_backup_currency_invalid")
         days[row["day"]] = {"token_cap": row["token_cap"], "cost_cap": row["cost_cap"],
@@ -253,7 +266,7 @@ def _ledger(db):
         cached_calls.add(call["cache_key"])
     if {call["cache_key"] for call in calls.values() if call["status"] == "succeeded"} != cached_calls:
         _fail("ledger_backup_cache_closure_invalid")
-    return {"database_schema_version": version, "days": len(days), "calls": len(calls), "pending_calls": pending}
+    return {"database_schema_version": version, "days": len(days), "calls": len(calls), "pending_calls": pending, **identity}
 
 
 def _result(status, location, counts):
@@ -279,7 +292,8 @@ def create_ledger_backup(state_path, destination):
             snapshot.close()
     with _readonly(staging / _DATABASE) as snapshot:
         counts = _ledger(snapshot)
-    manifest = {"schema_version": "llm-ledger-backup/0.1", "backup_id": "ledger_backup_" + uuid4().hex,
+    manifest_version = "llm-ledger-backup/0.2" if counts["database_schema_version"] == 3 else "llm-ledger-backup/0.1"
+    manifest = {"schema_version": manifest_version, "backup_id": "ledger_backup_" + uuid4().hex,
                 "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
                 "restore_mode": "isolated_copy", **counts,
                 "files": {_DATABASE: _hash_file(staging / _DATABASE)}}
@@ -298,7 +312,16 @@ def verify_ledger_backup(backup):
     manifest = _parse(_file(backup, _MANIFEST).read_text(encoding="utf-8"))
     required = {"schema_version", "backup_id", "created_at", "restore_mode", "database_schema_version",
                 "days", "calls", "pending_calls", "files"}
-    if type(manifest) is not dict or manifest.keys() != required or manifest["schema_version"] != "llm-ledger-backup/0.1" or manifest["restore_mode"] != "isolated_copy":
+    if type(manifest) is not dict:
+        _fail("ledger_backup_manifest_invalid")
+    version = manifest.get("schema_version")
+    if version == "llm-ledger-backup/0.2":
+        required.add("ledger_id")
+    if manifest.keys() != required or version not in ("llm-ledger-backup/0.1", "llm-ledger-backup/0.2") or manifest["restore_mode"] != "isolated_copy":
+        _fail("ledger_backup_manifest_invalid")
+    if (manifest["database_schema_version"] == 3) != (version == "llm-ledger-backup/0.2"):
+        _fail("ledger_backup_manifest_invalid")
+    if version == "llm-ledger-backup/0.2" and (type(manifest["ledger_id"]) is not str or not re.fullmatch(r"ledger_[0-9a-f]{32}", manifest["ledger_id"])):
         _fail("ledger_backup_manifest_invalid")
     if type(manifest["backup_id"]) is not str or not re.fullmatch(r"ledger_backup_[0-9a-f]{32}", manifest["backup_id"]):
         _fail("ledger_backup_manifest_invalid")
@@ -332,6 +355,8 @@ def restore_ledger_backup(backup, destination):
     verify_ledger_backup(staging)
     os.rename(staging, destination)
     counts = {key: checked[key] for key in ("database_schema_version", "days", "calls", "pending_calls")}
+    if "ledger_id" in checked:
+        counts["ledger_id"] = checked["ledger_id"]
     result = _result("restored", destination, counts)
     result.pop("backup")
     return {**result, "workspace": str(destination), "ledger": str(destination / _DATABASE)}

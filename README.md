@@ -110,7 +110,9 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 ./.venv/Scripts/market-intel.exe deepseek-smoke --workspace data/live --live
 ```
 
-本轮安装和回归只使用合成HTTP响应，没有执行上述真实调用。备份保留pending和币种/费用占用，恢复只能建立新隔离目录；CLI拒绝将带隔离恢复清单的目录直接用于live。人工账单对账、固定生产身份及正式恢复切换仍待完成，不据此宣称全生产可用。NLP-02抽取与正式解读尚未接入简报。
+本轮安装和回归只使用合成HTTP响应，没有执行上述真实调用。备份保留pending和币种/费用占用，恢复只能建立新隔离目录；CLI拒绝将带隔离恢复清单的目录直接用于live。人工账单对账、同身份旧快照回退防护及正式恢复切换仍待完成，不据此宣称全生产可用。NLP-02抽取与正式解读尚未接入简报。
+
+Batch07 为固定工作区增加账本 schema3 身份和 `llm-binding.json` 路径绑定。新工作区可用 `ledger-bind --workspace data/live` 初始化；已有无绑定账本必须明确执行 `ledger-bind --workspace data/live --adopt-existing`，采用会保留费用、pending及缓存。`deepseek-check`只读检查绑定，live入口拒绝单边文件丢失、不同身份替换或路径移动，不自动重建空账本。备份 schema3 使用0.2清单并校验身份，schema1/2仍兼容；恢复不生成活动绑定。两文件同时删除、另建工作区和同身份旧快照回退不在此防护范围，详见 `docs/ledger-binding.md`。
 
 最新真实验证：国家统计局15条、美联储20条，共35条标题级事件；限量消费后均可resume清空队列，重复完整扫描新增0条。此前Python TLS失败和RSS404记录保留，少量成功请求不证明长期稳定性。长期留存条件待确认，不开启全文存档；WorkBuddy的WB-04已取消，本批未重启。
 

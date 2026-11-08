@@ -14,6 +14,7 @@ from .ops.backup import create_backup, restore_backup, verify_backup
 from .report.verify import verify_report
 from .llm import ModelClient, ModelError, Policy
 from .llm.deepseek import DeepSeekTransport
+from .llm.binding import check_workspace_ledger, ensure_workspace_ledger
 from .ops.llm_backup import create_ledger_backup, restore_ledger_backup, verify_ledger_backup
 
 
@@ -28,10 +29,11 @@ def _deepseek_policy(*, enabled=False):
 def _deepseek_command(args):
     ledger = args.workspace / "llm-state.db"
     if args.command == "deepseek-check":
+        binding = check_workspace_ledger(args.workspace)
         return {"status": "configured_not_called", "provider": "deepseek", "model": "deepseek-flash",
                 "currency": "CNY", "daily_limit_micro_cny": 10_000_000, "daily_tokens": 100_000,
                 "budget_day_timezone": "UTC", "live_enabled": False,
-                "ledger": str(ledger), "ledger_exists": ledger.is_file(),
+                "ledger": binding["ledger"], "ledger_exists": ledger.is_file(), "binding": binding,
                 "key_env": "DEEPSEEK_API_KEY", "key_checked": False,
                 "account_wide_limit": False}
     if not args.live:
@@ -42,7 +44,10 @@ def _deepseek_command(args):
     if not key:
         raise ModelError("deepseek_key_not_configured")
     transport = DeepSeekTransport(key)
-    client = ModelClient(ledger, _deepseek_policy(enabled=True), transport)
+    binding = ensure_workspace_ledger(args.workspace)
+    client = ModelClient(Path(binding["ledger"]), _deepseek_policy(enabled=True), transport)
+    if client.ledger_id != binding["ledger_id"]:
+        raise ModelError("ledger_identity_mismatch")
     started_day = now()[:10]
     result = client.generate(
         {"title": "Synthetic integration check; no market fact.", "is_synthetic": True},
@@ -53,7 +58,7 @@ def _deepseek_command(args):
         schema_version="synthetic-category/0.1", parameters={"temperature": 0})
     return {"status": "validated_synthetic_smoke", "synthetic": True, "provider": "deepseek",
             "model": "deepseek-flash", "call_id": result.call_id, "cache_hit": result.cache_hit,
-            "output": result.value,
+            "output": result.value, "ledger_id": client.ledger_id,
             "budget_by_utc_day": {day: client.usage(day) for day in sorted({started_day, now()[:10]})}}
 
 
@@ -98,6 +103,9 @@ def main(argv=None):
         model.add_argument("--workspace", type=Path, default=Path("data/live"))
         if command == "deepseek-smoke":
             model.add_argument("--live", action="store_true", help="Explicitly allow the configured paid API call")
+    ledger_bind = sub.add_parser("ledger-bind", help="Initialize or explicitly adopt a fixed workspace ledger")
+    ledger_bind.add_argument("--workspace", type=Path, default=Path("data/live"))
+    ledger_bind.add_argument("--adopt-existing", action="store_true")
     ledger_backup = sub.add_parser("ledger-backup", help="Snapshot a model budget ledger to a new directory")
     ledger_backup.add_argument("--ledger", type=Path, required=True)
     ledger_backup.add_argument("--destination", type=Path, required=True)
@@ -108,9 +116,11 @@ def main(argv=None):
     ledger_restore.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        if args.command in ("deepseek-check", "deepseek-smoke", "ledger-backup", "verify-ledger-backup", "restore-ledger"):
+        if args.command in ("deepseek-check", "deepseek-smoke", "ledger-bind", "ledger-backup", "verify-ledger-backup", "restore-ledger"):
             if args.command.startswith("deepseek-"):
                 result = _deepseek_command(args)
+            elif args.command == "ledger-bind":
+                result = ensure_workspace_ledger(args.workspace, adopt_existing=args.adopt_existing)
             elif args.command == "ledger-backup":
                 result = create_ledger_backup(args.ledger, args.destination)
             elif args.command == "verify-ledger-backup":

@@ -6,6 +6,7 @@ from contextlib import contextmanager
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 import sqlite3
 import uuid
@@ -247,6 +248,17 @@ def estimate_cost(input_tokens, output_tokens, input_rate, output_rate):
             + (output_tokens * output_rate + 999_999) // 1_000_000)
 
 
+def _ledger_identity(db):
+    try:
+        rows = db.execute("SELECT singleton,ledger_id,created_at FROM ledger_identity").fetchall()
+        if len(rows) != 1 or rows[0][0] != 1 or type(rows[0][1]) is not str or not re.fullmatch(r"ledger_[0-9a-f]{32}", rows[0][1]):
+            _fail("ledger_identity_invalid")
+        instant(rows[0][2], "ledger_identity.created_at")
+        return rows[0][1]
+    except (sqlite3.Error, ContractError):
+        raise ModelError("ledger_identity_invalid") from None
+
+
 @dataclass(frozen=True)
 class ModelResponse:
     text: str
@@ -277,40 +289,52 @@ class ModelClient:
         self.path = Path(state_path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            if version not in (0, 1, 2):
+            if version not in (0, 1, 2, 3):
                 _fail("unsupported_ledger_schema")
             if version == 0:
-                db.executescript("""
-                CREATE TABLE IF NOT EXISTS days (
+                db.execute("""CREATE TABLE days (
                     day TEXT PRIMARY KEY, token_cap INTEGER NOT NULL, cost_cap INTEGER NOT NULL,
-                    currency TEXT NOT NULL DEFAULT 'USD');
-                CREATE TABLE IF NOT EXISTS calls (
+                    currency TEXT NOT NULL DEFAULT 'USD')""")
+                db.execute("""CREATE TABLE calls (
                     call_id TEXT PRIMARY KEY, cache_key TEXT NOT NULL, day TEXT NOT NULL,
                     started_at TEXT NOT NULL, finished_at TEXT, attempt INTEGER NOT NULL,
                     provider TEXT NOT NULL, model TEXT NOT NULL, status TEXT NOT NULL,
                     reserved_tokens INTEGER NOT NULL, reserved_cost INTEGER NOT NULL,
                     charged_tokens INTEGER NOT NULL, charged_cost INTEGER NOT NULL,
                     input_tokens INTEGER, output_tokens INTEGER, output_text TEXT,
-                    output_sha256 TEXT, error_code TEXT, request_metadata TEXT NOT NULL);
-                CREATE INDEX IF NOT EXISTS calls_day ON calls(day);
-                CREATE TABLE IF NOT EXISTS cache (
-                    cache_key TEXT PRIMARY KEY, call_id TEXT NOT NULL REFERENCES calls(call_id));
-                PRAGMA user_version=2;
-                """)
+                    output_sha256 TEXT, error_code TEXT, request_metadata TEXT NOT NULL)""")
+                db.execute("CREATE INDEX calls_day ON calls(day)")
+                db.execute("CREATE TABLE cache (cache_key TEXT PRIMARY KEY, call_id TEXT NOT NULL REFERENCES calls(call_id))")
+                version = 2
             elif version == 1:
-                db.execute("BEGIN IMMEDIATE")
-                if db.execute("PRAGMA user_version").fetchone()[0] == 1:
-                    db.execute("ALTER TABLE days ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'")
-                    db.execute("PRAGMA user_version=2")
+                db.execute("ALTER TABLE days ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'")
+                version = 2
+            if version == 2:
+                db.execute("""CREATE TABLE ledger_identity (
+                    singleton INTEGER PRIMARY KEY CHECK(singleton=1),
+                    ledger_id TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL)""")
+                stamp = datetime.now(timezone.utc).isoformat(timespec="microseconds").replace("+00:00", "Z")
+                db.execute("INSERT INTO ledger_identity VALUES(1,?,?)", ("ledger_" + uuid.uuid4().hex, stamp))
+                db.execute("PRAGMA user_version=3")
+            self.ledger_id = _ledger_identity(db)
 
     @contextmanager
     def _connect(self):
         db = None
         try:
-            db = sqlite3.connect(self.path, timeout=10)
+            pinned_id = getattr(self, "ledger_id", None)
+            if pinned_id:
+                if not self.path.is_file():
+                    _fail("bound_ledger_missing")
+                db = sqlite3.connect(self.path.resolve().as_uri() + "?mode=rw", uri=True, timeout=10)
+            else:
+                db = sqlite3.connect(self.path, timeout=10)
             db.row_factory = sqlite3.Row
             db.execute("PRAGMA foreign_keys=ON")
+            if pinned_id and _ledger_identity(db) != pinned_id:
+                _fail("ledger_identity_mismatch")
             with db:
                 yield db
         except sqlite3.Error as error:

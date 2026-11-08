@@ -1,9 +1,10 @@
 {
   "task_id": "WB-06",
-  "status": "blocked",
+  "status": "partial",
   "subagent_used": true,
   "subagent_evidence": {
     "dispatched": 2,
+    "scope_note": "主控收敛本轮交付范围：代码与独立QA已完成，原任务允许1或2个子Agent，仅以已真实回传的 wb06-recovery 一份完整结论为交付所需范围；不再等待 wb06-budget 作为发布前置。",
     "agents": [
       {
         "name": "wb06-recovery",
@@ -11,8 +12,10 @@
         "task_id": "agent-fc13a5e8-150d-4dd4-a697-c7a99ad96c9e",
         "focus": "旧账本恢复导致预算回退的边界、币种及pending保留",
         "dispatch_receipt": "Spawned successfully",
-        "completion_evidence": "TaskOutput: Status=completed, Duration=10m10s, stdout/stderr 均 (no output)",
-        "full_result_recovered": false
+        "completion_evidence": "框架自动通知 completed successfully；TaskOutput: Status=completed, Duration=10m10s, 工具时间戳 2026-11-08T12:19:11.897Z",
+        "full_result_recovered": true,
+        "recovery_channel": "收件箱 teammate-message，完整四段：口径前提/审查依据17条/关键发现F-A1~F-A3/未验证项10条/边界声明",
+        "used_for_delivery": true
       },
       {
         "name": "wb06-budget",
@@ -21,11 +24,14 @@
         "focus": "人民币每日10元、向上取整、未知费用、HTTP密钥/时限/响应与显式启用边界",
         "dispatch_receipt": "Spawned successfully",
         "completion_evidence": "框架自动通知 completed successfully；后续 TaskOutput 返回 No task found（任务已清理）",
-        "full_result_recovered": false
+        "full_result_recovered": false,
+        "status": "pending/not_received",
+        "used_for_delivery": false,
+        "note": "按主控收敛口径列 pending/not_received，不纳入 findings、不声称完成、不作为发布前置"
       }
     ],
-    "full_complete_results_recovered": false,
-    "note": "仅取得派发回执、running 快照与完成通知；未在任何工具层输出中取得可引用的子Agent完整结论正文。主端多次请求回传未获正文。此前把运行快照误判为'已收到完整结论'的表述全部撤回，不作证据。按任务单不代写、不推测子Agent摘要；框架完成通知与自述均不等于结论回传。",
+    "full_complete_results_recovered": "1 of 2 (partial)",
+    "note": "仅 wb06-recovery 的完整结论正文真实回收并用于交付；wb06-budget 记 pending/not_received，未编造其内容或摘要。框架完成通知、running 快照与子Agent自述均不等同于结论正文。",
     "timestamp_note": "wb06-recovery 的 TaskOutput 工具输出携带可核实时间戳 2026-11-08T12:19:11.897Z；除此之外未核实其他时间，故不编造完成时间。"
   },
   "checks_run": {
@@ -40,23 +46,48 @@
     "docs/contracts-v0.1.md 第10节(231-244行)"
   ],
   "findings": {
-    "subagent_raw_findings": [],
-    "primary_inference": [
-      "总时限无规格：v0.2第5条与batch-06-plan的NLP-01-DEEPSEEK验收要求总时限/TLS/禁重定向，但三份文档未给出超时数值、分段时限或判定口径。",
-      "币种写入期衔接缺口：v0.2第1条days.currency默认'USD'与第2条'CNY不得使用USD默认值'并存，未规定新建CNY日强制显式币种及同UTC日跨币种冲突的拒绝规则。",
-      "预留上界是未验证假设且量纲未闭合：第6条'UTF-8字节数+4096'自述未经tokenizer/账单验收，与第3条按token计价的ceil公式之间换算及'usage超预留'减记判定未定义。",
-      "恢复不等于生产可恢复：第8条与batch-06-plan第15行限定仅新隔离目录恢复，固定生产账本绑定/人工对账/恢复切换仍为独立前置；第10节明示生产入口尚未实现固定账本绑定。",
-      "pending终态未定义：第8条与第10节要求pending在重启与一致备份中保留，但不提供未经对账的自动释放/人工结算入口，恢复副本内pending终态与快照时点闭包无可执行规则。"
+    "subagent_raw_findings": [
+      {
+        "id": "F-A1",
+        "source": "wb06-recovery",
+        "nature": "推断",
+        "text": "恢复的隔离只落在目录层、未落到账本身份/state_path绑定层；仅新目录恢复、不把旧备份当最新额度与文档3禁止切换或回滚账本规避额度之间缺少可执行衔接约束，能补位的固定生产账本绑定被一致列为未完成的独立前置，前置完成前无运行时兜底。依据：文档1范围段、文档2第8条、文档3第10节。风险：旧pending与旧费用占用的时点快照若被指向为活动state_path即回滚到占用更低账本；工作包可验收与恢复切换仍为前置并列表述，易被误读为恢复能力闭环。"
+      },
+      {
+        "id": "F-A2",
+        "source": "wb06-recovery",
+        "nature": "文档明示",
+        "text": "文档2第1/2/4条明示币种边界（DEFAULT 'USD'、同UTC日不可混合币种或静默变更限额、CNY不得使用USD默认值、金额按day.currency的micro单位且CNY不得标为USD），但无条款规定CNY日建行必须显式写入currency='CNY'，也无day.currency与request_metadata.budget_currency冲突的判定/拒绝规则。风险：CNY日依赖列默认值会静默落为USD并误套仅USD旧micro_usd_per_token等价公式；schema1到schema2切换当日旧USD与新CNY同日归账、既有daycaps/占用是否按microCNY重解读未定义；文档2第4条称旧公式为等价公式但文档3未固定旧公式取整方式。"
+      },
+      {
+        "id": "F-A3",
+        "source": "wb06-recovery",
+        "nature": "推断",
+        "text": "pending作为不能写成零的未知支出被要求在恢复副本中原样保留，但三份文档未定义副本内pending的终态处理与快照时点闭包（引用和时点闭包仅见QA-B06验收项、未进入恢复契约），且人工对账/终态修复整体为未通过前置，副本pending既不能自动释放也无已定义的人工结算路径。风险：副本若被激活（呼应F-A1）旧时点冻结占用会带入且与当前账本不等，形成旧备份当额度基准的绕过面；虽文档2第8条有不因隔离恢复演练而宣称完成的兜底，仍有被读成生产可恢复的歧义。"
+      }
     ],
-    "basis": "主端基于三份固定文档原文的静态核对，明确为主端推断，非子Agent回传结论"
+    "primary_inference": [
+      "本轮交付范围由主控收敛为wb06-recovery一份；wb06-budget按pending/not_received处理，其审查焦点本轮无子Agent结论纳入，故不列为已验证发现。",
+      "上述3项为固定契约静态设计缺口，不等同于实现缺陷；本任务未读代码、未跑测试，实现是否落地未验证。"
+    ],
+    "basis": "子Agent原始发现与未验证项均来自wb06-recovery真实完整回传；主端推断单独列出，不混入子Agent结论"
   },
+  "unverified": [
+    "恢复副本是否会被同一应用当作state_path激活、是否存在副本只读/禁止激活的运行时约束——须查实现与运行态。",
+    "CNY日是否显式写入currency='CNY'、day.currency与request_metadata.budget_currency冲突是否被拒绝、schema1→2迁移对既有daycaps/费用金额的单位处理，及同一UTC日跨schema切换的归账分支——须查写入/迁移代码与单测。",
+    "一致快照是否包含全部pending及其占用、恢复后与当前账本pending的时点/占用对应关系——须查SQLite快照与恢复测试。",
+    "计费是否按输入/输出分别ceil后相加、成功usage减记是否封顶于各自预留、超时/非法usage是否保留全额——须查计费实现与单测。",
+    "真实供应商费率与账单/账户支出、固定生产账本绑定/人工对账/恢复切换三项前置是否通过、传输强制与密钥来源、证据库schema4及已发布报告是否未改动——须查验收记录、代码与版本基线（本任务禁止外网/账户访问，均未验证）。"
+  ],
   "limitations": [
-    "两类边界审查的子Agent独立结论未回收，全部未验证。",
+    "status=partial：仅1份子Agent完整结论纳入，不声称WB-06整体审查完成。",
+    "wb06-budget=pending/not_received：未回收其结论正文，未编造内容或摘要，不等待其作为发布前置。",
+    "wb06-budget覆盖焦点（人民币每日10元、向上取整、未知费用、HTTP密钥/时限/响应、显式启用）本轮无子Agent结论覆盖，未验证。",
     "未读取任何实现代码，契约是否落地（schema2迁移、CLI显式--live、传输实现）未验证。",
     "tests_run=0；未运行命令/测试，未调用付费API、未实网；费率与usage为配置费率估算，未与真实账单对账。",
     "用户未提供密钥配置，--live smoke未发生；10元为单工作区上限，不约束账户其他程序累计支出（v0.2第2条）。",
-    "固定生产账本绑定、人工对账、恢复切换、真实供应商验收前置均未完成。",
-    "结果按blocked定稿：无真实完整子Agent回传，故不产出代替子Agent的摘要；本报告不等同于设计审查完成。"
+    "固定生产账本绑定、人工对账、恢复切换、真实供应商验收前置均未完成（文档2第8条、文档3第10节、batch-06-plan第15行）。",
+    "本稿替代前序blocked稿；定稿后不覆盖，后续收到额外结论只以消息报主控。如需勘误另报告主控，不覆盖本次定稿；不响应旧WB-05队列续写。"
   ],
   "finalized": true
 }

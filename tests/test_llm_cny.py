@@ -94,10 +94,11 @@ class CNYTests(unittest.TestCase):
             before = db.execute("SELECT * FROM calls").fetchall()
             caps = db.execute("SELECT day,token_cap,cost_cap FROM days").fetchall()
             db.execute("ALTER TABLE days DROP COLUMN currency")
+            db.execute("DROP TABLE ledger_identity")
             db.execute("PRAGMA user_version=1")
         migrated = self.client(Policy(enabled=True, max_retries=0))
         with closing(sqlite3.connect(self.path)) as db:
-            self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 2)
+            self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 3)
             self.assertEqual(db.execute("SELECT * FROM calls").fetchall(), before)
             self.assertEqual(db.execute("SELECT day,token_cap,cost_cap FROM days").fetchall(), caps)
             self.assertEqual(db.execute("SELECT currency FROM days").fetchone()[0], "USD")

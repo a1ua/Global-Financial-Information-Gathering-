@@ -80,6 +80,7 @@ class LedgerBackupTests(unittest.TestCase):
             reserved = cost(metadata["input_bound"], metadata["max_output_tokens"])
             db.execute("UPDATE calls SET request_metadata=?,reserved_cost=?,charged_cost=? WHERE call_id=?",
                        (json.dumps(metadata), reserved, cost(row[2], row[3]), row[0]))
+            db.execute("DROP TABLE IF EXISTS ledger_identity")
             db.execute("PRAGMA user_version=2")
             db.commit()
 
@@ -89,13 +90,21 @@ class LedgerBackupTests(unittest.TestCase):
         before = self.path.read_bytes()
         created = create_ledger_backup(self.path, self.backup)
         self.assertEqual(created["status"], "backed_up")
+        self.assertEqual(created["database_schema_version"], 3)
+        self.assertEqual(created["ledger_id"], client.ledger_id)
+        self.assertEqual(self.manifest()["schema_version"], "llm-ledger-backup/0.2")
+        self.assertEqual(self.manifest()["ledger_id"], client.ledger_id)
         self.assertEqual((created["days"], created["calls"], created["pending_calls"]), (1, 1, 0))
         self.assertEqual(self.path.read_bytes(), before)
         checked = verify_ledger_backup(self.backup)
+        self.assertEqual(checked["ledger_id"], client.ledger_id)
         self.assertEqual(checked["restore_mode"], "isolated_copy")
         result = restore_ledger_backup(self.backup, self.restored)
+        self.assertEqual(result["ledger_id"], client.ledger_id)
+        self.assertEqual({p.name for p in self.restored.iterdir()}, {"ledger.db", "ledger-backup-manifest.json"})
         self.assertEqual(result["ledger"], str(self.restored / "ledger.db"))
         restored = self.client(self.restored / "ledger.db", transport=lambda *_: self.fail("cache must avoid transport"))
+        self.assertEqual(restored.ledger_id, client.ledger_id)
         self.assertEqual(restored.usage("2026-11-08"), client.usage("2026-11-08"))
         cached = self.generate(restored)
         self.assertTrue(cached.cache_hit)
@@ -112,7 +121,11 @@ class LedgerBackupTests(unittest.TestCase):
         self.currency_fixture("CNY", input_rate=1, output_rate=1)
         created = create_ledger_backup(self.path, self.backup)
         self.assertEqual(created["database_schema_version"], 2)
-        restore_ledger_backup(self.backup, self.restored)
+        self.assertNotIn("ledger_id", created)
+        self.assertEqual(self.manifest()["schema_version"], "llm-ledger-backup/0.1")
+        self.assertNotIn("ledger_id", self.manifest())
+        self.assertNotIn("ledger_id", verify_ledger_backup(self.backup))
+        self.assertNotIn("ledger_id", restore_ledger_backup(self.backup, self.restored))
         with closing(sqlite3.connect(self.restored / "ledger.db")) as db:
             self.assertEqual(db.execute("SELECT currency,cost_cap FROM days").fetchone(), ("CNY", 10000000))
             # ceil(10 / 1e6) + ceil(8 / 1e6) is two micro-units, never zero/one.
@@ -138,12 +151,18 @@ class LedgerBackupTests(unittest.TestCase):
             cost = lambda incoming, outgoing: incoming * metadata["input_micro_usd_per_token"] + outgoing * metadata["output_micro_usd_per_token"]
             db.execute("UPDATE calls SET request_metadata=?,reserved_cost=?,charged_cost=? WHERE call_id=?",
                        (json.dumps(metadata), cost(metadata["input_bound"], metadata["max_output_tokens"]), cost(row[2], row[3]), row[0]))
+            db.execute("DROP TABLE IF EXISTS ledger_identity")
             db.execute("PRAGMA user_version=1")
             db.commit()
         result = create_ledger_backup(self.path, self.backup)
         self.assertEqual(result["database_schema_version"], 1)
+        self.assertNotIn("ledger_id", result)
+        self.assertEqual(self.manifest()["schema_version"], "llm-ledger-backup/0.1")
+        self.assertNotIn("ledger_id", self.manifest())
+        self.assertNotIn("ledger_id", verify_ledger_backup(self.backup))
         restored = restore_ledger_backup(self.backup, self.restored)
         self.assertEqual(restored["database_schema_version"], 1)
+        self.assertNotIn("ledger_id", restored)
         with closing(sqlite3.connect(self.restored / "ledger.db")) as db:
             self.assertEqual(db.execute("SELECT charged_tokens FROM calls").fetchone()[0], 18)
             self.assertNotIn("currency", {row[1] for row in db.execute("PRAGMA table_info(days)")})
@@ -276,6 +295,7 @@ class LedgerBackupTests(unittest.TestCase):
             db.execute("""UPDATE calls SET request_metadata=?,input_tokens=NULL,output_tokens=NULL,
                        reserved_cost=?,charged_cost=?,charged_tokens=reserved_tokens,output_text=?,output_sha256=? WHERE call_id=?""",
                        (json.dumps(metadata), reserved_cost, reserved_cost, text, hashlib.sha256(text.encode()).hexdigest(), row[0]))
+            db.execute("DROP TABLE IF EXISTS ledger_identity")
             db.execute("PRAGMA user_version=1")
             db.commit()
         create_ledger_backup(self.path, self.backup)
@@ -312,6 +332,77 @@ class LedgerBackupTests(unittest.TestCase):
         self.mutate("PRAGMA user_version=99")
         with self.assertRaisesRegex(ValueError, "schema_unsupported"):
             verify_ledger_backup(self.backup)
+
+    def test_schema3_identity_missing_table_or_row_rejected(self):
+        self.client()
+        create_ledger_backup(self.path, self.backup)
+        self.mutate("DELETE FROM ledger_identity")
+        with self.assertRaisesRegex(ValueError, "identity_invalid"):
+            verify_ledger_backup(self.backup)
+        self.mutate("DROP TABLE ledger_identity")
+        with self.assertRaisesRegex(ValueError, "schema_invalid"):
+            verify_ledger_backup(self.backup)
+
+    def test_schema3_multiple_identity_rows_rejected(self):
+        self.client()
+        create_ledger_backup(self.path, self.backup)
+        with closing(sqlite3.connect(self.backup / "ledger.db")) as db:
+            db.execute("ALTER TABLE ledger_identity RENAME TO old_identity")
+            db.execute("CREATE TABLE ledger_identity(singleton INTEGER PRIMARY KEY,ledger_id TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL)")
+            db.execute("INSERT INTO ledger_identity SELECT * FROM old_identity")
+            db.execute("INSERT INTO ledger_identity VALUES(2,?,?)", ("ledger_" + "f" * 32, "2026-11-08T12:00:00Z"))
+            db.execute("DROP TABLE old_identity")
+            db.commit()
+        self.rehash()
+        with self.assertRaisesRegex(ValueError, "identity_invalid"):
+            verify_ledger_backup(self.backup)
+
+    def test_schema3_invalid_identity_id_and_time_rejected(self):
+        self.client()
+        create_ledger_backup(self.path, self.backup)
+        ledger_id = self.manifest()["ledger_id"]
+        for value in ("", "ledger_" + "A" * 32, "ledger_123", "call_" + "a" * 32):
+            with self.subTest(ledger_id=value):
+                self.mutate("UPDATE ledger_identity SET ledger_id=?", (value,))
+                with self.assertRaisesRegex(ValueError, "identity_invalid"):
+                    verify_ledger_backup(self.backup)
+        self.mutate("UPDATE ledger_identity SET ledger_id=?", (ledger_id,))
+        for value in ("2026-11-08T12:00:00", "2026-11-08T12:00:00+00:00", "not-a-time"):
+            with self.subTest(created_at=value):
+                self.mutate("UPDATE ledger_identity SET created_at=?", (value,))
+                with self.assertRaisesRegex(ValueError, "time_invalid"):
+                    verify_ledger_backup(self.backup)
+
+    def test_schema3_manifest_identity_mismatch_rejected(self):
+        self.client()
+        create_ledger_backup(self.path, self.backup)
+        manifest = self.manifest()
+        manifest["ledger_id"] = "ledger_" + "e" * 32
+        (self.backup / "ledger-backup-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "metadata_mismatch"):
+            verify_ledger_backup(self.backup)
+
+    def test_schema3_changed_database_identity_rejected_after_rehash(self):
+        self.client()
+        create_ledger_backup(self.path, self.backup)
+        self.mutate("UPDATE ledger_identity SET ledger_id=?", ("ledger_" + "e" * 32,))
+        with self.assertRaisesRegex(ValueError, "metadata_mismatch"):
+            restore_ledger_backup(self.backup, self.restored)
+        self.assertFalse(self.restored.exists())
+
+    def test_schema3_manifest_requires_exact_version_and_identity_field(self):
+        self.client()
+        create_ledger_backup(self.path, self.backup)
+        original = self.manifest()
+        cases = [dict(original, schema_version="llm-ledger-backup/0.1"),
+                 {key: value for key, value in original.items() if key != "ledger_id"},
+                 dict(original, ledger_id="invalid"), dict(original, unexpected=True),
+                 dict(original, database_schema_version=2)]
+        for manifest in cases:
+            with self.subTest(manifest=manifest):
+                (self.backup / "ledger-backup-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "manifest_invalid"):
+                    verify_ledger_backup(self.backup)
 
     def test_extra_tables_rejected(self):
         self.generate()

@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-08",
-  "status_note": "Batch06 CNY budget, restricted DeepSeek transport and isolated ledger recovery accepted as offline/code scope. Final normal-install suite:259 run,258 pass,1 existing OS symlink skip; independent63 targeted tests pass. No actual API/key/billing verification. NLP01/MKT01 remain in_progress; NLP02 not started. WB05 final correction retained; WB06 fixed-document child-agent review tracked separately. Publication verified after local commit.",
+  "status_note": "Batch07 fixed workspace binding/schema3 backup independently accepted. Normal-install291 run,289 pass,2 OS skips; independent133 run,132 pass,1 skip. No live API/key/billing. NLP01/MKT01 in_progress; NLP02 not_started. Same-ID rollback, reconciliation and production switching pending. WB06 later partial self-report not verified receipt; WB07 separately tracked.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -314,8 +314,8 @@
         6
       ],
       "gate": "G3",
-      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently",
-      "progress_note": "User selected DeepSeek at10 CNY/day per UTC ledger. API/tokenizer/usage/invoice not verified; explicit --live and local key needed for one synthetic smoke. Global account binding, manual reconciliation, production recovery switching and candidate count integration remain pending.",
+      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope",
+      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Fixed workspace binding accepted; same-ID rollback, API/tokenizer/usage/invoice, manual reconciliation, production switching and candidate integration remain pending. No account-wide guarantee.",
       "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
@@ -736,7 +736,79 @@
     {"id": "NLP-01-DEEPSEEK", "owner": "deepseek-transport-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/llm/deepseek.py", "tests/test_deepseek.py", "docs/deepseek-provider.md", "config/deepseek.example.json"], "acceptance": "Fixed endpoint TLS, safe errors, response limits and synthetic HTTP tests; actual API unverified"},
     {"id": "NLP-01-RECOVERY", "owner": "ledger-recovery-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/ops/llm_backup.py", "tests/test_llm_backup.py", "docs/llm-backup.md"], "acceptance": "schema1/2 consistent snapshot, currency/pending preservation and isolated restore; no production rollback"},
     {"id": "QA-B06", "owner": "independent-qa-agent", "depends_on": ["NLP-01-CNY", "NLP-01-DEEPSEEK", "NLP-01-RECOVERY"], "status": "done", "write_paths": ["docs/verification/batch-06-review.md"], "acceptance": "Independent tests, negative ledger business cases, CLI and correction review"},
-    {"id": "WB-06", "owner": "workbuddy-subagent", "depends_on": ["ENG-03"], "status": "blocked", "finalized": true, "blocked_reason": "Child-agent dispatch/completion receipts exist but complete result bodies were not recovered; no independent findings or test pass", "unblock_condition": "Recover verifiable original results and independently review them, or explicitly dispatch a new review task", "evidence": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json", "docs/verification/batch-06-workbuddy-triage.md"], "write_paths": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json"], "acceptance": "Actual complete child-agent results, fixed-doc design review, finalized=true and no test claims", "dispatch_evidence": "WorkBuddy task 执行WB-06审查任务 submitted and processing observed 2026-11-08T12:03:51Z"}
+    {"id": "WB-06", "owner": "workbuddy-subagent", "depends_on": ["ENG-03"], "status": "blocked", "finalized": true, "blocked_reason": "Previously blocked at publication. Later partial self-report claims one recovery result recovered, budget result missing; original tool receipt not independently verified, not done.", "unblock_condition": "Recover verifiable original results and independently review them, or explicitly dispatch a new review task", "evidence": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json", "docs/verification/batch-06-workbuddy-triage.md"], "write_paths": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json"], "acceptance": "Actual complete child-agent results, fixed-doc design review, finalized=true and no test claims", "dispatch_evidence": "WorkBuddy task 执行WB-06审查任务 submitted and processing observed 2026-11-08T12:03:51Z"}
+  ],
+  "batch07_work_packages": [
+    {
+      "id": "NLP-01-BINDING",
+      "owner": "binding_b07 + coordinator",
+      "depends_on": [
+        "NLP-01-CNY"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/llm/binding.py",
+        "tests/test_ledger_binding.py",
+        "docs/ledger-binding.md",
+        "src/market_intel/llm/client.py",
+        "src/market_intel/cli.py",
+        "tests/test_identity_migration.py",
+        "tests/test_batch06_cli.py",
+        "tests/test_llm_cny.py"
+      ],
+      "acceptance": "Schema3 transactional migration, fixed identity/path, explicit adoption and failure-closed CLI; independent QA",
+      "evidence": [
+        "docs/verification/batch-07.md",
+        "docs/verification/batch-07-review.md"
+      ]
+    },
+    {
+      "id": "NLP-01-BACKUP3",
+      "owner": "backup3_b07",
+      "depends_on": [
+        "NLP-01-BINDING"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/ops/llm_backup.py",
+        "tests/test_llm_backup.py",
+        "docs/llm-backup.md"
+      ],
+      "acceptance": "Strict schema3 identity manifest0.2 and legacy0.1 compatibility, isolated restoration",
+      "evidence": [
+        "docs/verification/batch-07-review.md"
+      ]
+    },
+    {
+      "id": "QA-B07",
+      "owner": "qa_b07",
+      "depends_on": [
+        "NLP-01-BINDING",
+        "NLP-01-BACKUP3"
+      ],
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-07-review.md"
+      ],
+      "acceptance": "Independent133 tests132 passed1 skipped plus migration and negative-path scenarios",
+      "evidence": [
+        "docs/verification/batch-07-review.md"
+      ]
+    },
+    {
+      "id": "WB-07",
+      "owner": "workbuddy",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "status": "in_progress",
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-07-report.md",
+        "collaboration/workbuddy/results/WB-07-results.json"
+      ],
+      "acceptance": "One synchronous child actual raw body, or truthful blocked final; tests_run0",
+      "dispatch_evidence": "Desktop task 执行 WB-07 任务单并生成报告 observed processing; task and contract reads observed; no result yet"
+    }
   ],
   "user_model_configuration": {
     "provider": "deepseek",
