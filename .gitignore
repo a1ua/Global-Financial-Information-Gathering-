@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+/data/
+/out/
+/build/
+*.egg-info/
+.pytest_cache/
+/scripts/python-path.local.txt
