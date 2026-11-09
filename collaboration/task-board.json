@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-09",
-  "status_note": "Batch08-A contract and08-B read-only reconciliation/recovery preflight accepted;335 run333 passed2 OS skips, independent110 run109 passed1 skip plus extra cases. WAL reads may create coordination sidefiles; no SQL/business/budget writes. No real model/bill/key verification. Immutable audit, trusted high-water, settlement and production switch not implemented. NLP01 remains in_progress; WB08 review, full body received without independently authenticated tool logs.",
+  "status_note": "Batch08-C local append-only observation audit accepted;358 run356 passed2 OS skips, independent120 run119 passed1 skip plus5 extra scenarios. local_untrusted_audit only; whole-chain rollback/recompute can still verify. No external high-water, real billing, settlement or production switch. Model schema3/evidence4 unchanged; NLP01 remains in_progress, WB08C review.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -314,7 +314,7 @@
         6
       ],
       "gate": "G3",
-      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission",
+      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary",
       "progress_note": "DeepSeek10 CNY/day per UTC ledger. Fixed workspace binding accepted; same-ID rollback, API/tokenizer/usage/invoice, manual reconciliation, production switching and candidate integration remain pending. No account-wide guarantee.",
       "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
       "acceptance": [
@@ -916,6 +916,95 @@
       ]
     }
   ],
+  "batch08c_work_packages": [
+    {
+      "id": "B08C-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "write_paths": [
+        "docs/contracts/audit-journal-v0.1.md",
+        "docs/audit-trust-decision.md",
+        "collaboration/batch-08c-plan.md"
+      ],
+      "depends_on": [],
+      "acceptance": "See collaboration/batch-08c-plan.md; independent evidence required; no trusted anchor/settlement/switch claims",
+      "evidence": [
+        "docs/verification/batch-08c.md",
+        "docs/verification/batch-08c-review.md"
+      ]
+    },
+    {
+      "id": "B08C-JOURNAL",
+      "owner": "journal_b08c",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/ops/audit_journal.py",
+        "tests/test_audit_journal.py",
+        "docs/audit-journal.md"
+      ],
+      "depends_on": [
+        "B08C-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-08c-plan.md; independent evidence required; no trusted anchor/settlement/switch claims",
+      "evidence": [
+        "docs/verification/batch-08c.md",
+        "docs/verification/batch-08c-review.md"
+      ]
+    },
+    {
+      "id": "QA-B08C",
+      "owner": "qa_b08c",
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-08c-review.md"
+      ],
+      "depends_on": [
+        "B08C-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-08c-plan.md; independent evidence required; no trusted anchor/settlement/switch claims",
+      "evidence": [
+        "docs/verification/batch-08c.md",
+        "docs/verification/batch-08c-review.md"
+      ]
+    },
+    {
+      "id": "WB-08C",
+      "owner": "workbuddy",
+      "status": "review",
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-08C-report.md",
+        "collaboration/workbuddy/results/WB-08C-results.json"
+      ],
+      "depends_on": [
+        "B08C-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-08c-plan.md; independent evidence required; no trusted anchor/settlement/switch claims",
+      "dispatch_evidence": "WorkBuddy task submitted via UI on 2026-11-09; fixed two-document scope, no results yet",
+      "evidence": [
+        "docs/verification/batch-08c-workbuddy-triage.md"
+      ],
+      "accepted_scope": "Complete design body received, raw Agent logs not independently authenticated; no test proof"
+    },
+    {
+      "id": "B08C-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/ops/reconciliation.py",
+        "src/market_intel/cli.py",
+        "tests/test_batch08c_cli.py",
+        "docs/verification/batch-08c.md"
+      ],
+      "depends_on": [
+        "B08C-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-08c-plan.md; independent evidence required; no trusted anchor/settlement/switch claims",
+      "evidence": [
+        "docs/verification/batch-08c.md",
+        "docs/verification/batch-08c-review.md"
+      ]
+    }
+  ],
   "user_model_configuration": {
     "provider": "deepseek",
     "model": "deepseek-flash",
@@ -1011,7 +1100,7 @@
   "release": {
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
-    "state": "uploaded",
+    "state": "pending_batch08c_publication",
     "verified_source_commit": "54616f66deed0a88537eb3351c34b8f207a8db3b",
     "verified_remote_commit": "2003240183803eedf7ea009ac98ce48697fd0446",
     "verified_tree": "d01f4d55b4cfcb9834aa9301476e119cd4cb29c6",

@@ -91,6 +91,15 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
+Batch08-C增加显式本地审计命令。`ledger-audit-record`会写入独立审计库，必须为`--journal`指定工作区树之外的新路径；先解析声明一次并完成预检，再保存同一输入对应的声明哈希、未认证凭证引用和观察结果。原`ledger-reconcile-preview`仍只读，不自动写审计。
+
+```powershell
+./.venv/Scripts/market-intel.exe ledger-audit-record --workspace data/live --statement out/statement.json --journal data/audit/journal.db
+./.venv/Scripts/market-intel.exe verify-ledger-audit --journal data/audit/journal.db
+```
+
+相同观察去重，账本观察变化会追加新事件。`verify-ledger-audit`只验证本地连续链、严格格式和保护定义；完整旧链仍可能校验成功。有文件权限者可替换/重算全库，因此该审计不是可信高水位，不认证账单、不结算、不许可生产切换。审计容量上限及错误码见`docs/contracts/audit-journal-v0.1.md`，部署边界见`docs/audit-trust-decision.md`。模型账本schema3不变。
+
 Batch08新增两项只读预检。`ledger-reconcile-preview`比较人工或合成声明与单个UTC日、provider的本地估算；声明文件严格格式见`docs/contracts/reconciliation-v0.1.md`。数值相同不认证账单，缺项或pending为incomplete，预检不会释放预留。`ledger-recovery-preflight`比较当前绑定账本与schema3备份的全部业务行；结果相同也不授权切换生产，始终`switch_allowed=false`。未提供结算、覆盖生产库或强制切换参数。
 
 ```powershell

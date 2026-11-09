@@ -1,6 +1,8 @@
 """Read-only comparison of unverified statement amounts and ledger estimates."""
 
 from datetime import date
+import hashlib
+import json
 from pathlib import Path
 import re
 import sqlite3
@@ -72,10 +74,9 @@ def _statement(path):
         _fail("ledger_reconciliation_statement_invalid")
 
 
-def preview_reconciliation(workspace, statement_path):
-    """Compare one UTC day/provider; never authenticate evidence or settle costs."""
+def _preview_statement(workspace, statement):
+    """Compare one already validated statement within one ledger read snapshot."""
     try:
-        statement = _statement(statement_path)
         root, _, _ = _paths(workspace)
         if (root / "ledger-backup-manifest.json").exists():
             _fail("isolated_ledger_not_live")
@@ -122,3 +123,25 @@ def preview_reconciliation(workspace, statement_path):
         _fail("ledger_reconciliation_io_error")
     except sqlite3.Error:
         _fail("ledger_reconciliation_database_error")
+
+
+def preview_reconciliation(workspace, statement_path):
+    """Compare one UTC day/provider; never authenticate evidence or settle costs."""
+    try:
+        return _preview_statement(workspace, _statement(statement_path))
+    except OSError:
+        _fail("ledger_reconciliation_io_error")
+
+
+def prepare_audit_observation(workspace, statement_path):
+    """Parse once so the declared hashes and preview refer to the same input."""
+    try:
+        statement = _statement(statement_path)
+    except OSError:
+        _fail("ledger_reconciliation_io_error")
+    preview = _preview_statement(workspace, statement)
+    encoded = json.dumps(statement, ensure_ascii=False, sort_keys=True,
+                         separators=(",", ":"), allow_nan=False).encode("utf-8")
+    return {"schema_version": "ledger-audit-observation/0.1",
+            "statement_sha256": hashlib.sha256(encoded).hexdigest(),
+            "evidence_sha256": statement["evidence_sha256"], "preview": preview}

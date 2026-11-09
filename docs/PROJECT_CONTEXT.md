@@ -36,6 +36,10 @@ CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief
 
 ## 最新开发批次08（2026-11-09）
 
+Batch08-C后续：契约`audit-journal-v0.1.md`先通过独立设计审查（容量/REPLACE保护意见已修），再派journal_b08c实现独立审计库schema1。主控复用同一声明解析值生成预检与canonical声明哈希，新增显式audit-record及只读verify；普通预检不自动写审计。部署模式local_untrusted_audit，工作区外路径不是可信高水位。记录预检观察，不认证来源/真实账单，不释放费用、不授予切换。原模型schema3与证据schema4不变。实际测试与回收见`docs/verification/batch-08c.md`。
+
+Batch08-C完整/普通安装358项356通过2权限跳过，安装证据`.venv/setup-runs/20261109-125130-2d05e690/`；独立120项119通过1跳过及5组额外场景，实际junction通过。完整旧链回退、特权重算仍可能本地校验成功的限制已实测，全部许可保持false。WB-08C完整正文已收、底层Agent日志未独立认证，保持review。下一项可推进Batch09离线候选限量/预算联验，不需要读取密钥或执行真实模型。
+
 本轮读取并校验`out/市场信息Agent-开发计划与对话归档-20261109.zip`的逐文件SHA-256，确认20轮100条可见消息及既有用户约定。压缩包、对话正文和运行数据继续仅留本地，不上传GitHub；当前开发计划文档可随代码提交。
 
 分工见`collaboration/batch-08-plan.md`，冻结契约见`docs/contracts/reconciliation-v0.1.md`。独立设计通过后两个实现Agent交付`ops/reconciliation.py`和`ops/recovery_preflight.py`；主控接CLI。新入口只读比较单日/provider外部声明与估算，及schema3备份与当前绑定账本的逐行业务差异；金额相等不认证，pending不释放，切换始终禁止。不改schema，不读真实密钥或付费调用。

@@ -16,7 +16,8 @@ from .llm import ModelClient, ModelError, Policy
 from .llm.deepseek import DeepSeekTransport
 from .llm.binding import check_workspace_ledger, ensure_workspace_ledger
 from .ops.llm_backup import create_ledger_backup, restore_ledger_backup, verify_ledger_backup
-from .ops.reconciliation import preview_reconciliation
+from .ops.reconciliation import preview_reconciliation, prepare_audit_observation
+from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
 
 
@@ -122,8 +123,31 @@ def main(argv=None):
     preflight = sub.add_parser("ledger-recovery-preflight", help="Compare a recovery candidate read-only; never switch production")
     preflight.add_argument("--workspace", type=Path, default=Path("data/live"))
     preflight.add_argument("--backup", type=Path, required=True)
+    audit = sub.add_parser("ledger-audit-record", help="Explicitly append an unverified preview observation to a local audit journal")
+    audit.add_argument("--workspace", type=Path, default=Path("data/live"))
+    audit.add_argument("--statement", type=Path, required=True)
+    audit.add_argument("--journal", type=Path, required=True)
+    audit_verify = sub.add_parser("verify-ledger-audit", help="Check a local audit chain; no external trust or switch permission")
+    audit_verify.add_argument("--journal", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command == "verify-ledger-audit":
+            print(json.dumps(verify_audit_journal(args.journal), ensure_ascii=False))
+            return 0
+        if args.command == "ledger-audit-record":
+            try:
+                root = args.workspace.resolve()
+                journal = args.journal.resolve()
+                roles = (args.statement, root / "llm-state.db", root / "llm-binding.json")
+                if journal.is_relative_to(root) or any(
+                        journal == path.resolve() or (journal.exists() and path.exists() and journal.samefile(path))
+                        for path in roles):
+                    raise ValueError("ledger_audit_path_conflict")
+            except OSError:
+                raise ValueError("ledger_audit_path_error") from None
+            observation = prepare_audit_observation(args.workspace, args.statement)
+            print(json.dumps(append_observation(args.journal, observation), ensure_ascii=False))
+            return 0
         if args.command in ("ledger-reconcile-preview", "ledger-recovery-preflight"):
             result = (preview_reconciliation(args.workspace, args.statement)
                       if args.command == "ledger-reconcile-preview"
