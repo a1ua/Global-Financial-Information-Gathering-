@@ -23,6 +23,7 @@ from .pipeline.candidates import select_candidates
 from .pipeline.evidence_candidates import plan_evidence_candidates
 from .ops.candidate_snapshot import (freeze_candidate_snapshot, verify_candidate_snapshot_file,
                                      replay_candidate_snapshot, verify_candidate_replay)
+from .ops.model_calls import inspect_model_call
 from .llm.batch import run_mock_candidates
 from .llm.client import _strict_loads
 from .ops.backup import _linked
@@ -196,8 +197,14 @@ def main(argv=None):
             snapshot.add_argument("--destination", type=Path, required=True)
     replay_verify = sub.add_parser("verify-candidate-replay", help="Verify a self-contained candidate replay offline")
     replay_verify.add_argument("--replay", type=Path, required=True)
+    call_info = sub.add_parser("model-call-info", help="Read one bound model call summary; no model or settlement")
+    call_info.add_argument("--workspace", type=Path, default=Path("data/live"))
+    call_info.add_argument("--call-id", required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command == "model-call-info":
+            print(json.dumps(inspect_model_call(args.workspace, args.call_id), ensure_ascii=False))
+            return 0
         if args.command in ("freeze-evidence-candidates", "verify-evidence-candidates",
                             "replay-evidence-candidates", "verify-candidate-replay"):
             if args.command == "freeze-evidence-candidates":

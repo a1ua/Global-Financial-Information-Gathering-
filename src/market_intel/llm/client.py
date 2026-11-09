@@ -12,6 +12,7 @@ import sqlite3
 import uuid
 
 from market_intel.contracts import ContractError, instant
+from .correlation import validate_call_correlation, validate_response_hash
 
 
 class ModelError(ValueError):
@@ -264,6 +265,7 @@ class ModelResponse:
     text: str
     input_tokens: int | None = None
     output_tokens: int | None = None
+    response_id_sha256: str | None = None
 
 
 @dataclass(frozen=True)
@@ -414,9 +416,19 @@ class ModelClient:
                 else:
                     incoming = outgoing = None
             output_hash = hashlib.sha256(output.encode("utf-8")).hexdigest() if output is not None else None
+            if status == "succeeded" and incoming is not None and outgoing is not None:
+                try:
+                    validate_response_hash(response.response_id_sha256)
+                except ValueError:
+                    _fail("invalid_provider_response")
+                metadata["provider_response"] = {
+                    "schema_version": "provider-response-correlation/0.1",
+                    "response_id_sha256": response.response_id_sha256,
+                    "input_tokens": incoming, "output_tokens": outgoing,
+                }
             db.execute("""UPDATE calls SET status=?,finished_at=?,charged_tokens=?,charged_cost=?,
-                       input_tokens=?,output_tokens=?,output_text=?,output_sha256=?,error_code=? WHERE call_id=?""",
-                       (status, stamp, tokens, cost, incoming, outgoing, output, output_hash, error, call_id))
+                       input_tokens=?,output_tokens=?,output_text=?,output_sha256=?,error_code=?,request_metadata=? WHERE call_id=?""",
+                       (status, stamp, tokens, cost, incoming, outgoing, output, output_hash, error, _json(metadata), call_id))
             if status == "succeeded":
                 db.execute("INSERT OR IGNORE INTO cache VALUES(?,?)", (row["cache_key"], call_id))
 
@@ -471,6 +483,10 @@ class ModelClient:
         with self._connect() as db:
             cached = db.execute("SELECT calls.* FROM cache JOIN calls USING(call_id) WHERE cache.cache_key=?", (key,)).fetchone()
         if cached:
+            try:
+                validate_call_correlation(_strict_loads(cached["request_metadata"]), cached)
+            except (ValueError, TypeError, KeyError):
+                _fail("cache_integrity_error")
             text = cached["output_text"]
             if cached["cache_key"] != key or cached["status"] != "succeeded" or type(text) is not str or hashlib.sha256(text.encode("utf-8")).hexdigest() != cached["output_sha256"]:
                 _fail("cache_integrity_error")
@@ -504,6 +520,10 @@ class ModelClient:
                 try:
                     if type(response) is not ModelResponse or type(response.text) is not str:
                         _fail("invalid_transport_response")
+                    try:
+                        validate_response_hash(response.response_id_sha256)
+                    except ValueError:
+                        _fail("invalid_provider_response")
                     if (response.input_tokens is None) != (response.output_tokens is None):
                         _fail("invalid_usage")
                     if response.input_tokens is not None and (not _integer(response.input_tokens) or response.input_tokens > input_bound):

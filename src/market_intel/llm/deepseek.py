@@ -11,6 +11,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request
 
 from .client import ModelError, ModelResponse, TransientTransportError, _strict_loads
+from .correlation import response_id_sha256
 
 
 ENDPOINT = "https://api.deepseek.com/chat/completions"
@@ -279,4 +280,10 @@ class DeepSeekTransport:
         if (type(details) is not dict or type(details.get("reasoning_tokens", 0)) is not int
                 or details.get("reasoning_tokens", 0) != 0):
             _error("deepseek_invalid_usage")
-        return ModelResponse(content, incoming, outgoing)
+        response_hash = None
+        if "id" in result:
+            try:
+                response_hash = response_id_sha256(result["id"])
+            except ValueError:
+                _error("deepseek_invalid_response")
+        return ModelResponse(content, incoming, outgoing, response_hash)

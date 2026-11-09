@@ -91,6 +91,14 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
+Batch10增加成功调用的completion ID哈希关联与只读摘要查询：
+
+```powershell
+./.venv/Scripts/market-intel.exe model-call-info --workspace data/live --call-id call_0123456789abcdef0123456789abcdef
+```
+
+示例ID是占位值，需使用实际本地call_id。命令只读已绑定schema3账本，不创建模型调用；输出用量、原日费率估算和可选响应ID哈希，不输出正文/完整元数据或原ID。completion ID不是已核实的HTTP请求ID或账单凭证，invoice_verified与settlement_allowed始终false。仅成功且接受正整数usage的调用保存关联；旧行/旧缓存不回填，失败与超时仍全额占用。模型schema不变，真实API/账单尚未验收。详见`docs/provider-response-correlation.md`和`docs/contracts/provider-correlation-v0.1.md`。
+
 Batch09-C增加候选清单冻结、精确输入复核与自包含离线重放。冻结后只读取已列版本，新版本和历史回填不会替换原输入。以下两个目标必须是尚不存在的独立目录：
 
 ```powershell

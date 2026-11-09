@@ -14,6 +14,7 @@ from uuid import uuid4
 
 from ..contracts import ContractError, instant
 from ..llm.client import ModelError, _matches, _safe_json, _schema, _strict_loads
+from ..llm.correlation import validate_call_correlation
 from .backup import _copy, _destination, _file, _hash_file, _linked, _root
 
 
@@ -210,6 +211,10 @@ def _ledger(db):
         if call["charged_tokens"] > call["reserved_tokens"] or call["charged_cost"] > call["reserved_cost"]:
             _fail("ledger_backup_amount_invalid")
         metadata = _metadata(call["request_metadata"])
+        try:
+            validate_call_correlation(metadata, call)
+        except (ValueError, TypeError, KeyError):
+            _fail("ledger_backup_correlation_invalid")
         if metadata.get("budget_currency", "USD") != days[call["day"]]["currency"]:
             _fail("ledger_backup_currency_invalid")
         if call["reserved_tokens"] != metadata["input_bound"] + metadata["max_output_tokens"]:

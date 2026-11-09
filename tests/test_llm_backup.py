@@ -146,7 +146,8 @@ class LedgerBackupTests(unittest.TestCase):
                 db.execute("ALTER TABLE days DROP COLUMN currency")
             row = db.execute("SELECT call_id,request_metadata,input_tokens,output_tokens FROM calls").fetchone()
             metadata = json.loads(row[1])
-            for key in ("budget_currency", "input_micro_units_per_million_tokens", "output_micro_units_per_million_tokens"):
+            for key in ("budget_currency", "input_micro_units_per_million_tokens", "output_micro_units_per_million_tokens",
+                        "provider_response"):
                 metadata.pop(key, None)
             cost = lambda incoming, outgoing: incoming * metadata["input_micro_usd_per_token"] + outgoing * metadata["output_micro_usd_per_token"]
             db.execute("UPDATE calls SET request_metadata=?,reserved_cost=?,charged_cost=? WHERE call_id=?",
@@ -289,7 +290,8 @@ class LedgerBackupTests(unittest.TestCase):
                 db.execute("ALTER TABLE days DROP COLUMN currency")
             row = db.execute("SELECT call_id,request_metadata FROM calls").fetchone()
             metadata = json.loads(row[1])
-            for key in ("budget_currency", "input_micro_units_per_million_tokens", "output_micro_units_per_million_tokens"):
+            for key in ("budget_currency", "input_micro_units_per_million_tokens", "output_micro_units_per_million_tokens",
+                        "provider_response"):
                 metadata.pop(key, None)
             reserved_cost = metadata["input_bound"] * metadata["input_micro_usd_per_token"] + metadata["max_output_tokens"] * metadata["output_micro_usd_per_token"]
             db.execute("""UPDATE calls SET request_metadata=?,input_tokens=NULL,output_tokens=NULL,
