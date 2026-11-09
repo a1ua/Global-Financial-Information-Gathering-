@@ -2,6 +2,8 @@
 
 日期2026-11-09，基线本地84ca192、GitHub73cf935。输入契约`docs/contracts/candidate-batch-v0.1.md`，独占目录/负责人见`collaboration/batch-09-plan.md`。
 
+发布核验：本地代码`979d50697ae0158a3f639b397fd730460f62d5c2`、GitHub快照`0346c2a76cf7b1a4b9fad8b925bef779b4083761`，相同tree`a4b4430a874915ba27cc77718d45d785d8f146a3`；非强制更新，保留本地开发历史。最终发布记录另作后续归档提交。
+
 ## 交付
 
 QA先设计审查，主控补充DeepSeekTransport显式拒绝和expected_ledger_id签名/格式/构造时机及TOCTOU限制后冻结，再派候选Agent实现。候选Agent只写纯选择器、定向测试/说明；主控负责runner、CLI和集成；独立QA不修改产品。

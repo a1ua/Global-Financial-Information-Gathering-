@@ -1189,11 +1189,11 @@
   "release": {
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
-    "state": "pending_batch09_publication",
-    "verified_source_commit": "9db4c59f017ed657fecc2e6180afeaeb39db78b7",
-    "verified_remote_commit": "2c8153e6d72f13e9bc611e84454ac5d452c84627",
-    "verified_tree": "c67587dfca37d6f6516c71300979f3ee2dcea999",
-    "verification_scope": "Batch08-C local untrusted audit exact-tree verified;358 run356 passed2 skipped, independent120 run119 passed1 skipped plus5 scenarios. No external anchor, verified bills, settlement or production switch. Final publication archive follows.",
+    "state": "uploaded",
+    "verified_source_commit": "979d50697ae0158a3f639b397fd730460f62d5c2",
+    "verified_remote_commit": "0346c2a76cf7b1a4b9fad8b925bef779b4083761",
+    "verified_tree": "a4b4430a874915ba27cc77718d45d785d8f146a3",
+    "verification_scope": "Batch09-A synthetic-only candidate/mock integration exact-tree verified;384 tests382 passed2 skipped, independent112 tests111 passed1 skipped plus5 scenarios. Installed CLI examples passed. No real evidence selection/NLP02/API/billing/trusted high-water/settlement/switch acceptance. Publication archive follows.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }

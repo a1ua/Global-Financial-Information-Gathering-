@@ -40,6 +40,8 @@ Batch09-A后续：`collaboration/batch-09-plan.md`登记选择Agent/主控/QA/Wo
 
 Batch09普通安装同为384项382pass2skip，证据`.venv/setup-runs/20261109-140320-57d8829a/`；已安装CLI只读plan和显式mock示例通过，运行库在out忽略目录。WB-09三点正文已收齐，计数/内部重试意见已由契约澄清，产品未修改；底层Agent工具日志未独立认证，保持review，不计测试。
 
+Batch09-A代码发布已核验：本地`979d50697ae0158a3f639b397fd730460f62d5c2`、GitHub`0346c2a76cf7b1a4b9fad8b925bef779b4083761`，tree均为`a4b4430a874915ba27cc77718d45d785d8f146a3`；最终发布归档随后提交。合成运行库、对话包和凭证不上传。
+
 Batch08-C后续：契约`audit-journal-v0.1.md`先通过独立设计审查（容量/REPLACE保护意见已修），再派journal_b08c实现独立审计库schema1。主控复用同一声明解析值生成预检与canonical声明哈希，新增显式audit-record及只读verify；普通预检不自动写审计。部署模式local_untrusted_audit，工作区外路径不是可信高水位。记录预检观察，不认证来源/真实账单，不释放费用、不授予切换。原模型schema3与证据schema4不变。实际测试与回收见`docs/verification/batch-08c.md`。
 
 Batch08-C完整/普通安装358项356通过2权限跳过，安装证据`.venv/setup-runs/20261109-125130-2d05e690/`；独立120项119通过1跳过及5组额外场景，实际junction通过。完整旧链回退、特权重算仍可能本地校验成功的限制已实测，全部许可保持false。WB-08C完整正文已收、底层Agent日志未独立认证，保持review。下一项可推进Batch09离线候选限量/预算联验，不需要读取密钥或执行真实模型。
