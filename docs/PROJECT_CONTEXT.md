@@ -40,6 +40,8 @@ Batch09-B后续：分工`collaboration/batch-09b-plan.md`，契约`contracts/evi
 
 Batch09-B完整/普通安装407项405通过2权限跳过，安装`.venv/setup-runs/20261109-143201-cfa93ef6/`。已有真实归档库只读得到Fed20/NBS15共35候选、四表各35，cap5选5限30；重复计划相同，主库/raw哈希不变，源码与安装CLI cap5 hash均a5b147d7f9a65017b7b5d6f6be3089427b80859a76987e08ded4667190322df8。仅先前标题元数据、无来源刷新或模型调用，实际清单和数据留本地。
 
+Batch09-B代码上传已核验：本地`d918076e1467751dcd1002f68675ee94f498af4a`、GitHub`eb20ca476401a81e15d0a6206ba02045d8663e97`，tree均为`b10fab220a48e7d0df4b9ac75ace17849bccc9c1`；发布归档随后提交。恢复额度中断后QA补WB静态复核，独立89项88pass1skip及5场景结果保留；未取得底层Agent日志，WB仍review。产品无新变更，output/tmp未跟踪目录保留不上传。
+
 Batch09-A后续：`collaboration/batch-09-plan.md`登记选择Agent/主控/QA/WorkBuddy；`contracts/candidate-batch-v0.1.md`经独立设计复核后冻结。新增纯合成候选选择、只读candidate-plan、显式candidate-mock-run，复用已有CNY账本/预算/缓存，首次ModelError即停。直接DeepSeekTransport与DeepSeek策略拒绝，不读key；真实来源/证据库、NLP-02、真实供应商验证均不在本批。原schema不变。完整回归384项382pass2skip；独立112项111pass1skip及5组补充场景，实际junction通过。安装/发布最终证据见`docs/verification/batch-09.md`。下一项可推进09-B真实证据只读候选清单契约，不执行真实模型。
 
 Batch09普通安装同为384项382pass2skip，证据`.venv/setup-runs/20261109-140320-57d8829a/`；已安装CLI只读plan和显式mock示例通过，运行库在out忽略目录。WB-09三点正文已收齐，计数/内部重试意见已由契约澄清，产品未修改；底层Agent工具日志未独立认证，保持review，不计测试。

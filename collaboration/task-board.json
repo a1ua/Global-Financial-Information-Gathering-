@@ -1276,11 +1276,11 @@
   "release": {
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
-    "state": "pending_batch09b_publication",
-    "verified_source_commit": "979d50697ae0158a3f639b397fd730460f62d5c2",
-    "verified_remote_commit": "0346c2a76cf7b1a4b9fad8b925bef779b4083761",
-    "verified_tree": "a4b4430a874915ba27cc77718d45d785d8f146a3",
-    "verification_scope": "Batch09-A synthetic-only candidate/mock integration exact-tree verified;384 tests382 passed2 skipped, independent112 tests111 passed1 skipped plus5 scenarios. Installed CLI examples passed. No real evidence selection/NLP02/API/billing/trusted high-water/settlement/switch acceptance. Publication archive follows.",
+    "state": "uploaded",
+    "verified_source_commit": "d918076e1467751dcd1002f68675ee94f498af4a",
+    "verified_remote_commit": "eb20ca476401a81e15d0a6206ba02045d8663e97",
+    "verified_tree": "b10fab220a48e7d0df4b9ac75ace17849bccc9c1",
+    "verification_scope": "Batch09-B readonly evidence candidate plan exact-tree verified:407 tests405 passed2 skipped, independent89 tests88 passed1 skipped plus5 scenarios. Existing Fed20/NBS15 metadata only, unchanged DB/raw hashes. No model/source refresh/NLP02; WorkBuddy static review only. Publication archive follows; unrelated output/tmp excluded.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }

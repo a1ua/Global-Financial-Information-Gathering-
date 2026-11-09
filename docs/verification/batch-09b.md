@@ -2,6 +2,8 @@
 
 2026-11-09，基线本地cca420a、GitHub7f2f96b。契约`docs/contracts/evidence-candidates-v0.1.md`；任务/目录责任见`collaboration/batch-09b-plan.md`。
 
+发布核验：本地代码`d918076e1467751dcd1002f68675ee94f498af4a`、GitHub快照`eb20ca476401a81e15d0a6206ba02045d8663e97`，相同tree`b10fab220a48e7d0df4b9ac75ace17849bccc9c1`；非强制更新，保留本地开发历史。最终发布记录另作后续归档提交。额度恢复后只补文档/交接，产品SHA与既有独立验收一致，没有重复运行已通过测试。新出现output/tmp目录保留且不提交。
+
 ## 交付及设计处置
 
 独立QA先复核设计，主控明确合成receipt忽略及历史稳定性仅适用于新增effective晚于旧cutoff且既有引用未改，再冻结并派发。证据Agent仅写模块、18项测试及API说明；主控接CLI及5项集成；独立QA不改产品。
