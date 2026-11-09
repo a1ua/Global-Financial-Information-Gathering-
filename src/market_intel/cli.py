@@ -21,6 +21,8 @@ from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
 from .pipeline.candidates import select_candidates
 from .pipeline.evidence_candidates import plan_evidence_candidates
+from .ops.candidate_snapshot import (freeze_candidate_snapshot, verify_candidate_snapshot_file,
+                                     replay_candidate_snapshot, verify_candidate_replay)
 from .llm.batch import run_mock_candidates
 from .llm.client import _strict_loads
 from .ops.backup import _linked
@@ -181,8 +183,34 @@ def main(argv=None):
     evidence_candidates.add_argument("--cutoff", required=True)
     evidence_candidates.add_argument("--max-candidates", type=int, default=5)
     evidence_candidates.add_argument("--include-synthetic", action="store_true")
+    for command in ("freeze-evidence-candidates", "verify-evidence-candidates", "replay-evidence-candidates"):
+        snapshot = sub.add_parser(command, help="Freeze or verify exact evidence inputs; no models or source refresh")
+        snapshot.add_argument("--workspace", type=Path, default=Path("data/live"))
+        if command == "freeze-evidence-candidates":
+            snapshot.add_argument("--cutoff", required=True)
+            snapshot.add_argument("--max-candidates", type=int, default=5)
+            snapshot.add_argument("--include-synthetic", action="store_true")
+        else:
+            snapshot.add_argument("--manifest", type=Path, required=True)
+        if command != "verify-evidence-candidates":
+            snapshot.add_argument("--destination", type=Path, required=True)
+    replay_verify = sub.add_parser("verify-candidate-replay", help="Verify a self-contained candidate replay offline")
+    replay_verify.add_argument("--replay", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command in ("freeze-evidence-candidates", "verify-evidence-candidates",
+                            "replay-evidence-candidates", "verify-candidate-replay"):
+            if args.command == "freeze-evidence-candidates":
+                result = freeze_candidate_snapshot(args.workspace, args.destination, args.cutoff,
+                                                   args.max_candidates, include_synthetic=args.include_synthetic)
+            elif args.command == "verify-evidence-candidates":
+                result = verify_candidate_snapshot_file(args.workspace, args.manifest)
+            elif args.command == "replay-evidence-candidates":
+                result = replay_candidate_snapshot(args.workspace, args.manifest, args.destination)
+            else:
+                result = verify_candidate_replay(args.replay)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
         if args.command == "evidence-candidate-plan":
             print(json.dumps(plan_evidence_candidates(args.workspace, args.cutoff, args.max_candidates,
                                                       include_synthetic=args.include_synthetic), ensure_ascii=False))

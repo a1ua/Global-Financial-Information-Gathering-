@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-09",
-  "status_note": "Batch09-B readonly evidence candidate manifest accepted:407 run405 passed2 OS skips, independent89 run88 passed1 skip plus5 cases. Existing archived Fed20/NBS15 metadata only:35 candidates, cap5 selects5/limits30, DB/raw hashes and counts unchanged. No source refresh/models/NLP02. Real label not authenticity. Future-after-cutoff append stable; historical backfill not guaranteed. WB09B review only; fixed-manifest validation/replay next.",
+  "status_note": "Batch09-C fixed candidate snapshot/exact input validation and self-contained offline replay accepted:451 run448 passed3 OS symlink skips; independent50 run49 passed1 skip incl6 independent scenarios. Actual junction passed. Existing archived35 metadata freeze/replay verified with unchanged DB/raw; no source refresh/model calls/NLP02. WB09C complete design body recovered, underlying tool logs not independently authenticated, review only. Next supplier request correlation contract/mock path; true API/invoice/trusted high-water pending.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -314,8 +314,8 @@
         6
       ],
       "gate": "G3",
-      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline; Batch09-B readonly existing evidence candidate selection by frozen versions/receipts, no model execution",
-      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Synthetic candidate cap/mock integration accepted. Real evidence selection, API/tokenizer/usage/invoice, account-wide bound, manual settlement, trusted external high-water and production switching remain pending.",
+      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline; Batch09-B readonly existing evidence candidate selection by frozen versions/receipts, no model execution; Batch09-C fixed snapshot pure validation, exact-version input verification and explicit self-contained offline replay, no model execution",
+      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Mock candidate integration, existing evidence selection and fixed input freeze/verification/offline replay accepted. Real API/tokenizer/usage/request correlation/invoice, account-wide bound, terminal settlement, trusted external high-water and production switching remain pending.",
       "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
@@ -1178,6 +1178,116 @@
       "evidence": [
         "docs/verification/batch-09b.md",
         "docs/verification/batch-09b-review.md"
+      ]
+    }
+  ],
+  "batch09c_work_packages": [
+    {
+      "id": "B09C-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [],
+      "write_paths": [
+        "docs/contracts/candidate-snapshot-v0.1.md",
+        "src/market_intel/contracts/candidate_snapshot.py",
+        "collaboration/batch-09c-plan.md",
+        "tests/test_candidate_snapshot_contract.py"
+      ],
+      "acceptance": "See collaboration/batch-09c-plan.md and candidate-snapshot-v0.1; independent evidence required, fixed versions/no model",
+      "evidence": [
+        "docs/verification/batch-09c-review.md",
+        "docs/verification/batch-09c.md"
+      ]
+    },
+    {
+      "id": "B09C-VERIFY",
+      "owner": "snapshot_impl_09c",
+      "status": "done",
+      "depends_on": [
+        "B09C-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/pipeline/candidate_snapshot.py",
+        "tests/test_candidate_snapshot.py",
+        "docs/candidate-snapshot.md"
+      ],
+      "acceptance": "See collaboration/batch-09c-plan.md and candidate-snapshot-v0.1; independent evidence required, fixed versions/no model",
+      "evidence": [
+        "docs/verification/batch-09c-review.md",
+        "docs/verification/batch-09c.md"
+      ]
+    },
+    {
+      "id": "B09C-ARTIFACT",
+      "owner": "artifact_impl_09c",
+      "status": "done",
+      "depends_on": [
+        "B09C-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/ops/candidate_snapshot.py",
+        "tests/test_candidate_snapshot_artifacts.py",
+        "docs/candidate-replay.md"
+      ],
+      "acceptance": "See collaboration/batch-09c-plan.md and candidate-snapshot-v0.1; independent evidence required, fixed versions/no model",
+      "evidence": [
+        "docs/verification/batch-09c-review.md",
+        "docs/verification/batch-09c.md"
+      ]
+    },
+    {
+      "id": "QA-B09C",
+      "owner": "qa_b09c",
+      "status": "done",
+      "depends_on": [
+        "B09C-CONTRACT"
+      ],
+      "write_paths": [
+        "docs/verification/batch-09c-review.md"
+      ],
+      "acceptance": "See collaboration/batch-09c-plan.md and candidate-snapshot-v0.1; independent evidence required, fixed versions/no model",
+      "evidence": [
+        "docs/verification/batch-09c-review.md",
+        "docs/verification/batch-09c.md"
+      ]
+    },
+    {
+      "id": "WB-09C",
+      "owner": "workbuddy",
+      "status": "review",
+      "depends_on": [
+        "B09C-CONTRACT"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-09C-report.md",
+        "collaboration/workbuddy/results/WB-09C-results.json"
+      ],
+      "acceptance": "See collaboration/batch-09c-plan.md and candidate-snapshot-v0.1; independent evidence required, fixed versions/no model",
+      "dispatch_evidence": "Observed one synchronous child task entry, natural completion9m48s, both finalized files and complete body. Original underlying Agent logs not independently authenticated; not product test.",
+      "evidence": [
+        "collaboration/workbuddy/results/WB-09C-report.md",
+        "collaboration/workbuddy/results/WB-09C-results.json",
+        "docs/verification/batch-09c-workbuddy-triage.md"
+      ],
+      "finalized": true,
+      "tests_run": 0
+    },
+    {
+      "id": "B09C-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B09C-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "tests/test_batch09c_cli.py",
+        "docs/verification/batch-09c.md"
+      ],
+      "acceptance": "See collaboration/batch-09c-plan.md and candidate-snapshot-v0.1; independent evidence required, fixed versions/no model",
+      "evidence": [
+        "docs/verification/batch-09c-review.md",
+        "docs/verification/batch-09c.md"
       ]
     }
   ],

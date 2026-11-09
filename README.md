@@ -91,6 +91,17 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
+Batch09-C增加候选清单冻结、精确输入复核与自包含离线重放。冻结后只读取已列版本，新版本和历史回填不会替换原输入。以下两个目标必须是尚不存在的独立目录：
+
+```powershell
+./.venv/Scripts/market-intel.exe freeze-evidence-candidates --workspace data/live --cutoff 2026-11-09T00:00:00Z --destination out/candidates/frozen-new
+./.venv/Scripts/market-intel.exe verify-evidence-candidates --workspace data/live --manifest out/candidates/frozen-new/candidate-manifest.json
+./.venv/Scripts/market-intel.exe replay-evidence-candidates --workspace data/live --manifest out/candidates/frozen-new/candidate-manifest.json --destination out/candidates/replay-new
+./.venv/Scripts/market-intel.exe verify-candidate-replay --replay out/candidates/replay-new
+```
+
+冻结目录只保存清单；重放目录显式保存候选正文，离线校验不再依赖源库。终端仅返回摘要，不调用模型。发布不覆盖旧目录，中断半成品会被拒绝；哈希自洽不认证来源、事实或选择完整性。容量上限清单1MiB、重放输入64MiB。详见`docs/candidate-snapshot.md`与`docs/candidate-replay.md`。
+
 Batch09-B新增`evidence-candidate-plan`，只读既有schema4证据库，不联网、不读模型密钥、不调用模型或写模型预算。默认排除合成记录；真实标签事件需已持久化的提交后receipt，取截点内最新可用版本，再按有效可用时刻/ID限量。该清单不是重要性评分或事实抽取。
 
 ```powershell
