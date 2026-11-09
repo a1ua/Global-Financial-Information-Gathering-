@@ -1387,10 +1387,10 @@
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
     "state": "uploaded",
-    "verified_source_commit": "d918076e1467751dcd1002f68675ee94f498af4a",
-    "verified_remote_commit": "eb20ca476401a81e15d0a6206ba02045d8663e97",
-    "verified_tree": "b10fab220a48e7d0df4b9ac75ace17849bccc9c1",
-    "verification_scope": "Batch09-B readonly evidence candidate plan exact-tree verified:407 tests405 passed2 skipped, independent89 tests88 passed1 skipped plus5 scenarios. Existing Fed20/NBS15 metadata only, unchanged DB/raw hashes. No model/source refresh/NLP02; WorkBuddy static review only. Publication archive follows; unrelated output/tmp excluded.",
+    "verified_source_commit": "37000d3c70c8bcdf2f98369bed37d4b50335be78",
+    "verified_remote_commit": "5a8db409fbb41ba12e743cf9e14b1480fa4a2ab9",
+    "verified_tree": "2b2fd3e30ecf556e5cf6d11395c23c4718514a51",
+    "verification_scope": "Batch09-C fixed snapshots/exact inputs/offline replay exact-tree verified. Full and installed451 run448 passed3 symlink skips; independent50 run49 passed1 skip incl6 scenarios. Archived35 metadata DB/raw unchanged; no refresh/model/production acceptance. WB09C design review only; conversation ZIP/runtime data/output/tmp excluded. Publication record archived separately.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }

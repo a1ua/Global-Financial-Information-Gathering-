@@ -36,6 +36,8 @@ CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief
 
 ## 最新开发批次09及此前进展（2026-11-09）
 
+Batch09-C发布已核验：本地代码`37000d3c70c8bcdf2f98369bed37d4b50335be78`、GitHub`5a8db409fbb41ba12e743cf9e14b1480fa4a2ab9`，tree同为`2b2fd3e30ecf556e5cf6d11395c23c4718514a51`。WB-09C自然完成，完整正文/两文件已回收并静态处置，底层日志非独立认证、保持review且不计测试。发布记录随后纯文档归档，产品验收SHA不变。无关output/tmp保留未提交，对话归档仍只本地。
+
 Batch09-C最新：依用户指定Batch09B计划和归档恢复（99文件逐SHA通过，26轮143条可见消息）。已完成严格固定snapshot、精确ID单只读事务复核、显式新目录冻结、自包含重放及离线校验；新增四CLI，不调用模型、不读取最新关系。两个实现Agent、主控共享schema/CLI、独立QA按独占路径交付。完整及普通隔离安装均451项448通过3权限跳过；独立50项49通过1跳过（含6独立场景），实际junction通过。现有Fed20/NBS15归档元数据冻结/重放通过，DB/raw哈希不变，无来源刷新。证据`verification/batch-09c.md`，最新任务顺序`development-status-plan-20261109-batch09c.md`。哈希自洽不认证来源/历史/事实或选择完整性，DB/raw非联合原子，发布失败半成品不修复。NLP-01仍进行中，NLP-02及完整闸门未升级；下一项优先供应商请求关联契约/模拟链路，真实smoke/账单需本地配置及对应明确启用，可信外部高水位/结算/生产切换仍待。
 
 Batch09-B后续：分工`collaboration/batch-09b-plan.md`，契约`contracts/evidence-candidates-v0.1.md`先经独立设计复核再派实现。`evidence-candidate-plan`读取既有schema4单快照，验证bundle/真实receipt/文件闭包，截点内选择每event最新可用版本，再稳定限量；只输出版本/时间/hash，无模型/来源网络/账本写。合成receipt忽略，人工回填旧时刻不在历史稳定性保证内。当前CLI5项通过，完整/安装/独立及真实归档样本证据见`docs/verification/batch-09b.md`；不把合成false标签当联网真实验证。下一项09-C固定清单验证与重放，保持NLP-02/真实模型关闭。
