@@ -2,6 +2,8 @@
 
 日期2026-11-09，基线本地9e30027、GitHub115a141。分工见`collaboration/batch-08c-plan.md`，契约`docs/contracts/audit-journal-v0.1.md`，信任决策`docs/audit-trust-decision.md`。本批只实现本地预检观察审计，不认证账单，不提供可信高水位、结算或生产切换。
 
+发布核验：本地代码`9db4c59f017ed657fecc2e6180afeaeb39db78b7`、GitHub快照`2c8153e6d72f13e9bc611e84454ac5d452c84627`，相同tree`c67587dfca37d6f6516c71300979f3ee2dcea999`；非强制更新，保留本地历史。最终发布记录另作后续归档提交。
+
 ## 交付范围与过程
 
 QA先独立设计审查，指出容量兼容承诺过宽及REPLACE隐式删除绕过风险；主控修正后冻结，才派审计Agent实现。主控维护共享预检/CLI/集成测试，审计Agent独占新模块/定向测试/说明，独立QA只维护审查记录。
