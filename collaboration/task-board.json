@@ -1499,10 +1499,10 @@
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
     "state": "uploaded",
-    "verified_source_commit": "37000d3c70c8bcdf2f98369bed37d4b50335be78",
-    "verified_remote_commit": "5a8db409fbb41ba12e743cf9e14b1480fa4a2ab9",
-    "verified_tree": "2b2fd3e30ecf556e5cf6d11395c23c4718514a51",
-    "verification_scope": "Batch09-C fixed snapshots/exact inputs/offline replay exact-tree verified. Full and installed451 run448 passed3 symlink skips; independent50 run49 passed1 skip incl6 scenarios. Archived35 metadata DB/raw unchanged; no refresh/model/production acceptance. WB09C design review only; conversation ZIP/runtime data/output/tmp excluded. Publication record archived separately.",
+    "verified_source_commit": "2bca05b89268ca713d6ecdf0689292f865046c72",
+    "verified_remote_commit": "1b255f3675b90ac473093ed011f26630e78a55e8",
+    "verified_tree": "73c7e945a1dff02503db062f9270771284908520",
+    "verification_scope": "Batch10 successful provider completion hash correlation and readonly call info exact-tree verified. Full/installed485 run482 pass3 symlink skips; independent160 run159 pass1 skip incl6 scenarios, actual junction pass. Installed injected HTTP/CNY console verified; no real API/key/source refresh/invoice/settlement. WB10 design body recovered review only. Conversation ZIP/runtime data/output/tmp excluded; publication record follows.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }

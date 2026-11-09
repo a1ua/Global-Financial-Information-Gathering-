@@ -36,6 +36,8 @@ CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief
 
 ## 最新开发批次10及此前进展（2026-11-10）
 
+Batch10代码发布已核验：本地`2bca05b89268ca713d6ecdf0689292f865046c72`、GitHub`1b255f3675b90ac473093ed011f26630e78a55e8`，相同tree`73c7e945a1dff02503db062f9270771284908520`；通过授权连接非强制更新，发布记录另行归档。产品SHA与独立验收相同。最新计划为development-status-plan-20261110-batch10.md，凭证/运行库/归档ZIP/output/tmp不入库。
+
 最新Batch10（2026-11-10）：完成成功调用供应商completion ID哈希关联与model-call-info只读摘要。关联仅随最终接受的正usage/成功状态同事务存储，缓存不补写，失败未知费用全额；不是HTTP请求ID/账单认证。schema3/证据4不变，备份/恢复严格兼容；无真实key/API调用。主控与两个实现Agent按独占目录，独立QA修复纯校验缺call错误码，历史schema1 fixture相应移除新字段；最终完整及普通安装485项482通过3权限跳过，独立160项159通过1跳过，actual junction通过。已安装包注入HTTP到CNY摘要联验通过（不是实网）。WB-10自然结束、完整正文收齐，底层日志非独立认证、review且tests_run0。证据verification/batch-10.md，最新计划development-status-plan-20261110-batch10.md；NLP-01及完整闸门未升级。下一项可离线先设计失败/不完整响应关联；真实smoke/账单仍需安全本地配置及对应明确启用，可信高水位/结算/生产恢复未完成。
 
 Batch09-C发布已核验：本地代码`37000d3c70c8bcdf2f98369bed37d4b50335be78`、GitHub`5a8db409fbb41ba12e743cf9e14b1480fa4a2ab9`，tree同为`2b2fd3e30ecf556e5cf6d11395c23c4718514a51`。WB-09C自然完成，完整正文/两文件已回收并静态处置，底层日志非独立认证、保持review且不计测试。发布记录随后纯文档归档，产品验收SHA不变。无关output/tmp保留未提交，对话归档仍只本地。
