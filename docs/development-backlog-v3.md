@@ -8,6 +8,8 @@
 
 ## 1. 立项后仍需先解决的工程缺口
 
+Batch09-B按`../collaboration/batch-09b-plan.md`实现既有证据库只读候选清单：复用schema4 bundle、receipt和文件闭包，冻结cutoff内最新可用版本与输入哈希，不接入模型或真实全文抽取。真实归档元数据测试与合成故障测试分开，NLP-01整体及NLP-02未通过。
+
 Batch09-A离线候选限量按`../collaboration/batch-09-plan.md`推进：全量验证、稳定UTC排序、上限与缓存名额、首错停机、mock预算联验。只接合成文件，不读取真实证据库或接NLP-02，NLP-01保持in_progress。后续09-B先冻结真实证据只读候选清单的版本/receipt契约，再实现；不以本批人工usage冒充真实token/账单。
 
 Batch08-C：本地追加审计和高水位信任决策按`../collaboration/batch-08c-plan.md`推进。审计只记录未认证声明的预检观察，不是全部预算事务审计；完整旧库可能自洽，外部锚点未部署，不称不可回退或生产闭环。原模型/证据schema不变，后续候选限量可离线推进。

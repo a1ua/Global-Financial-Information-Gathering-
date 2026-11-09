@@ -91,6 +91,14 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
+Batch09-B新增`evidence-candidate-plan`，只读既有schema4证据库，不联网、不读模型密钥、不调用模型或写模型预算。默认排除合成记录；真实标签事件需已持久化的提交后receipt，取截点内最新可用版本，再按有效可用时刻/ID限量。该清单不是重要性评分或事实抽取。
+
+```powershell
+./.venv/Scripts/market-intel.exe evidence-candidate-plan --workspace data/live --cutoff 2026-11-09T00:00:00Z --max-candidates 5
+```
+
+输出input_manifest固定event/raw/evidence版本、payload与文件哈希、回执和scope，不打印标题、正文、quote或URL。仅在新增记录有效时间晚于旧cutoff且原引用未改时，重查旧截点的manifest保持稳定；合成旧时刻回填/特权改写不在保证内。`--include-synthetic`仅供显式测试，可输出mixed标签；false来源标签不认证数据真实。SQLite只读WAL仍可能维护协调侧文件。详见`docs/evidence-candidates.md`及`docs/contracts/evidence-candidates-v0.1.md`。本命令不会将真实清单送入candidate-mock-run或DeepSeek。
+
 Batch09-A新增离线合成候选限量与mock批处理。示例文件`config/candidates.synthetic.example.json`全部为合成数据，不查询真实证据库或市场来源。
 
 ```powershell

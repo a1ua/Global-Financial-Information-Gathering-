@@ -20,6 +20,7 @@ from .ops.reconciliation import preview_reconciliation, prepare_audit_observatio
 from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
 from .pipeline.candidates import select_candidates
+from .pipeline.evidence_candidates import plan_evidence_candidates
 from .llm.batch import run_mock_candidates
 from .llm.client import _strict_loads
 from .ops.backup import _linked
@@ -175,8 +176,17 @@ def main(argv=None):
         candidate.add_argument("--max-candidates", type=int, default=5)
         if command == "candidate-mock-run":
             candidate.add_argument("--workspace", type=Path, default=Path("out/candidate-mock"))
+    evidence_candidates = sub.add_parser("evidence-candidate-plan", help="Read existing evidence versions and visibility receipts; no models or capture")
+    evidence_candidates.add_argument("--workspace", type=Path, default=Path("data/live"))
+    evidence_candidates.add_argument("--cutoff", required=True)
+    evidence_candidates.add_argument("--max-candidates", type=int, default=5)
+    evidence_candidates.add_argument("--include-synthetic", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.command == "evidence-candidate-plan":
+            print(json.dumps(plan_evidence_candidates(args.workspace, args.cutoff, args.max_candidates,
+                                                      include_synthetic=args.include_synthetic), ensure_ascii=False))
+            return 0
         if args.command in ("candidate-plan", "candidate-mock-run"):
             result = _candidate_command(args)
             print(json.dumps(result, ensure_ascii=False))

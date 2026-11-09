@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-09",
-  "status_note": "Batch09-A synthetic-only candidate selection/mock batch accepted:384 run382 passed2 OS skips; independent112 run111 passed1 skip plus5 scenarios. Installed CLI examples passed. No real source DB/NLP02/model/key/tokenizer/bill verification. First model error stops remaining candidates; cache uses a slot, retries still reserve each attempt. NLP01 remains in_progress; WB09 design review separately tracked.",
+  "status_note": "Batch09-B readonly evidence candidate manifest accepted:407 run405 passed2 OS skips, independent89 run88 passed1 skip plus5 cases. Existing archived Fed20/NBS15 metadata only:35 candidates, cap5 selects5/limits30, DB/raw hashes and counts unchanged. No source refresh/models/NLP02. Real label not authenticity. Future-after-cutoff append stable; historical backfill not guaranteed. WB09B review only; fixed-manifest validation/replay next.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -314,7 +314,7 @@
         6
       ],
       "gate": "G3",
-      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline",
+      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline; Batch09-B readonly existing evidence candidate selection by frozen versions/receipts, no model execution",
       "progress_note": "DeepSeek10 CNY/day per UTC ledger. Synthetic candidate cap/mock integration accepted. Real evidence selection, API/tokenizer/usage/invoice, account-wide bound, manual settlement, trusted external high-water and production switching remain pending.",
       "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
       "acceptance": [
@@ -1094,6 +1094,93 @@
       "accepted_scope": "Complete design body received; raw Agent logs not independently authenticated. Counts/retry wording clarified, no test proof"
     }
   ],
+  "batch09b_work_packages": [
+    {
+      "id": "B09B-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [],
+      "write_paths": [
+        "docs/contracts/evidence-candidates-v0.1.md",
+        "collaboration/batch-09b-plan.md"
+      ],
+      "acceptance": "See collaboration/batch-09b-plan.md and evidence-candidates-v0.1; actual independent evidence required; readonly/no model",
+      "evidence": [
+        "docs/verification/batch-09b.md",
+        "docs/verification/batch-09b-review.md"
+      ]
+    },
+    {
+      "id": "B09B-SELECT",
+      "owner": "evidence_candidates_b09b",
+      "status": "done",
+      "depends_on": [
+        "B09B-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/pipeline/evidence_candidates.py",
+        "tests/test_evidence_candidates.py",
+        "docs/evidence-candidates.md"
+      ],
+      "acceptance": "See collaboration/batch-09b-plan.md and evidence-candidates-v0.1; actual independent evidence required; readonly/no model",
+      "evidence": [
+        "docs/verification/batch-09b.md",
+        "docs/verification/batch-09b-review.md"
+      ]
+    },
+    {
+      "id": "QA-B09B",
+      "owner": "qa_b09b",
+      "status": "done",
+      "depends_on": [
+        "B09B-CONTRACT"
+      ],
+      "write_paths": [
+        "docs/verification/batch-09b-review.md"
+      ],
+      "acceptance": "See collaboration/batch-09b-plan.md and evidence-candidates-v0.1; actual independent evidence required; readonly/no model",
+      "evidence": [
+        "docs/verification/batch-09b.md",
+        "docs/verification/batch-09b-review.md"
+      ]
+    },
+    {
+      "id": "WB-09B",
+      "owner": "workbuddy",
+      "status": "review",
+      "depends_on": [
+        "B09B-CONTRACT"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-09B-report.md",
+        "collaboration/workbuddy/results/WB-09B-results.json"
+      ],
+      "acceptance": "See collaboration/batch-09b-plan.md and evidence-candidates-v0.1; actual independent evidence required; readonly/no model",
+      "dispatch_evidence": "WorkBuddy fixed-document WB-09B task submitted via UI on 2026-11-09; no results yet",
+      "evidence": [
+        "docs/verification/batch-09b-workbuddy-triage.md"
+      ],
+      "accepted_scope": "Complete design body received; original Agent logs not independently authenticated, no code test proof"
+    },
+    {
+      "id": "B09B-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B09B-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "tests/test_batch09b_cli.py",
+        "docs/verification/batch-09b.md"
+      ],
+      "acceptance": "See collaboration/batch-09b-plan.md and evidence-candidates-v0.1; actual independent evidence required; readonly/no model",
+      "evidence": [
+        "docs/verification/batch-09b.md",
+        "docs/verification/batch-09b-review.md"
+      ]
+    }
+  ],
   "user_model_configuration": {
     "provider": "deepseek",
     "model": "deepseek-flash",
@@ -1189,7 +1276,7 @@
   "release": {
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
-    "state": "uploaded",
+    "state": "pending_batch09b_publication",
     "verified_source_commit": "979d50697ae0158a3f639b397fd730460f62d5c2",
     "verified_remote_commit": "0346c2a76cf7b1a4b9fad8b925bef779b4083761",
     "verified_tree": "a4b4430a874915ba27cc77718d45d785d8f146a3",

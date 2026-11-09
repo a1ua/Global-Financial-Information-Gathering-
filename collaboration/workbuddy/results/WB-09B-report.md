@@ -1,0 +1,54 @@
+# WB-09B：证据候选时间与版本设计审查 — 结果报告
+
+- task_id：WB-09B
+- 读取范围：仅任务单 `collaboration/workbuddy/WB-09B-task.md` 与唯一固定契约 `docs/contracts/evidence-candidates-v0.1.md`。
+- 执行方式：恰一次普通同步阻塞只读子任务（run_in_background=false，未设 team/name），契约全文内嵌于子任务提示；子任务不读写文件。
+- 实际回执：Agent 同步内联返回完整正文，Agent ID `agent-dd4d256f-452a-44dc-b221-3ace69aef946`；未轮询、未重试、未代写。
+- 状态：completed（具备同步阻塞能力，且已回收实际完整正文）；raw_result_recovered=true。
+- 父端仅写本文件与 `WB-09B-results.json`；未运行命令/网络/测试（tests_run=0），未读实现/配置/凭证/环境/账户/对话，未改任何旧 WB 文件；未编造时间。
+
+## 子任务实际完整正文（逐字保留）
+
+WB-09B「证据候选时间与版本设计审查」只读复核意见
+
+复核范围与依据：本意见仅依据内嵌冻结契约《证据库候选输入清单 v0.1（已冻结）》全文作纯文本设计审查，未读取或写入任何文件、未运行任何命令、未访问网络或测试、未接触实现／配置／环境／账户／凭证／对话内容；不引入契约之外的时间或外部事实。以下按三个主题逐一给出审查结论。
+
+一、关于 receipt 回执时间／有效可用时间与发布时间（source_published_at）是否被混淆
+
+引用措辞：§2 规定"存在receipt必须有效UTC Z且不早于raw/event/evidence全部available_at的最大时刻；非法/过早回执拒绝整次计划"，"合成不要求receipt，有效可用时刻取三对象available_at最大值；真实取其与receipt.committed_at最大值"，并明确"source_published_at不是可用时间，不参与候选排序或截点放行"；§3 将 manifest 字段拆为"event_available_at（event原字段）""receipt_committed_at（真实原回执/合成为null）""effective_available_at（规范化UTC微秒Z）"；§4 验收列有"缺receipt排除、receipt晚于cutoff、无时区/过早拒绝、发布时间不放行；全部对象可用时间与小数秒"。另有"真实event缺receipt时计missing_receipt，不作为候选（可能处于提交后尚未记录回执窗口，不当作已可用）"、"合成event即使在receipt表存在行也忽略该行，不作为系统可用凭证；其manifest.receipt_committed_at始终null"与"上述receipt格式/顺序规则只适用于真实标签事件，外键检查仍全库执行"。
+
+清晰性判断：设计清晰。三类时间被分层定义——对象可用时间 available_at、回执提交时间 receipt.committed_at、派生有效可用时间 effective_available_at，并在 manifest 中以三个独立字段分别承载；发布时间被显式否定（"不是可用时间""不参与候选排序或截点放行""发布时间不放行"）。"提交后尚未记录回执窗口，不当作已可用"进一步排除了把入库／提交时间直接当作可用时间；合成与真实的回执语义被切开，避免合成数据被当作持有系统可用凭证。三者未被混淆，source_published_at 亦未被混入放行或排序。
+
+误读风险：存在两处低风险措辞可优化。其一，"真实取其与receipt.committed_at最大值"在"回执不早于raw/event/evidence全部available_at的最大时刻"这一前置校验通过后，真实标签的 effective_available_at 恒等于 receipt.committed_at；契约未点破这一等价关系，"取最大值"可能被误读为两时刻可任意大小或取某种折中。其二，"effective_available_at（规范化UTC微秒Z）"与"cutoff（保留原输入）""cutoff必须有效UTC Z"之间，"effective_available_at<=cutoff"是否已将 cutoff 同样规范化到微秒精度未明写，小数秒边界（§4"全部对象可用时间与小数秒"）依赖实现约定。二者均不改变"发布时间被排除"的结论。
+
+结论：未混淆，定义与验收双重兜底充分，可判定清晰；建议补明"真实标签 effective_available_at 等价于回执时刻、合成标签等价于三对象 available_at 最大值"以及截点比较的精度口径，属可优化项而非设计缺陷。
+
+二、关于「最新可用版本」选择规则与旧截点 input_manifest 历史稳定性边界是否自洽、限定是否明确
+
+引用措辞：§2"effective_available_at<=cutoff才可用。每个event_id从可用版本中取version最大者；较高版本未来/缺receipt时允许选择较低可用版本，不查询"当前最新"覆盖旧截点"，"选定各event最新可用版本后，验证这些全部候选的raw文件真实字节哈希、与normalized_text UTF8字节相等和固定content_ref，再按effective_available_at升序、event_id升序、event_version_id升序取前cap。cap0仍验证所有上述最新可用候选文件"，"未来、缺回执或scope排除版本无需读取原始文件；结构仍验证"，以及"DB快照不与文件系统原子，不能抵抗恶意并发换文件或被特权修改历史"；§1"不按cap/时间提前截断来跳过非法bundle，包括未来或被scope排除者"与"单个BEGIN读事务"；§3"selection_version='latest-available/0.1'""input_manifest_sha256为canonical整个input_manifest的SHA256；不包含当前时间、全库计数或最新关系""未来追加、较新版本/晚回执不应悄悄改变已固定旧截点的input_manifest（全库诊断计数可变化）；哈希是本次观察完整性引用，不是签名、防回退或事实真实性证明""历史稳定性限定：新增记录的effective_available_at晚于旧cutoff且既有引用内容未改时，追加及较新版本/晚回执不会改变旧manifest。人工回填有效时间早于旧cutoff的记录（尤其include_synthetic测试数据）、回写历史或特权篡改可改变结果，不在稳定保证内；本批不禁止合成回填，不宣称任意版本追加永远不改变计划"；§3 计数恒等式"event_versions_count=excluded_synthetic_count+missing_receipt_count+after_cutoff_count+eligible_versions_count；eligible_versions_count=superseded_count+eligible_events_count；eligible_events_count=limited_count+selected_count"及"按上述scope→缺receipt→after_cutoff→eligible优先级计数，互不重复"；§4"最新可用版本、同版本冲突、未来新版本不污染旧截点""单读事务与WAL并发新提交不污染快照""manifest hash可复算，追加后旧清单稳定"。
+
+自洽性判断：自洽。"最新"被严格限定为"截点内可用集合中的最大 version"，由"不查询'当前最新'覆盖旧截点""较高版本未来/缺receipt时允许选择较低可用版本"与 selection_version 命名共同确认，而非全局最新；被取代的较低可用版本由 superseded_count 承接，与恒等式 eligible_versions_count=superseded_count+eligible_events_count 对齐，计数优先级 scope→缺receipt→after_cutoff→eligible 与 §2 各分支一一对应且"互不重复"。选择先于文件内容验证、cap 只影响 selected_count／limited_count 而不影响版本选择，由"cap0仍验证所有上述最新可用候选文件""未来、缺回执或scope排除版本无需读取原始文件；结构仍验证"与 §1"不按cap/时间提前截断来跳过非法bundle"闭合。哈希"不包含当前时间、全库计数或最新关系"与"全库诊断计数可变化"一致；单读事务／WAL 快照与"文件层非原子、特权篡改不保证"分层表述，无自相矛盾。
+
+限定是否明确：总体明确，且为"限定式"而非"绝对式"——稳定条件（新增记录 effective_available_at 晚于旧 cutoff、既有引用内容未改）与排除项（人工回填早于旧 cutoff 尤其 include_synthetic 测试数据、回写历史、特权篡改、恶意并发换文件）均被列举，并以"不宣称任意版本追加永远不改变计划"收口。仍有三处限定可补：其一，"取version最大者""较高版本／较低可用版本"及"不同event_version_id不能重复(event_id,version)"未声明 version 的数据类型与"最大"的比较规则（数值、字典序或语义版本），而同段对 max_candidates 却显式限定"0..100严格int"；§4 虽有"同版本冲突"验收，但比较语义缺失可能使"较高版本"在字符串形态下被误判。其二，"未来追加、较新版本/晚回执不应悄悄改变已固定旧截点的input_manifest"为无条件口吻，须与紧随的"历史稳定性限定"例外合读，若被单独截取易产生"任何追加都不改变"的过度保证；所幸同段已有兜底句。其三，计数优先级中的"缺receipt"未显式标注"仅真实标签"，需与 §2"真实event缺receipt时计missing_receipt""合成不要求receipt"合读，才能确定合成缺回执不进入该分支。
+
+结论：选择规则与历史稳定性边界自洽，限定基本明确且刻意不作绝对承诺；上述三处属措辞可补强项，不构成逻辑冲突，建议分别补明 version 比较语义、将"不应悄悄改变"与限定条款交叉引用、在计数优先级中标注"缺receipt 仅适用于真实标签"。
+
+三、关于「真实标签」与「只读计划」是否被误称为「来源已认证」或「模型已验收」
+
+引用措辞：开头"只读既存证据库，不采集、不调用模型、不改NLP02/报告/账本""不是重要性排序、全文支持评测或真实模型验收""QA-B09B独立设计复核通过，补充合成receipt忽略和历史稳定性条件后冻结；实现另行验收"；§2"默认只选is_synthetic=false的真实标签记录……标签是数据库声明，不因false就认证来源。合成测试中构造的false标签仅用于回执故障验证，不计真实来源联网验收"；§3 返回"status='planned'、read_only=true、model_called=false、content_support_reviewed=false、data_status='empty|real|synthetic|mixed'""data_status只按所选，不用真实标签推断空计划real""它是未来抽取的版本化输入清单，不承诺重要性或语义正确""API/CLI不写manifest文件，不调用模型、不自动写审计、不更改任何模型预算""哈希是本次观察完整性引用，不是签名、防回退或事实真实性证明"；§4"没有--live/--model/--force参数，不转入candidate-mock-run""不读DEEPSEEK_API_KEY、不联网""真实运行只验证此前已保存Fed/NBS标题元数据，不代表刷新来源、正文事实、七交易日或NLP02通过""静态非WAL库与文件字节不变、无模型/密钥/网络/预算写入"。
+
+清晰性判断：未被误称，且防御是系统性的。"真实标签"被直接降格为"标签是数据库声明，不因false就认证来源"，并补"合成测试中构造的false标签仅用于回执故障验证，不计真实来源联网验收"，堵住把人为构造的 false 标签当作来源验收的口子；"只读计划"由 status='planned'、read_only=true、model_called=false、content_support_reviewed=false、"不调用模型""没有--live/--model/--force参数""不读DEEPSEEK_API_KEY、不联网""无模型/密钥/网络/预算写入"多重否定式框定；data_status 的 real 被限定为"只按所选"而非真实性推断；"真实运行"被专门澄清"不代表刷新来源、正文事实、七交易日或NLP02通过"；"它是未来抽取的版本化输入清单，不承诺重要性或语义正确"与"哈希……不是签名、防回退或事实真实性证明"把完整性与事实认证切开；"实现另行验收"把本契约的"设计复核通过"与实现／模型验收分离。
+
+误读风险：风险主要来自术语本身而非逻辑。"真实标签""真实event""真实运行""real""QA-B09B独立设计复核通过""已冻结"在全文中密集出现，而否定式边界分散于开头、§2、§3、§4，读者若只截取"真实运行""real""复核通过／冻结"等局部措辞，存在断章取义为"来源已认证／模型已验收"的可能；"真实运行"一词尤易外溢，尽管同句已否定。"复核通过""冻结"是文档／设计状态而非验收结论，亦需与"实现另行验收"合读。现有措辞已实质堵住误称，但缺少一处统一的术语层声明。
+
+结论：设计未将「真实标签」或「只读计划」表述为「来源已认证」或「模型已验收」，否定式边界完整、自洽；建议在开头一次性声明"本文'真实'仅指 is_synthetic=false 的数据库声明，不指来源认证或事实核验，'复核通过／冻结'仅为设计状态"，以消除断章取义风险。属表述优化，不影响结论成立。
+
+综上，三个主题的设计均清晰、自洽且边界限定成立：发布时间未被混入可用时间或截点放行；「最新可用版本」与旧截点 input_manifest 历史稳定性相互吻合且刻意不作绝对保证；「真实标签／只读计划」未被误称为来源认证或模型验收。所识别事项均为低风险措辞可补强项（回执时刻等价关系、截点比较精度、version 比较语义、"不应悄悄改变"与限定条款的合读、计数优先级仅真实标签的标注、术语统一声明），不构成设计缺陷，可作为该冻结契约的审查附注直接采用。
+
+## 实际工具回执（保留）
+
+- 工具：Agent（general-purpose），run_in_background=false，未设 team/name，契约全文内嵌。
+- 工具返回附带的回执行：`[Agent ID: agent-dd4d256f-452a-44dc-b221-3ace69aef946]`
+- 交付形态：同步内联完整正文，一次成功；无轮询、无重试、无代写；未编造时间。
+
+WB-09B FINALIZED
