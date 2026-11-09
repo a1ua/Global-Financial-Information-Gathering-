@@ -91,6 +91,15 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
+Batch09-A新增离线合成候选限量与mock批处理。示例文件`config/candidates.synthetic.example.json`全部为合成数据，不查询真实证据库或市场来源。
+
+```powershell
+./.venv/Scripts/market-intel.exe candidate-plan --input config/candidates.synthetic.example.json --cutoff 2026-11-09T12:00:00Z --max-candidates 1
+./.venv/Scripts/market-intel.exe candidate-mock-run --input config/candidates.synthetic.example.json --cutoff 2026-11-09T12:00:00Z --max-candidates 2 --workspace out/candidate-mock
+```
+
+plan只读输出ID和计数，不建模型库。mock-run显式写合成调用账本，固定mock transport，不读真实key，不支持--live/provider/model；首次ModelError停止剩余项，保留已成功和未知费用。缓存命中仍占所选名额，不从限量外补位。单次最多100个候选；重试可能产生多次传输尝试，每次仍由现有客户端事务预留。候选数量不是账户全局额度或真实模型token保证。输入上限1MiB/1000项，所有项先验证再截断。详见`docs/contracts/candidate-batch-v0.1.md`及`docs/candidate-selection.md`。
+
 Batch08-C增加显式本地审计命令。`ledger-audit-record`会写入独立审计库，必须为`--journal`指定工作区树之外的新路径；先解析声明一次并完成预检，再保存同一输入对应的声明哈希、未认证凭证引用和观察结果。原`ledger-reconcile-preview`仍只读，不自动写审计。
 
 ```powershell

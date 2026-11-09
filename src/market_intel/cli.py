@@ -19,6 +19,10 @@ from .ops.llm_backup import create_ledger_backup, restore_ledger_backup, verify_
 from .ops.reconciliation import preview_reconciliation, prepare_audit_observation
 from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
+from .pipeline.candidates import select_candidates
+from .llm.batch import run_mock_candidates
+from .llm.client import _strict_loads
+from .ops.backup import _linked
 
 
 def _deepseek_policy(*, enabled=False):
@@ -27,6 +31,41 @@ def _deepseek_policy(*, enabled=False):
                   input_micro_units_per_million_tokens=2_000_000,
                   output_micro_units_per_million_tokens=8_000_000,
                   max_input_tokens=16384, max_retries=0)
+
+
+def _load_candidate_input(path):
+    try:
+        path = path.absolute()
+        if any(_linked(item) for item in (path, *path.parents)):
+            raise ValueError("candidate_input_link_forbidden")
+        if not path.is_file():
+            raise ValueError("candidate_input_missing")
+        with path.open("rb") as stream:
+            raw = stream.read(1_048_577)
+        if len(raw) > 1_048_576:
+            raise ValueError("candidate_input_too_large")
+        try:
+            return _strict_loads(raw.decode("utf-8"))
+        except (ModelError, UnicodeError):
+            raise ValueError("candidate_input_invalid") from None
+    except OSError:
+        raise ValueError("candidate_input_io_error") from None
+
+
+def _candidate_command(args):
+    batch = _load_candidate_input(args.input)
+    selection = select_candidates(batch, args.cutoff, args.max_candidates)
+    if args.command == "candidate-plan":
+        return {**{k: v for k, v in selection.items() if k != "selected"},
+                "selected_ids": [c["candidate_id"] for c in selection["selected"]]}
+    policy = Policy(provider="mock", model="mock-candidates/0.1", enabled=True,
+                    budget_currency="CNY", daily_micro_units=10_000_000, daily_tokens=100_000,
+                    input_micro_units_per_million_tokens=2_000_000,
+                    output_micro_units_per_million_tokens=8_000_000,
+                    max_input_tokens=16384, max_retries=0)
+    binding = ensure_workspace_ledger(args.workspace) if selection["selected"] else None
+    return run_mock_candidates(batch, args.workspace / "llm-state.db", args.cutoff, args.max_candidates,
+                               policy=policy, expected_ledger_id=binding["ledger_id"] if binding else None)
 
 
 def _deepseek_command(args):
@@ -129,8 +168,19 @@ def main(argv=None):
     audit.add_argument("--journal", type=Path, required=True)
     audit_verify = sub.add_parser("verify-ledger-audit", help="Check a local audit chain; no external trust or switch permission")
     audit_verify.add_argument("--journal", type=Path, required=True)
+    for command in ("candidate-plan", "candidate-mock-run"):
+        candidate = sub.add_parser(command, help="Plan or explicitly run bounded synthetic candidates with mock responses only")
+        candidate.add_argument("--input", type=Path, required=True)
+        candidate.add_argument("--cutoff", required=True)
+        candidate.add_argument("--max-candidates", type=int, default=5)
+        if command == "candidate-mock-run":
+            candidate.add_argument("--workspace", type=Path, default=Path("out/candidate-mock"))
     args = parser.parse_args(argv)
     try:
+        if args.command in ("candidate-plan", "candidate-mock-run"):
+            result = _candidate_command(args)
+            print(json.dumps(result, ensure_ascii=False))
+            return 1 if result.get("status") == "stopped" else 0
         if args.command == "verify-ledger-audit":
             print(json.dumps(verify_audit_journal(args.journal), ensure_ascii=False))
             return 0

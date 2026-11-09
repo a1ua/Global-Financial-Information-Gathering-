@@ -236,6 +236,8 @@ Batch08对账/恢复前置契约见`contracts/reconciliation-v0.1.md`：仅只�
 
 Batch08-C本地追加审计见`contracts/audit-journal-v0.1.md`：独立审计库schema1、显式写入观察、链校验及幂等；SQL保护不等于外部不可回退存储。可信高水位、真实结算和生产切换仍未实现。
 
+Batch09-A合成候选契约见`contracts/candidate-batch-v0.1.md`：只做全量验证、UTC稳定排序、确定性限量及mock客户端预算联验；真实新闻选择须另接证据版本/系统回执，不替代NLP-02或真实供应商验收。
+
 本节由主控整合，限定 `market_intel.llm` 的独立账本 schema 1，不改变证据库 schema 4 或既有对象格式。示例见 `config/llm.example.json`，合成输入输出及反例见 `tests/test_llm.py`。这不是云端供应商或 R08 完整上线验收。
 
 - 预算池以应用明确配置的单一 `state_path` 为范围，多个模型共享同账本额度；它不是跨任意文件、账户或机器的全局费用控制。调用方不能新建、删除、切换或回滚账本规避额度。生产入口尚未实现固定账本绑定，真实 provider 保持关闭。

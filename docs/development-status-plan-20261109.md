@@ -94,6 +94,8 @@ Batch06的CNY预算、受限DeepSeek传输、独立模型账本恢复和QA子包
 
 Batch08-C实施补充：当前选定可部署的`local_untrusted_audit`模式，实现本地追加观察和链校验，单独审计库schema1，不改模型账本。外部可信服务/锚点尚未提供并验收，不能把工作区外SQLite升级为高水位，生产切换继续关闭。局部验收后可并行推进Batch09不依赖凭证的候选数限量/预算联验；真实账单关联、外部高水位和生产恢复单列未完成，不借局部进展提前关闭NLP-01。详见`contracts/audit-journal-v0.1.md`和`audit-trust-decision.md`。
 
+Batch09-A补充：已实现合成候选纯选择、只读candidate-plan及显式candidate-mock-run，先验证全量输入后去重/截点/稳定限量，首错停止且缓存不补位，重试仍逐次预留；详见`contracts/candidate-batch-v0.1.md`和`verification/batch-09.md`。下一项先冻结Batch09-B“基于既有证据库的只读候选清单”契约，复用证据版本/系统回执，不把合成available_at当真实可用时间。该步骤不调用真实模型；NLP-02及真实供应商/账单验收仍未完成。
+
 ## 7. 协作、闸门与交接
 
 主控负责范围、共享契约/schema/CLI/依赖与集成；模型、数据、QA按独占路径并行。每个文件只允许一位当前写入者；实现者不能作为唯一验收者。WorkBuddy仅派发固定任务单，必须带实际文件/结果正文和执行证据；派发或完成提示不算通过。产品采用确定性流水线，不新增自主调度Agent框架。

@@ -1,0 +1,23 @@
+{
+  "schema_version": "synthetic-candidate-batch/0.1",
+  "candidates": [
+    {
+      "candidate_id": "candidate_example_a",
+      "available_at": "2026-11-09T00:00:00Z",
+      "title": "合成样例A：仅测试候选限量，不包含市场事实。",
+      "is_synthetic": true
+    },
+    {
+      "candidate_id": "candidate_example_b",
+      "available_at": "2026-11-09T00:01:00Z",
+      "title": "合成样例B：仅测试模拟预算，不调用真实模型。",
+      "is_synthetic": true
+    },
+    {
+      "candidate_id": "candidate_example_future",
+      "available_at": "2026-11-10T00:00:00Z",
+      "title": "合成未来项：相对示例截点应被排除。",
+      "is_synthetic": true
+    }
+  ]
+}

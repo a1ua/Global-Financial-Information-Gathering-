@@ -34,7 +34,11 @@ Python 包位于 `src/market_intel/`。已实现：
 
 CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief`、`replay`、`status`、`validate-report`、`backup`、`verify-backup`、`restore`，以及批次06的`deepseek-check`、`deepseek-smoke`、`ledger-backup`、`verify-ledger-backup`、`restore-ledger`。参数见README与`--help`。
 
-## 最新开发批次08（2026-11-09）
+## 最新开发批次09及此前进展（2026-11-09）
+
+Batch09-A后续：`collaboration/batch-09-plan.md`登记选择Agent/主控/QA/WorkBuddy；`contracts/candidate-batch-v0.1.md`经独立设计复核后冻结。新增纯合成候选选择、只读candidate-plan、显式candidate-mock-run，复用已有CNY账本/预算/缓存，首次ModelError即停。直接DeepSeekTransport与DeepSeek策略拒绝，不读key；真实来源/证据库、NLP-02、真实供应商验证均不在本批。原schema不变。完整回归384项382pass2skip；独立112项111pass1skip及5组补充场景，实际junction通过。安装/发布最终证据见`docs/verification/batch-09.md`。下一项可推进09-B真实证据只读候选清单契约，不执行真实模型。
+
+Batch09普通安装同为384项382pass2skip，证据`.venv/setup-runs/20261109-140320-57d8829a/`；已安装CLI只读plan和显式mock示例通过，运行库在out忽略目录。WB-09三点正文已收齐，计数/内部重试意见已由契约澄清，产品未修改；底层Agent工具日志未独立认证，保持review，不计测试。
 
 Batch08-C后续：契约`audit-journal-v0.1.md`先通过独立设计审查（容量/REPLACE保护意见已修），再派journal_b08c实现独立审计库schema1。主控复用同一声明解析值生成预检与canonical声明哈希，新增显式audit-record及只读verify；普通预检不自动写审计。部署模式local_untrusted_audit，工作区外路径不是可信高水位。记录预检观察，不认证来源/真实账单，不释放费用、不授予切换。原模型schema3与证据schema4不变。实际测试与回收见`docs/verification/batch-08c.md`。
 

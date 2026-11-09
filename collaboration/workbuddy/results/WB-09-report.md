@@ -1,0 +1,30 @@
+# WB-09 合成候选限量与预算设计审查 — 报告
+
+## 执行说明
+
+- 项目：C:/Users/user/Documents/ChatGPT/市场信息抓取
+- 只读范围：本任务单 `collaboration/workbuddy/WB-09-task.md` 与指定固定契约 `docs/contracts/candidate-batch-v0.1.md`（已冻结）。未读取任何代码、配置、账户、环境、凭证或对话。
+- 执行方式：恰一次普通同步阻塞只读子任务，`run_in_background=false`，未设置 team/name，契约原文完整内嵌于子任务输入，子任务不读写文件。
+- 未运行任何命令、测试或网络访问；tests_run=0；未修改任何旧 WB 文件。
+- 子任务完整实际正文已回传并原样收录如下；真实回执见文末。未编造任何时间或执行结果。
+
+## 子任务完整实际正文（原样收录）
+
+1. 结论：候选上限与重试/缓存的口径自洽，契约已逐句写明且无实质性计数矛盾；但有两处表述歧义与计数边界未闭合。依据：§2「候选数量上限只限制每次函数调用的selected数量，不是transport次数；max_retries+1可能带来更多尝试，每次仍受原预算限额。重跑可命中缓存，但仍占当次selected名额，不"补选"超限候选」，与§1「eligible_count=selected_count+limited_count」「未来项不算超上限丢弃」一致。歧义在于：§4验收「候选限量后transport只见selected」按字面易与「max_retries+1可能带来更多尝试」被读成transport次数等于selected，契约未显式限定前者仅指候选集合；「每次仍受原预算限额」中"原限额"所指（§3的每日CNY/daily_tokens预算，或max_input_tokens）与缓存命中是否计作一次尝试/一次预留均未定义；且§2返回字段仅「结果顺序对应selected」及逐项status，固定字段集中无容纳同一候选多次transport尝试的计数项。
+
+2. 结论：首错停机与预算预留边界基本完整、未见过度承诺，但"账本拒绝"停机路径与"ModelError"触发时点两处未闭合。依据：§2「首次ModelError即停止，当前项failed（safe error code），剩余项not_attempted，不能继续尝试后续候选；budget_exceeded等账本拒绝不进入transport」「已有预留、unknown/failed费用和缓存语义不变，不为批任务回滚或释放预算」「预算不预计算为已授权调用，以每次generate事务预留为准」「首错停止允许此前成功/费用保留；不宣称整批事务」——这些主动否定构成克制边界，不构成过度承诺。未闭合处：①§4「预算不足前缀成功后停止且后续transport0」表明budget_exceeded确会触发停机，但该路径下当前项/剩余项的逐项状态、整体status='completed|stopped'取值以及「等账本拒绝」所指的其他拒绝类型均未写明，首错停机仅为ModelError路径定义了状态；②§4「timeout/invalid JSON重试每次预留」允许同一候选多次尝试，故「首次ModelError即停止」须以重试耗尽后的终态为前提，契约未写明该前提，字面上与允许重试相冲突。
+
+3. 结论：未发现把人工合成usage、固定mock transport、live_called=false或"QA-B09设计审查通过"误表述为真实token验证、真实来源接入或供应商验收；契约自身已写明的免责边界整体足够，仅"设计审查通过……后冻结"的免责需跨条款关联才能成立。依据：§2「这是人工合成usage，不是真实token验证」「provider='mock'、live_called=false」「transport注入只计作本地测试，不承诺live_called=false能证明恶意注入函数未联网」；§3「默认transport为固定合成返回，不使用DeepSeekTransport/账户或真实key」「不更新正式报告、不调用真实来源、不自动写审计」；§4「所有样本明确合成，不等价真实供应商或候选抽取验收」「真实模型/账单/可信外部高水位、结算、生产恢复切换保持未完成」「真实事件接入时必须重新冻结证据/可用时间/版本契约，不能直接用任意available_at代替系统receipt」；开头「Batch09-A不依赖真实凭证，不做NLP-02事实抽取」。需关联处：开头「QA-B09设计审查通过……后冻结」与§4免责分置两处，§4免责主语为「所有样本」，未直接限定「设计审查通过」这一措辞本身，需结合同句「实现测试独立验收」方能排除其被读作验收结论。
+
+## 真实回执
+
+- 调用：恰一次普通同步阻塞子任务（Agent，subagent_type=general-purpose），`run_in_background=false`，未设 team/name，契约原文完整内嵌，子任务被约束为不读写文件。
+- 工具返回的真实回执行：`[Agent ID: agent-38c9bcb4-10ec-4cb3-bc82-b7d19da47a2c]`
+- 完整正文已回传（未截断、未代写）；未进行轮询、重试或补写。
+- tests_run=0。未编造时间。
+
+## 结论
+
+三点审查意见（候选上限与重试/缓存次数口径；首错停机及预算预留边界；合成mock是否被误称真实来源/供应商验证）均已由子任务给出完整实际正文，共三点，未超出「最多三点」限制。定稿，不再覆盖。
+
+WB-09 FINALIZED

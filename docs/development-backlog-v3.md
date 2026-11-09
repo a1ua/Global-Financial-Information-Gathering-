@@ -8,6 +8,8 @@
 
 ## 1. 立项后仍需先解决的工程缺口
 
+Batch09-A离线候选限量按`../collaboration/batch-09-plan.md`推进：全量验证、稳定UTC排序、上限与缓存名额、首错停机、mock预算联验。只接合成文件，不读取真实证据库或接NLP-02，NLP-01保持in_progress。后续09-B先冻结真实证据只读候选清单的版本/receipt契约，再实现；不以本批人工usage冒充真实token/账单。
+
 Batch08-C：本地追加审计和高水位信任决策按`../collaboration/batch-08c-plan.md`推进。审计只记录未认证声明的预检观察，不是全部预算事务审计；完整旧库可能自洽，外部锚点未部署，不称不可回退或生产闭环。原模型/证据schema不变，后续候选限量可离线推进。
 
 2026-11-09 Batch08以`development-status-plan-20261109.md`和对话归档为输入，先完成独立设计审查，再实施只读对账/恢复预检，分工见`../collaboration/batch-08-plan.md`。不将预检视为账单认证、pending终态或同身份回退防护；可信高水位与不可变审计未完成前禁止生产恢复切换。NLP-01保持in_progress，后续先解决这些前置，再进入Batch09真实小样本及候选数量集成。

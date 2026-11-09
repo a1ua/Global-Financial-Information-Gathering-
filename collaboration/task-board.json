@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-09",
-  "status_note": "Batch08-C local append-only observation audit accepted;358 run356 passed2 OS skips, independent120 run119 passed1 skip plus5 extra scenarios. local_untrusted_audit only; whole-chain rollback/recompute can still verify. No external high-water, real billing, settlement or production switch. Model schema3/evidence4 unchanged; NLP01 remains in_progress, WB08C review.",
+  "status_note": "Batch09-A synthetic-only candidate selection/mock batch accepted:384 run382 passed2 OS skips; independent112 run111 passed1 skip plus5 scenarios. Installed CLI examples passed. No real source DB/NLP02/model/key/tokenizer/bill verification. First model error stops remaining candidates; cache uses a slot, retries still reserve each attempt. NLP01 remains in_progress; WB09 design review separately tracked.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -314,8 +314,8 @@
         6
       ],
       "gate": "G3",
-      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary",
-      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Fixed workspace binding accepted; same-ID rollback, API/tokenizer/usage/invoice, manual reconciliation, production switching and candidate integration remain pending. No account-wide guarantee.",
+      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline",
+      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Synthetic candidate cap/mock integration accepted. Real evidence selection, API/tokenizer/usage/invoice, account-wide bound, manual settlement, trusted external high-water and production switching remain pending.",
       "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
@@ -1005,6 +1005,95 @@
       ]
     }
   ],
+  "batch09_work_packages": [
+    {
+      "id": "B09-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [],
+      "write_paths": [
+        "docs/contracts/candidate-batch-v0.1.md",
+        "collaboration/batch-09-plan.md"
+      ],
+      "acceptance": "See collaboration/batch-09-plan.md and candidate-batch-v0.1; actual independent evidence required, synthetic/mock only",
+      "evidence": [
+        "docs/verification/batch-09.md",
+        "docs/verification/batch-09-review.md"
+      ]
+    },
+    {
+      "id": "B09-SELECT",
+      "owner": "candidates_b09",
+      "status": "done",
+      "depends_on": [
+        "B09-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/pipeline/candidates.py",
+        "tests/test_candidates.py",
+        "docs/candidate-selection.md"
+      ],
+      "acceptance": "See collaboration/batch-09-plan.md and candidate-batch-v0.1; actual independent evidence required, synthetic/mock only",
+      "evidence": [
+        "docs/verification/batch-09.md",
+        "docs/verification/batch-09-review.md"
+      ]
+    },
+    {
+      "id": "B09-BATCH",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B09-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/llm/batch.py",
+        "src/market_intel/cli.py",
+        "tests/test_candidate_batch.py",
+        "tests/test_batch09_cli.py",
+        "config/candidates.synthetic.example.json"
+      ],
+      "acceptance": "See collaboration/batch-09-plan.md and candidate-batch-v0.1; actual independent evidence required, synthetic/mock only",
+      "evidence": [
+        "docs/verification/batch-09.md",
+        "docs/verification/batch-09-review.md"
+      ]
+    },
+    {
+      "id": "QA-B09",
+      "owner": "qa_b09",
+      "status": "done",
+      "depends_on": [
+        "B09-CONTRACT"
+      ],
+      "write_paths": [
+        "docs/verification/batch-09-review.md"
+      ],
+      "acceptance": "See collaboration/batch-09-plan.md and candidate-batch-v0.1; actual independent evidence required, synthetic/mock only",
+      "evidence": [
+        "docs/verification/batch-09.md",
+        "docs/verification/batch-09-review.md"
+      ]
+    },
+    {
+      "id": "WB-09",
+      "owner": "workbuddy",
+      "status": "review",
+      "depends_on": [
+        "B09-CONTRACT"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-09-report.md",
+        "collaboration/workbuddy/results/WB-09-results.json"
+      ],
+      "acceptance": "See collaboration/batch-09-plan.md and candidate-batch-v0.1; actual independent evidence required, synthetic/mock only",
+      "dispatch_evidence": "WorkBuddy fixed WB-09 task submitted via desktop UI on 2026-11-09; no result yet",
+      "evidence": [
+        "docs/verification/batch-09-workbuddy-triage.md"
+      ],
+      "accepted_scope": "Complete design body received; raw Agent logs not independently authenticated. Counts/retry wording clarified, no test proof"
+    }
+  ],
   "user_model_configuration": {
     "provider": "deepseek",
     "model": "deepseek-flash",
@@ -1100,7 +1189,7 @@
   "release": {
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
-    "state": "uploaded",
+    "state": "pending_batch09_publication",
     "verified_source_commit": "9db4c59f017ed657fecc2e6180afeaeb39db78b7",
     "verified_remote_commit": "2c8153e6d72f13e9bc611e84454ac5d452c84627",
     "verified_tree": "c67587dfca37d6f6516c71300979f3ee2dcea999",
