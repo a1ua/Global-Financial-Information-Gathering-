@@ -1608,10 +1608,10 @@
     "excludes": "Live data, runtime backups, venv, credentials and local interpreter path",
     "target_repository": "a1ua/Global-Financial-Information-Gathering-",
     "state": "uploaded",
-    "verified_source_commit": "2bca05b89268ca713d6ecdf0689292f865046c72",
-    "verified_remote_commit": "1b255f3675b90ac473093ed011f26630e78a55e8",
-    "verified_tree": "73c7e945a1dff02503db062f9270771284908520",
-    "verification_scope": "Batch10 successful provider completion hash correlation and readonly call info exact-tree verified. Full/installed485 run482 pass3 symlink skips; independent160 run159 pass1 skip incl6 scenarios, actual junction pass. Installed injected HTTP/CNY console verified; no real API/key/source refresh/invoice/settlement. WB10 design body recovered review only. Conversation ZIP/runtime data/output/tmp excluded; publication record follows.",
+    "verified_source_commit": "bffc04730f7707a93a9ccbf09b8bf2979ee76817",
+    "verified_remote_commit": "8bdd7d1b0eead94d275d8f1c5ffd6579c08b6a40",
+    "verified_tree": "8709b5a18d0dd4c878f251b65e2fc16dafbd3644",
+    "verification_scope": "Batch11 failed/incomplete response hash observations exact-tree verified; full reservations retained, readonly summary0.2, strict backup compatibility. Full/installed510 run507 pass3 symlink skips; independent185 run184 pass1 skip incl6 scenarios, actual junction pass. Installed injected HTTP/CNY verified, no live API/key/invoice/settlement/source refresh. WB11 full static body recovered review only; conversation ZIP/runtime data/output/tmp excluded. Publication record follows.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
   }
