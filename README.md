@@ -91,6 +91,8 @@ demo输出SQLite库、简报HTML与输入manifest；全部内容为合成测试�
 
 ## 当前限制
 
+Batch11支持失败响应的可选标识哈希观察。现有`model-call-info`默认输出`model-call-info/0.2`，仍为26字段，新增`correlation_status=failure_recorded`；使用方需识别新版本。仅已解析同模型合法标识或正常响应后本地校验失败可附观察；无响应超时/网络/HTTP失败不造关联。失败不保存正文或usage、不减记全额预算，重试各自独立，旧记录不回填。哈希不认证账单、不允许结算。契约见`docs/contracts/provider-failure-correlation-v0.1.md`。
+
 Batch10增加成功调用的completion ID哈希关联与只读摘要查询：
 
 ```powershell

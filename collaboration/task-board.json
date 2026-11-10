@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-09",
-  "status_note": "Batch10 successful completion-id hash correlation accepted: same success transaction, original cache call/no backfill, strict optional backup metadata, readonly bound model-call-info. Full/installed485 run482 passed3 symlink skips; independent160 run159 passed1 skip incl6 scenarios, actual junction passed. Synthetic injected HTTP only, no real model/key/invoice/source refresh. WB10 full body recovered, review only. NLP01/G3 unchanged; failed response correlation and real validation/invoice/trusted high-water/settlement pending.",
+  "status_note": "Batch11 failed/incomplete response hash observations accepted: same failed transaction, per-attempt reset, no failure body/usage and full reservations retained. Summary0.2 preserves26 fields with failure_recorded. Full/installed510 run507 pass3 symlink skips; independent185 run184 pass1 skip incl6 scenarios, actual junction pass. Installed injected HTTP/CNY readonly CLI verified. No live API/key/invoice/settlement; WB11 static body recovered review only. NLP01/G3 unchanged. Next readonly supplier verification evidence preflight.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -314,8 +314,8 @@
         6
       ],
       "gate": "G3",
-      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline; Batch09-B readonly existing evidence candidate selection by frozen versions/receipts, no model execution; Batch09-C fixed snapshot pure validation, exact-version input verification and explicit self-contained offline replay, no model execution; Batch10 successful completion-id hash correlation and readonly call summary with strict backup compatibility, synthetic HTTP only",
-      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Candidate snapshots and successful response hash correlation accepted offline. Real API/tokenizer/usage/invoice verification, failed/incomplete response correlation, account-wide bound, terminal settlement, trusted external high-water and production switching remain pending.",
+      "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline; Batch09-B readonly existing evidence candidate selection by frozen versions/receipts, no model execution; Batch09-C fixed snapshot pure validation, exact-version input verification and explicit self-contained offline replay, no model execution; Batch10 successful completion-id hash correlation and readonly call summary with strict backup compatibility, synthetic HTTP only; Batch11 failed/incomplete response hash observations, full reservation preservation, readonly call summary0.2 and backup compatibility, synthetic HTTP only",
+      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Candidate snapshots plus successful/failed response hash observations accepted offline. Real API/tokenizer/usage/invoice verification, account-wide bound, terminal settlement, trusted external high-water and production switching remain pending. Failed observations never release reservations.",
       "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
@@ -1400,6 +1400,115 @@
       "evidence": [
         "docs/verification/batch-10.md",
         "docs/verification/batch-10-review.md"
+      ]
+    }
+  ],
+  "batch11_work_packages": [
+    {
+      "id": "B11-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/llm/client.py",
+        "src/market_intel/llm/correlation.py",
+        "tests/test_failure_correlation.py",
+        "docs/contracts/provider-failure-correlation-v0.1.md"
+      ],
+      "depends_on": [],
+      "acceptance": "See collaboration/batch-11-plan.md; design QA then independent actual verification, full reservation retained, no live model",
+      "evidence": [
+        "docs/verification/batch-11.md",
+        "docs/verification/batch-11-review.md"
+      ]
+    },
+    {
+      "id": "B11-TRANSPORT",
+      "owner": "transport_b11",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/llm/deepseek.py",
+        "tests/test_deepseek_failure_correlation.py"
+      ],
+      "depends_on": [
+        "B11-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-11-plan.md; design QA then independent actual verification, full reservation retained, no live model",
+      "evidence": [
+        "docs/verification/batch-11.md",
+        "docs/verification/batch-11-review.md"
+      ]
+    },
+    {
+      "id": "B11-INSPECT",
+      "owner": "inspect_b11",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/ops/model_calls.py",
+        "tests/test_failure_call_info.py",
+        "tests/test_model_call_info.py"
+      ],
+      "depends_on": [
+        "B11-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-11-plan.md; design QA then independent actual verification, full reservation retained, no live model",
+      "evidence": [
+        "docs/verification/batch-11.md",
+        "docs/verification/batch-11-review.md"
+      ]
+    },
+    {
+      "id": "QA-B11",
+      "owner": "qa_b11",
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-11-review.md"
+      ],
+      "depends_on": [
+        "B11-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-11-plan.md; design QA then independent actual verification, full reservation retained, no live model",
+      "evidence": [
+        "docs/verification/batch-11.md",
+        "docs/verification/batch-11-review.md"
+      ]
+    },
+    {
+      "id": "WB-11",
+      "owner": "workbuddy",
+      "status": "review",
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-11-report.md",
+        "collaboration/workbuddy/results/WB-11-results.json"
+      ],
+      "depends_on": [
+        "B11-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-11-plan.md; design QA then independent actual verification, full reservation retained, no live model",
+      "evidence": [
+        "collaboration/workbuddy/results/WB-11-report.md",
+        "collaboration/workbuddy/results/WB-11-results.json",
+        "docs/verification/batch-11-workbuddy-triage.md"
+      ],
+      "finalized": true,
+      "tests_run": 0,
+      "dispatch_evidence": "Observed fixed-doc reads, one synchronous subtask return, natural finalization and two full-body result files. Parent existence Glob hit permission error then used direct target checks; underlying Agent logs not independently authenticated, review only."
+    },
+    {
+      "id": "B11-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "write_paths": [
+        "tests/test_failure_backup.py",
+        "tests/test_batch11_cli.py",
+        "docs/verification/batch-11.md"
+      ],
+      "depends_on": [
+        "B11-CONTRACT"
+      ],
+      "acceptance": "See collaboration/batch-11-plan.md; design QA then independent actual verification, full reservation retained, no live model",
+      "evidence": [
+        "docs/verification/batch-11.md",
+        "docs/verification/batch-11-review.md"
       ]
     }
   ],

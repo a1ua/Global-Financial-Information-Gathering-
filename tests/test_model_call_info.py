@@ -66,6 +66,7 @@ class ModelCallInfoTests(unittest.TestCase):
                 "market_intel.llm.client.ModelClient.__init__", side_effect=AssertionError("mutating client forbidden")):
             summary = inspect_model_call(self.root, result.call_id)
         self.assertEqual(set(summary), FIELDS)
+        self.assertEqual(summary["schema_version"], "model-call-info/0.2")
         self.assertEqual((summary["correlation_status"], summary["response_id_sha256"]), ("recorded", "a" * 64))
         self.assertEqual((summary["charged_tokens"], summary["charged_cost_micro_units"]), (28, 28))
         self.assertEqual(summary["currency"], "USD")

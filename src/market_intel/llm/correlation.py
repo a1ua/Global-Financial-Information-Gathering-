@@ -32,17 +32,32 @@ def validate_provider_response(value):
         _fail()
 
 
+def validate_provider_failure(value):
+    if (type(value) is not dict or value.keys() != {"schema_version", "response_id_sha256"}
+            or value["schema_version"] != "provider-failure-correlation/0.1"
+            or value["response_id_sha256"] is None):
+        _fail()
+    validate_response_hash(value["response_id_sha256"])
+
+
 def validate_call_correlation(metadata, call):
     if type(metadata) is not dict:
         _fail()
-    if "provider_response" not in metadata:
+    success, failure = "provider_response" in metadata, "provider_failure" in metadata
+    if success and failure:
+        _fail()
+    if not success and not failure:
         return
-    value = metadata["provider_response"]
-    validate_provider_response(value)
+    value = metadata["provider_failure" if failure else "provider_response"]
+    (validate_provider_failure if failure else validate_provider_response)(value)
     try:
         status, incoming, outgoing = (call[key] for key in ("status", "input_tokens", "output_tokens"))
     except (TypeError, KeyError, IndexError):
         _fail()
+    if failure:
+        if status != "failed" or incoming is not None or outgoing is not None:
+            _fail()
+        return
     if status != "succeeded" or any(type(actual) is not int or actual != value[key]
                                     for key, actual in (("input_tokens", incoming), ("output_tokens", outgoing))):
         _fail()

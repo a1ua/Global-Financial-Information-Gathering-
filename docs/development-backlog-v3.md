@@ -8,6 +8,8 @@
 
 ## 1. 立项后仍需先解决的工程缺口
 
+2026-11-10 Batch11按`../collaboration/batch-11-plan.md`交付失败/不完整响应的安全hash观察、同事务failed metadata、摘要0.2及备份兼容，未知费用全额不释放，无响应不造关联。完整/安装510项507通过3跳过，独立185项184通过1跳过，actual junction通过。仅模拟HTTP，无真实API/账单或生产切换；NLP-01继续进行中。证据verification/batch-11.md，后续development-status-plan-20261110-batch11.md。
+
 2026-11-10 Batch10按`../collaboration/batch-10-plan.md`交付成功调用的completion ID哈希关联、同事务metadata、只读摘要与备份严格兼容。完整/安装485项482通过3权限跳过，独立160项159通过1跳过；仅注入模拟HTTP，无真实API/账单、结算或生产切换。证据`verification/batch-10.md`，最新任务流`development-status-plan-20261110-batch10.md`。NLP-01保持进行中，下一项离线失败响应关联契约及真实验证前证据准备。
 
 Batch09-C按`../collaboration/batch-09c-plan.md`实现冻结候选清单的纯校验、精确版本复核、自包含离线重放；不重新查latest，不调用模型。完整及安装451项448通过3权限跳过，独立50项49通过1跳过；既有35条归档元数据只读验证通过。详细证据`verification/batch-09c.md`，最新后续计划`development-status-plan-20261109-batch09c.md`。NLP-01仍进行中，下一项为供应商请求关联契约/模拟链路，真实凭证/账单、可信高水位和生产切换仍未通过。

@@ -44,8 +44,12 @@ def inspect_model_call(workspace, call_id):
             response_hash = correlation["response_id_sha256"] if correlation is not None else None
             correlation_status = ("absent" if correlation is None else
                                   "id_unavailable" if response_hash is None else "recorded")
+            failure = metadata.get("provider_failure")
+            if failure is not None:
+                response_hash = failure["response_id_sha256"]
+                correlation_status = "failure_recorded"
             return {
-                "schema_version": "model-call-info/0.1", "status": "observed", "read_only": True,
+                "schema_version": "model-call-info/0.2", "status": "observed", "read_only": True,
                 "model_called": False, "invoice_verified": False, "settlement_allowed": False,
                 "ledger_id": observed["ledger_id"], "call_id": call["call_id"],
                 "call_status": call["status"], "attempt": call["attempt"],

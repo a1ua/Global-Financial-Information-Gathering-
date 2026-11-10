@@ -34,7 +34,9 @@ Python 包位于 `src/market_intel/`。已实现：
 
 CLI：`demo`、`collect-fed`、`collect-nbs`、`collect-all`、`resume`、`brief`、`replay`、`status`、`validate-report`、`backup`、`verify-backup`、`restore`，以及批次06的`deepseek-check`、`deepseek-smoke`、`ledger-backup`、`verify-ledger-backup`、`restore-ledger`。参数见README与`--help`。
 
-## 最新开发批次10及此前进展（2026-11-10）
+## 最新开发批次11及此前进展（2026-11-10）
+
+最新Batch11：失败/不完整响应仅保存合法completion ID哈希观察，provider_failure随failed同事务，不保存失败usage/正文、不释放全额预算，每attempt重置；无响应超时/HTTP/网络/前置解析失败不造关联，普通异常同名属性不采信。摘要model-call-info默认0.2、26字段，failure_recorded区分失败观察；schema3/证据4不变，备份/恢复/预检严格校验且不授予切换。完整及普通安装510项507通过3权限跳过，独立185项184通过1跳过，实际junction通过；已安装包模拟HTTP不完整响应→CNY全额失败摘要联验通过，非真实模型。证据verification/batch-11.md与独立review，最新计划development-status-plan-20261110-batch11.md。NLP-01及完整闸门不升级；真实API/逐调用账单、可信高水位/结算/生产恢复仍待，下一项只读供应商验证证据预检契约。7版PowerShell原路径缺失已改系统入口恢复，无关output/tmp保留不提交。
 
 Batch10代码发布已核验：本地`2bca05b89268ca713d6ecdf0689292f865046c72`、GitHub`1b255f3675b90ac473093ed011f26630e78a55e8`，相同tree`73c7e945a1dff02503db062f9270771284908520`；通过授权连接非强制更新，发布记录另行归档。产品SHA与独立验收相同。最新计划为development-status-plan-20261110-batch10.md，凭证/运行库/归档ZIP/output/tmp不入库。
 

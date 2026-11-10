@@ -10,7 +10,7 @@ import time
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
 
-from .client import ModelError, ModelResponse, TransientTransportError, _strict_loads
+from .client import ModelError, ModelResponse, ObservedTransportError, TransientTransportError, _strict_loads
 from .correlation import response_id_sha256
 
 
@@ -242,6 +242,19 @@ class DeepSeekTransport:
             _close(response)
 
     def _parse(self, result, request):
+        try:
+            return self._parse_result(result, request)
+        except ModelError as error:
+            if (str(error) not in ERROR_CODES or type(result) is not dict
+                    or result.get("model") != "deepseek-flash" or "id" not in result):
+                raise
+            try:
+                response_hash = response_id_sha256(result["id"])
+            except ValueError:
+                raise error from None
+            raise ObservedTransportError(str(error), response_hash) from None
+
+    def _parse_result(self, result, request):
         if type(result) is not dict:
             _error("deepseek_invalid_response")
         if result.get("model") != "deepseek-flash":

@@ -1,5 +1,7 @@
 # 成功调用的供应商响应关联
 
+后续Batch11已增加失败响应的可选hash观察，现查询摘要默认0.2；成功路径仍按本文规则。失败新规则见[provider-failure-correlation-v0.1.md](contracts/provider-failure-correlation-v0.1.md)，不释放全额费用、不保存失败正文。下文“失败不保存关联”描述Batch10当时范围。
+
 Batch10，2026-11-10。契约见[provider-correlation-v0.1.md](contracts/provider-correlation-v0.1.md)。本批不改变证据schema4或模型账本schema3，不运行真实付费请求。
 
 DeepSeek适配器在既有非流式响应与usage检查通过后，读取响应体的`id`，使用共享纯函数计算原始ASCII字节的SHA256并作为`ModelResponse.response_id_sha256`返回。只返回哈希，不返回或保存原ID，不读取HTTP响应头，也不把其它`request_id`字段替换为completion ID。传输版本、请求payload和缓存键语义保持不变。

@@ -23,6 +23,22 @@ class TransientTransportError(Exception):
     """Transport explicitly reports a retryable error; payload is never logged."""
 
 
+class ObservedTransportError(ModelError):
+    """A bounded safe error code and a completion hash, without response bodies."""
+
+    def __init__(self, code, response_id_sha256):
+        if type(code) is not str or not re.fullmatch(r"[a-z][a-z0-9_]{0,79}", code):
+            raise ModelError("invalid_provider_observation") from None
+        try:
+            validate_response_hash(response_id_sha256)
+            if response_id_sha256 is None:
+                raise ValueError()
+        except ValueError:
+            raise ModelError("invalid_provider_observation") from None
+        super().__init__(code)
+        self.response_id_sha256 = response_id_sha256
+
+
 def _fail(code):
     raise ModelError(code)
 
@@ -386,7 +402,14 @@ class ModelClient:
                        (call_id, key, day, stamp, attempt, policy.provider, policy.model, tokens, cost, tokens, cost, _json(metadata)))
         return call_id
 
-    def _finish(self, call_id, status, *, response=None, output=None, error=None):
+    def _finish(self, call_id, status, *, response=None, output=None, error=None, failure_hash=None):
+        if failure_hash is not None:
+            try:
+                validate_response_hash(failure_hash)
+            except ValueError:
+                _fail("invalid_provider_observation")
+            if status != "failed" or response is not None or output is not None:
+                _fail("invalid_provider_observation")
         stamp = self._now()
         with self._connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -425,6 +448,10 @@ class ModelClient:
                     "schema_version": "provider-response-correlation/0.1",
                     "response_id_sha256": response.response_id_sha256,
                     "input_tokens": incoming, "output_tokens": outgoing,
+                }
+            if failure_hash is not None:
+                metadata["provider_failure"] = {
+                    "schema_version": "provider-failure-correlation/0.1", "response_id_sha256": failure_hash,
                 }
             db.execute("""UPDATE calls SET status=?,finished_at=?,charged_tokens=?,charged_cost=?,
                        input_tokens=?,output_tokens=?,output_text=?,output_sha256=?,error_code=?,request_metadata=? WHERE call_id=?""",
@@ -498,6 +525,7 @@ class ModelClient:
         for attempt in range(policy.max_retries + 1):
             call_id = self._reserve(key, attempt + 1, input_bound, metadata)
             response = None
+            failure_hash = None
             retryable = True
             try:
                 # A new deep copy prevents transport mutation from changing future retries.
@@ -512,6 +540,13 @@ class ModelClient:
                     from .deepseek import ERROR_CODES
                     if str(error) in ERROR_CODES:
                         last_error = str(error)
+                if isinstance(error, ObservedTransportError):
+                    try:
+                        validate_response_hash(error.response_id_sha256)
+                    except (ValueError, AttributeError):
+                        pass
+                    else:
+                        failure_hash = error.response_id_sha256
                 retryable = False
             except Exception:
                 last_error = "transport_error"
@@ -524,6 +559,7 @@ class ModelClient:
                         validate_response_hash(response.response_id_sha256)
                     except ValueError:
                         _fail("invalid_provider_response")
+                    failure_hash = response.response_id_sha256
                     if (response.input_tokens is None) != (response.output_tokens is None):
                         _fail("invalid_usage")
                     if response.input_tokens is not None and (not _integer(response.input_tokens) or response.input_tokens > input_bound):
@@ -545,7 +581,7 @@ class ModelClient:
                     self._finish(call_id, "succeeded", response=response, output=response.text)
                     return CallResult(value, call_id, False)
             # Failed/malformed output is not retained. Unknown spend stays reserved.
-            self._finish(call_id, "failed", error=last_error)
+            self._finish(call_id, "failed", error=last_error, failure_hash=failure_hash)
             if not retryable:
                 break
         _fail(last_error)
