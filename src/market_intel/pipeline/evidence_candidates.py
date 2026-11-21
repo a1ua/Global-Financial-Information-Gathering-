@@ -107,7 +107,7 @@ def _descriptor(bundle, effective, receipt):
 
 
 def _plan(db, root, cutoff, limit, max_candidates, include_synthetic):
-    if db.execute("PRAGMA user_version").fetchone()[0] != 4:
+    if db.execute("PRAGMA user_version").fetchone()[0] not in (4, 5):
         _fail("evidence_candidate_schema_unsupported")
     if [tuple(row) for row in db.execute("PRAGMA integrity_check")] != [("ok",)]:
         _fail("evidence_candidate_database_invalid")
@@ -171,7 +171,7 @@ def _plan(db, root, cutoff, limit, max_candidates, include_synthetic):
 
 
 def plan_evidence_candidates(workspace, cutoff, max_candidates=5, *, include_synthetic=False):
-    """Observe an existing schema4 evidence snapshot without modifying business state."""
+    """Observe an existing schema 4 or 5 evidence snapshot without modifying business state."""
     if type(max_candidates) is not int or not 0 <= max_candidates <= 100:
         _fail("evidence_candidate_limit_invalid")
     if type(include_synthetic) is not bool:

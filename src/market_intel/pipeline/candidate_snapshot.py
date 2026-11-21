@@ -12,13 +12,14 @@ def _fail(code):
     raise ValueError(code) from None
 
 
-def _load(db, root, snapshot):
-    if db.execute("PRAGMA user_version").fetchone()[0] != 4:
+def _load(db, root, snapshot, *, verify_database=True):
+    if db.execute("PRAGMA user_version").fetchone()[0] not in (4, 5):
         _fail("candidate_snapshot_schema_unsupported")
-    if [tuple(row) for row in db.execute("PRAGMA integrity_check")] != [("ok",)]:
-        _fail("candidate_snapshot_database_invalid")
-    if db.execute("PRAGMA foreign_key_check").fetchall():
-        _fail("candidate_snapshot_foreign_keys_invalid")
+    if verify_database:
+        if [tuple(row) for row in db.execute("PRAGMA integrity_check")] != [("ok",)]:
+            _fail("candidate_snapshot_database_invalid")
+        if db.execute("PRAGMA foreign_key_check").fetchall():
+            _fail("candidate_snapshot_foreign_keys_invalid")
     bundles = []
     for expected in snapshot["input_manifest"]["candidates"]:
         _, event = _payload(db, "event_versions", expected["event_version_id"], "event_version_id")

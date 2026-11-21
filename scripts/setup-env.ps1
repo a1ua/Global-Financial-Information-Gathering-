@@ -6,12 +6,15 @@ $venvRoot = Join-Path $projectRoot '.venv'
 $venvPython = Join-Path $venvRoot 'Scripts/python.exe'
 $externalTempRoot = [IO.Path]::GetTempPath()
 $localPath = Join-Path $PSScriptRoot 'python-path.local.txt'
-if (-not (Test-Path -LiteralPath $localPath -PathType Leaf)) {
-    throw 'Missing scripts/python-path.local.txt. Record a verified Python 3.11+ path first.'
+if ($env:MARKET_INTEL_PYTHON) {
+    $basePython = $env:MARKET_INTEL_PYTHON
+} elseif (Test-Path -LiteralPath $localPath -PathType Leaf) {
+    $basePython = (Get-Content -LiteralPath $localPath -Raw).Trim()
+} else {
+    throw 'Set MARKET_INTEL_PYTHON or record a verified Python 3.11+ path in scripts/python-path.local.txt.'
 }
-$basePython = (Get-Content -LiteralPath $localPath -Raw).Trim()
 if (-not (Test-Path -LiteralPath $basePython -PathType Leaf)) {
-    throw 'The recorded Python interpreter no longer exists. Refresh python-path.local.txt.'
+    throw 'The configured Python interpreter no longer exists. Refresh MARKET_INTEL_PYTHON or python-path.local.txt.'
 }
 
 $script:setupLog = $null
@@ -20,10 +23,35 @@ function Write-SetupLog([string]$Message) {
     if ($script:setupLog) { Add-Content -LiteralPath $script:setupLog -Value $Message -Encoding utf8 }
 }
 function Invoke-Checked([string]$File, [string[]]$ArgumentList) {
-    if ($File -eq $basePython -or $File -eq $venvPython) { $ArgumentList = @('-X','utf8') + $ArgumentList }
+    if ($File -eq $basePython -or $File -eq $venvPython) {
+        # Windows PowerShell 5.1 native quoting can strip quotes inside -c code.
+        # Persist only this script's fixed Python helpers, never runtime inputs.
+        $codeIndex = [Array]::IndexOf($ArgumentList, '-c')
+        if ($codeIndex -ge 0 -and $script:setupLog) {
+            $helper = Join-Path (Split-Path $script:setupLog -Parent) ('helper-' + [guid]::NewGuid().ToString('N') + '.py')
+            [IO.File]::WriteAllText($helper, $ArgumentList[$codeIndex + 1], (New-Object Text.UTF8Encoding($false)))
+            $beforeCode = @()
+            if ($codeIndex -gt 0) { $beforeCode = @($ArgumentList[0..($codeIndex - 1)]) }
+            $afterCode = @()
+            if ($codeIndex + 2 -lt $ArgumentList.Count) { $afterCode = @($ArgumentList[($codeIndex + 2)..($ArgumentList.Count - 1)]) }
+            $ArgumentList = $beforeCode + @($helper) + $afterCode
+        }
+        $ArgumentList = @('-X','utf8') + $ArgumentList
+    }
     Write-SetupLog ('> ' + $File + ' ' + (ConvertTo-Json -InputObject $ArgumentList -Compress))
-    $nativeOutput = & $File @ArgumentList 2>&1
-    $nativeExitCode = $LASTEXITCODE
+    $savedErrorPreference = $ErrorActionPreference
+    try {
+        # Python unittest progress is stderr even when the native exit code is 0.
+        $ErrorActionPreference = 'Continue'
+        $nativeOutput = & $File @ArgumentList 2>&1
+        $nativeExitCode = $LASTEXITCODE
+    } finally { $ErrorActionPreference = $savedErrorPreference }
+    foreach ($entry in $nativeOutput) {
+        if ($entry -is [Management.Automation.ErrorRecord] -and
+            $entry.Exception -isnot [Management.Automation.RemoteException]) {
+            throw $entry
+        }
+    }
     foreach ($line in $nativeOutput) { Write-SetupLog ([string]$line) }
     Write-SetupLog "exit_code=$nativeExitCode"
     if ($nativeExitCode -ne 0) { throw "Setup command failed with exit code $nativeExitCode ($File)." }
@@ -43,6 +71,22 @@ try {
     Invoke-Checked $basePython @('-I','-B','-c','import sys; print(sys.executable); print(sys.version); sys.exit(0 if sys.version_info >= (3, 11) else 1)')
     $createEnvironment = -not (Test-Path -LiteralPath $venvPython -PathType Leaf)
     if ($createEnvironment -and (Test-Path -LiteralPath $venvRoot)) { throw 'Incomplete .venv exists. Inspect it before choosing a new environment; setup never deletes it.' }
+    $upgradeEnvironment = $false
+    if (-not $createEnvironment) {
+        $venvConfig = Join-Path $venvRoot 'pyvenv.cfg'
+        if (-not (Test-Path -LiteralPath $venvConfig -PathType Leaf)) { throw 'Existing .venv has no pyvenv.cfg; setup will not modify it.' }
+        try {
+            & $venvPython -I -c "import sys; sys.exit(0 if sys.version_info >= (3,11) else 1)" 2>$null
+            $upgradeEnvironment = $LASTEXITCODE -ne 0
+        } catch { $upgradeEnvironment = $true }
+        if ($upgradeEnvironment) {
+            $recordedVersion = [regex]::Match((Get-Content -LiteralPath $venvConfig -Raw), '(?m)^version\s*=\s*(\d+\.\d+)\.')
+            $baseVersion = & $basePython -I -c "import sys; print(str(sys.version_info.major) + '.' + str(sys.version_info.minor))"
+            if ($LASTEXITCODE -ne 0 -or -not $recordedVersion.Success -or $recordedVersion.Groups[1].Value -ne $baseVersion) {
+                throw 'Stale .venv Python version differs from the configured base or is unknown; setup will not modify it.'
+            }
+        }
+    }
     $runId = (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0,8)
     $runRoot = Join-Path $venvRoot "setup-runs/$runId"
     $null = New-Item -ItemType Directory -Path (Join-Path $runRoot 'tmp') -Force
@@ -51,6 +95,10 @@ try {
     $env:TMP = $env:TEMP
     Write-SetupLog "setup_run=$runId (local time); project=$projectRoot"
     if ($createEnvironment) { Invoke-Checked $basePython @('-I','-B','-m','venv',$venvRoot) }
+    elseif ($upgradeEnvironment) {
+        Write-SetupLog 'Recovering stale same-version .venv with venv --upgrade; preserving packages and prior evidence.'
+        Invoke-Checked $basePython @('-I','-B','-m','venv','--upgrade',$venvRoot)
+    }
     $checkEnvironment = @'
 import json, pathlib, sqlite3, sys
 expected = pathlib.Path(sys.argv[1]).resolve()

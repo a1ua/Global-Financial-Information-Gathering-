@@ -1,7 +1,7 @@
 {
   "version": "3.0",
-  "updated_at": "2026-11-09",
-  "status_note": "Batch11 failed/incomplete response hash observations accepted: same failed transaction, per-attempt reset, no failure body/usage and full reservations retained. Summary0.2 preserves26 fields with failure_recorded. Full/installed510 run507 pass3 symlink skips; independent185 run184 pass1 skip incl6 scenarios, actual junction pass. Installed injected HTTP/CNY readonly CLI verified. No live API/key/invoice/settlement; WB11 static body recovered review only. NLP01/G3 unchanged. Next readonly supplier verification evidence preflight.",
+  "updated_at": "2026-11-22",
+  "status_note": "Batch27 synthetic weekly summary accepted. 606 run 603 passed 3 permission skips; independent 11 + 4 passed. Production dependencies unchanged. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -101,7 +101,7 @@
         "src/market_intel/store/",
         "tests/store/"
       ],
-      "status": "in_progress",
+      "status": "done",
       "estimate_hours": [
         5,
         8
@@ -112,11 +112,14 @@
         "历史判断普通修改被拒绝，更正使用追加",
         "副本迁移、事务回滚及引用完整性通过"
       ],
-      "progress_note": "Evidence schema0->4, immutable records, durable queue and receipts verified; current evidence backup/restore accepted under OPS-02 in Batch04. Prediction persistence and broader production operations remain pending.",
+      "progress_note": "Batch17 verified foreign keys, uniqueness and append-only correction, version 4 copy migration and rollback, exact old report replay and schema 4/5 backup coexistence. Production evaluation remains gated.",
       "evidence": [
         "tests/test_workflow.py",
-        "docs/verification/batch-02.md"
-      ]
+        "docs/verification/batch-02.md",
+        "docs/verification/batch-17.md",
+        "docs/verification/batch-17-review.md"
+      ],
+      "accepted_scope": "Evidence schema 0–5, synthetic prediction persistence, immutable correction chain, post-commit receipt and verified backup compatibility. Production judgment input registries and evaluation are later tasks."
     },
     {
       "id": "ENG-05",
@@ -263,8 +266,18 @@
         5
       ],
       "gate": "G4",
-      "progress_note": "Batch05 official index identity and exchange session rules partially verified; Python TLS failures retained and three bounded Node GETs returned 200. No production OHLC provider, open timestamp definition, retention scope or versioned calendar accepted; evaluation remains disabled.",
-      "evidence": ["docs/market/capability-review-20261108.md", "docs/market/probe-results-20261108.json"],
+      "progress_note": "Batch18 reviewed CSI/SSE source evidence and 2 historical OHLC rows, validated normalized OHLC against explicit sessions. Tushare index_daily documentation candidate; authorized direct sample, actual open/arrival semantics, historical session coverage, revisions and retention pending. Batch19 generated 242 SSE scheduled dates from official notices and linked OHLC audit. Actual session and authorized provider coverage still pending. Batch20 offline documented Tushare sample normalization and session audit accepted. Real sample not accessed. Batch21 offline file-to-coverage audit accepted; Antigravity reviewed synthetic edge cases; authorized real source pending. Batch22 validated SZSE plan and offline .SZ audit with non-interchangeable SSE/SZSE provenance. Authorized samples and actual sessions pending.",
+      "evidence": [
+        "docs/market/capability-review-20261108.md",
+        "docs/market/probe-results-20261108.json",
+        "docs/market/source-acceptance-20261118.md",
+        "docs/verification/batch-18.md",
+        "docs/contracts/scheduled-sessions-v0.1.md",
+        "docs/verification/batch-19.md",
+        "docs/verification/batch-20.md",
+        "docs/verification/batch-21.md",
+        "docs/verification/batch-22.md"
+      ],
       "acceptance": [
         "代码、币种、OHLC和调整口径可解释",
         "日历来源及可回溯范围有证据",
@@ -294,6 +307,11 @@
         "假期、DST与提前收市测试通过",
         "缺失、异常价格与公司行动触发明确状态",
         "修订新增版本，旧快照仍可查询"
+      ],
+      "progress_note": "Batch23 synthetic in-memory as-of selection and exact revision replay accepted. Production persistence, synchronization and source activation await MKT-01. Batch24 self-contained synthetic replay artifact and CLI verification accepted; production synchronization remains planned.",
+      "evidence": [
+        "docs/verification/batch-23.md",
+        "docs/verification/batch-24.md"
       ]
     },
     {
@@ -316,7 +334,13 @@
       "gate": "G3",
       "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline; Batch09-B readonly existing evidence candidate selection by frozen versions/receipts, no model execution; Batch09-C fixed snapshot pure validation, exact-version input verification and explicit self-contained offline replay, no model execution; Batch10 successful completion-id hash correlation and readonly call summary with strict backup compatibility, synthetic HTTP only; Batch11 failed/incomplete response hash observations, full reservation preservation, readonly call summary0.2 and backup compatibility, synthetic HTTP only",
       "progress_note": "DeepSeek10 CNY/day per UTC ledger. Candidate snapshots plus successful/failed response hash observations accepted offline. Real API/tokenizer/usage/invoice verification, account-wide bound, terminal settlement, trusted external high-water and production switching remain pending. Failed observations never release reservations.",
-      "evidence": ["docs/llm-client.md", "docs/verification/batch-05-review.md", "docs/verification/batch-05.md", "docs/verification/batch-06.md", "docs/verification/batch-06-review.md"],
+      "evidence": [
+        "docs/llm-client.md",
+        "docs/verification/batch-05-review.md",
+        "docs/verification/batch-05.md",
+        "docs/verification/batch-06.md",
+        "docs/verification/batch-06-review.md"
+      ],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
         "真实调用前明确限额与凭证配置",
@@ -447,6 +471,10 @@
         "固定方向语义、标的、基准、阈值和时间窗口",
         "价格起点严格晚于校验提交成功的committed_at",
         "缺字段拒收，历史更正追加"
+      ],
+      "progress_note": "Batch25 synthetic receipt-based session planning accepted. Actual session, price and production evaluation contracts remain pending.",
+      "evidence": [
+        "docs/verification/batch-25.md"
       ]
     },
     {
@@ -472,6 +500,10 @@
         "手算价格样例一致",
         "未成熟不评分，缺失不当作零收益",
         "同快照、协议与算法版本重算数值一致"
+      ],
+      "progress_note": "Batch26 synthetic close-gated two-leg AR/CAR calculation accepted; real maturity queue, source data and evaluation remain planned.",
+      "evidence": [
+        "docs/verification/batch-26.md"
       ]
     },
     {
@@ -496,6 +528,10 @@
         "分母可逐条追溯，弃权与完整率单列",
         "同事件多个标的和窗口不扩大独立事件数",
         "不将描述性表现写成因果或研究有效性证明"
+      ],
+      "progress_note": "Batch27 synthetic weekly receipt cohort and per-protocol CAR summary accepted. Formal weekly report awaits production REV-02.",
+      "evidence": [
+        "docs/verification/batch-27.md"
       ]
     },
     {
@@ -712,31 +748,120 @@
     {
       "id": "WB-05",
       "owner": "workbuddy-subagent",
-      "depends_on": ["ENG-03"],
+      "depends_on": [
+        "ENG-03"
+      ],
       "status": "done",
       "accepted_scope": "Child-agent dispatch observed; final WorkBuddy correction retained and reviewed. Initial prematurely written summaries do not prove child results. Reported static review is separate from independent product tests; WorkBuddy tests_run=0",
       "probe_result": "partial",
       "subagent_count": 2,
-      "evidence": ["collaboration/workbuddy/results/WB-05-report.md", "collaboration/workbuddy/results/WB-05-results.json", "docs/verification/batch-05-workbuddy-triage.md"],
-      "write_paths": ["collaboration/workbuddy/results/WB-05-report.md", "collaboration/workbuddy/results/WB-05-results.json"],
+      "evidence": [
+        "collaboration/workbuddy/results/WB-05-report.md",
+        "collaboration/workbuddy/results/WB-05-results.json",
+        "docs/verification/batch-05-workbuddy-triage.md"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-05-report.md",
+        "collaboration/workbuddy/results/WB-05-results.json"
+      ],
       "acceptance": "Actual child-agent evidence, independent budget failure cases and truthful unverified items",
       "dispatch_evidence": "WorkBuddy desktop task: 执行WB-05独立任务并委派子代理审查; submitted and processing observed 2026-11-08"
     },
     {
       "id": "QA-B05",
       "owner": "independent-review-agent",
-      "depends_on": ["NLP-01"],
+      "depends_on": [
+        "NLP-01"
+      ],
       "status": "done",
-      "write_paths": ["docs/verification/batch-05-review.md"],
+      "write_paths": [
+        "docs/verification/batch-05-review.md"
+      ],
       "acceptance": "Independent review and adversarial budget/cache verification"
     }
   ],
   "batch06_work_packages": [
-    {"id": "NLP-01-CNY", "owner": "coordinator", "depends_on": ["ENG-03", "NLP-01"], "status": "done", "write_paths": ["src/market_intel/llm/client.py", "src/market_intel/cli.py", "tests/test_llm_cny.py", "tests/test_batch06_cli.py"], "acceptance": "CNY integer ceiling, schema1 migration without reset, explicit CLI and no-key rejection"},
-    {"id": "NLP-01-DEEPSEEK", "owner": "deepseek-transport-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/llm/deepseek.py", "tests/test_deepseek.py", "docs/deepseek-provider.md", "config/deepseek.example.json"], "acceptance": "Fixed endpoint TLS, safe errors, response limits and synthetic HTTP tests; actual API unverified"},
-    {"id": "NLP-01-RECOVERY", "owner": "ledger-recovery-agent", "depends_on": ["NLP-01"], "status": "done", "write_paths": ["src/market_intel/ops/llm_backup.py", "tests/test_llm_backup.py", "docs/llm-backup.md"], "acceptance": "schema1/2 consistent snapshot, currency/pending preservation and isolated restore; no production rollback"},
-    {"id": "QA-B06", "owner": "independent-qa-agent", "depends_on": ["NLP-01-CNY", "NLP-01-DEEPSEEK", "NLP-01-RECOVERY"], "status": "done", "write_paths": ["docs/verification/batch-06-review.md"], "acceptance": "Independent tests, negative ledger business cases, CLI and correction review"},
-    {"id": "WB-06", "owner": "workbuddy-subagent", "depends_on": ["ENG-03"], "status": "blocked", "finalized": true, "blocked_reason": "Previously blocked at publication. Later partial self-report claims one recovery result recovered, budget result missing; original tool receipt not independently verified, not done.", "unblock_condition": "Recover verifiable original results and independently review them, or explicitly dispatch a new review task", "evidence": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json", "docs/verification/batch-06-workbuddy-triage.md"], "write_paths": ["collaboration/workbuddy/results/WB-06-report.md", "collaboration/workbuddy/results/WB-06-results.json"], "acceptance": "Actual complete child-agent results, fixed-doc design review, finalized=true and no test claims", "dispatch_evidence": "WorkBuddy task 执行WB-06审查任务 submitted and processing observed 2026-11-08T12:03:51Z"}
+    {
+      "id": "NLP-01-CNY",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-03",
+        "NLP-01"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/llm/client.py",
+        "src/market_intel/cli.py",
+        "tests/test_llm_cny.py",
+        "tests/test_batch06_cli.py"
+      ],
+      "acceptance": "CNY integer ceiling, schema1 migration without reset, explicit CLI and no-key rejection"
+    },
+    {
+      "id": "NLP-01-DEEPSEEK",
+      "owner": "deepseek-transport-agent",
+      "depends_on": [
+        "NLP-01"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/llm/deepseek.py",
+        "tests/test_deepseek.py",
+        "docs/deepseek-provider.md",
+        "config/deepseek.example.json"
+      ],
+      "acceptance": "Fixed endpoint TLS, safe errors, response limits and synthetic HTTP tests; actual API unverified"
+    },
+    {
+      "id": "NLP-01-RECOVERY",
+      "owner": "ledger-recovery-agent",
+      "depends_on": [
+        "NLP-01"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/ops/llm_backup.py",
+        "tests/test_llm_backup.py",
+        "docs/llm-backup.md"
+      ],
+      "acceptance": "schema1/2 consistent snapshot, currency/pending preservation and isolated restore; no production rollback"
+    },
+    {
+      "id": "QA-B06",
+      "owner": "independent-qa-agent",
+      "depends_on": [
+        "NLP-01-CNY",
+        "NLP-01-DEEPSEEK",
+        "NLP-01-RECOVERY"
+      ],
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-06-review.md"
+      ],
+      "acceptance": "Independent tests, negative ledger business cases, CLI and correction review"
+    },
+    {
+      "id": "WB-06",
+      "owner": "workbuddy-subagent",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "status": "blocked",
+      "finalized": true,
+      "blocked_reason": "Previously blocked at publication. Later partial self-report claims one recovery result recovered, budget result missing; original tool receipt not independently verified, not done.",
+      "unblock_condition": "Recover verifiable original results and independently review them, or explicitly dispatch a new review task",
+      "evidence": [
+        "collaboration/workbuddy/results/WB-06-report.md",
+        "collaboration/workbuddy/results/WB-06-results.json",
+        "docs/verification/batch-06-workbuddy-triage.md"
+      ],
+      "write_paths": [
+        "collaboration/workbuddy/results/WB-06-report.md",
+        "collaboration/workbuddy/results/WB-06-results.json"
+      ],
+      "acceptance": "Actual complete child-agent results, fixed-doc design review, finalized=true and no test claims",
+      "dispatch_evidence": "WorkBuddy task 执行WB-06审查任务 submitted and processing observed 2026-11-08T12:03:51Z"
+    }
   ],
   "batch07_work_packages": [
     {
@@ -1614,5 +1739,915 @@
     "verification_scope": "Batch11 failed/incomplete response hash observations exact-tree verified; full reservations retained, readonly summary0.2, strict backup compatibility. Full/installed510 run507 pass3 symlink skips; independent185 run184 pass1 skip incl6 scenarios, actual junction pass. Installed injected HTTP/CNY verified, no live API/key/invoice/settlement/source refresh. WB11 full static body recovered review only; conversation ZIP/runtime data/output/tmp excluded. Publication record follows.",
     "transport": "Authorized GitHub connection; exact source snapshot, local history retained",
     "includes": "Tracked source, synthetic fixtures, plans and verification docs"
-  }
+  },
+  "batch12_work_packages": [
+    {
+      "id": "B12-PREFLIGHT",
+      "owner": "preflight12",
+      "status": "done",
+      "depends_on": [
+        "QA-B12-design"
+      ],
+      "write_paths": [
+        "src/market_intel/ops/provider_preflight.py",
+        "tests/test_provider_preflight.py",
+        "docs/provider-preflight.md"
+      ],
+      "acceptance": "Design QA then independent tests, readonly no settlement",
+      "evidence": [
+        "docs/verification/batch-12.md",
+        "docs/verification/batch-12-review.md"
+      ]
+    },
+    {
+      "id": "QA-B12",
+      "owner": "qa12",
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-12-review.md"
+      ],
+      "depends_on": [],
+      "acceptance": "Independent design and actual tests",
+      "evidence": [
+        "docs/verification/batch-12.md",
+        "docs/verification/batch-12-review.md"
+      ]
+    },
+    {
+      "id": "B12-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "docs/contracts/provider-preflight-v0.1.md",
+        "docs/verification/batch-12.md"
+      ],
+      "depends_on": [
+        "B12-PREFLIGHT",
+        "QA-B12"
+      ],
+      "acceptance": "Full offline suite",
+      "evidence": [
+        "docs/verification/batch-12.md",
+        "docs/verification/batch-12-review.md"
+      ]
+    }
+  ],
+  "batch13_work_packages": [
+    {
+      "id": "B13-ENV",
+      "owner": "env13",
+      "status": "done",
+      "depends_on": [
+        "QA-B13-design"
+      ],
+      "write_paths": [
+        "scripts/dev.ps1",
+        "scripts/setup-env.ps1",
+        "docs/environment-recovery-batch13.md"
+      ],
+      "acceptance": "Independent QA and normal isolated install",
+      "evidence": [
+        "docs/verification/batch-13.md",
+        "docs/verification/batch-13-review.md"
+      ]
+    },
+    {
+      "id": "QA-B13",
+      "owner": "qa13",
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-13-review.md"
+      ],
+      "depends_on": [],
+      "acceptance": "Design and actual independent checks",
+      "evidence": [
+        "docs/verification/batch-13.md",
+        "docs/verification/batch-13-review.md"
+      ]
+    },
+    {
+      "id": "B13-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B13-ENV",
+        "QA-B13"
+      ],
+      "write_paths": [
+        "collaboration/batch-13-plan.md",
+        "collaboration/task-board.json",
+        "docs/verification/batch-13.md",
+        "docs/deepseek-smoke-runbook.md"
+      ],
+      "acceptance": "Installed CLI and offline suite evidence; live remains gated",
+      "evidence": [
+        "docs/verification/batch-13.md",
+        "docs/verification/batch-13-review.md"
+      ]
+    }
+  ],
+  "batch14_work_packages": [
+    {
+      "id": "B14-RECEIPT",
+      "owner": "receipt14",
+      "status": "done",
+      "depends_on": [
+        "QA-B14-design"
+      ],
+      "write_paths": [
+        "src/market_intel/ops/provider_receipt.py",
+        "tests/test_provider_receipt.py",
+        "docs/provider-receipt.md"
+      ],
+      "acceptance": "Strict unverified claim comparison, readonly, actual tests",
+      "evidence": [
+        "docs/verification/batch-14.md",
+        "docs/verification/batch-14-review.md"
+      ]
+    },
+    {
+      "id": "QA-B14",
+      "owner": "qa14",
+      "status": "done",
+      "depends_on": [],
+      "write_paths": [
+        "docs/verification/batch-14-review.md"
+      ],
+      "acceptance": "Independent design then implementation verification",
+      "evidence": [
+        "docs/verification/batch-14.md",
+        "docs/verification/batch-14-review.md"
+      ]
+    },
+    {
+      "id": "B14-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B14-RECEIPT",
+        "QA-B14"
+      ],
+      "write_paths": [
+        "docs/contracts/provider-receipt-v0.1.md",
+        "collaboration/task-board.json",
+        "docs/verification/batch-14.md"
+      ],
+      "acceptance": "Full offline suite and handoff",
+      "evidence": [
+        "docs/verification/batch-14.md",
+        "docs/verification/batch-14-review.md"
+      ]
+    }
+  ],
+  "batch15_work_packages": [
+    {
+      "id": "B15-DESIGN",
+      "owner": "judgment_design15",
+      "status": "done",
+      "depends_on": [],
+      "write_paths": [
+        "docs/prediction-storage-design.md"
+      ],
+      "acceptance": "Concrete schema/reference/receipt/idempotency/backup design",
+      "evidence": [
+        "docs/verification/batch-15.md",
+        "docs/verification/batch-15-review.md"
+      ]
+    },
+    {
+      "id": "B15-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B15-DESIGN"
+      ],
+      "write_paths": [
+        "docs/contracts/prediction-storage-v0.1.md"
+      ],
+      "acceptance": "Independent QA freeze before implementation",
+      "evidence": [
+        "docs/verification/batch-15.md",
+        "docs/verification/batch-15-review.md"
+      ]
+    },
+    {
+      "id": "QA-B15",
+      "owner": "qa15",
+      "status": "done",
+      "depends_on": [
+        "B15-CONTRACT"
+      ],
+      "write_paths": [
+        "docs/verification/batch-15-review.md"
+      ],
+      "acceptance": "Design only; no unrun tests claimed",
+      "evidence": [
+        "docs/verification/batch-15.md",
+        "docs/verification/batch-15-review.md"
+      ]
+    }
+  ],
+  "batch16_work_packages": [
+    {
+      "id": "P16-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B15-CONTRACT"
+      ],
+      "write_paths": [
+        "docs/contracts/prediction-input-v0.1.md"
+      ],
+      "acceptance": "Independent design review",
+      "evidence": [
+        "docs/verification/batch-16.md",
+        "docs/verification/batch-16-review.md"
+      ]
+    },
+    {
+      "id": "P16-VALIDATE",
+      "owner": "prediction16",
+      "status": "done",
+      "depends_on": [
+        "P16-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/prediction_input.py",
+        "src/market_intel/pipeline/prediction_input.py",
+        "tests/test_prediction_input.py"
+      ],
+      "acceptance": "Strict synthetic validation and exact read-only lookup",
+      "evidence": [
+        "docs/verification/batch-16.md",
+        "docs/verification/batch-16-review.md"
+      ]
+    },
+    {
+      "id": "QA-B16",
+      "owner": "qa16",
+      "status": "done",
+      "depends_on": [
+        "P16-CONTRACT"
+      ],
+      "write_paths": [
+        "docs/verification/batch-16-review.md"
+      ],
+      "acceptance": "Independent design and implementation checks",
+      "evidence": [
+        "docs/verification/batch-16.md",
+        "docs/verification/batch-16-review.md"
+      ]
+    }
+  ],
+  "batch17_work_packages": [
+    {
+      "id": "P17-STORE",
+      "owner": "store17",
+      "status": "done",
+      "depends_on": [
+        "P16-VALIDATE"
+      ],
+      "write_paths": [
+        "src/market_intel/store/predictions.py",
+        "tests/test_prediction_store.py"
+      ],
+      "acceptance": "Immutable synthetic persistence, recovery, semantic closure",
+      "evidence": [
+        "docs/verification/batch-17.md",
+        "docs/verification/batch-17-review.md"
+      ]
+    },
+    {
+      "id": "P17-COMPAT",
+      "owner": "compat17",
+      "status": "done",
+      "depends_on": [
+        "P16-VALIDATE"
+      ],
+      "write_paths": [
+        "src/market_intel/ops/backup.py",
+        "src/market_intel/pipeline/evidence_candidates.py",
+        "src/market_intel/pipeline/candidate_snapshot.py",
+        "tests/test_prediction_backup.py"
+      ],
+      "acceptance": "Schema 4/5 readers and verified backup compatibility",
+      "evidence": [
+        "docs/verification/batch-17.md",
+        "docs/verification/batch-17-review.md"
+      ]
+    },
+    {
+      "id": "P17-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "P17-STORE",
+        "P17-COMPAT"
+      ],
+      "write_paths": [
+        "src/market_intel/store/__init__.py",
+        "collaboration/task-board.json",
+        "collaboration/batch-17-plan.md",
+        "tests/test_workflow.py",
+        "docs/verification/batch-17.md"
+      ],
+      "acceptance": "Transactional migration and full/regression install",
+      "evidence": [
+        "docs/verification/batch-17.md",
+        "docs/verification/batch-17-review.md"
+      ]
+    },
+    {
+      "id": "QA-B17",
+      "owner": "qa17",
+      "status": "done",
+      "depends_on": [
+        "P16-VALIDATE"
+      ],
+      "write_paths": [
+        "docs/verification/batch-17-review.md"
+      ],
+      "acceptance": "Independent review and fault checks",
+      "evidence": [
+        "docs/verification/batch-17.md",
+        "docs/verification/batch-17-review.md"
+      ]
+    }
+  ],
+  "batch18_work_packages": [
+    {
+      "id": "B18-SOURCE",
+      "owner": "source18",
+      "status": "done",
+      "write_paths": [
+        "docs/market/source-acceptance-20261118.md"
+      ],
+      "depends_on": [],
+      "acceptance": "Official OHLC and session evidence; production gaps",
+      "evidence": [
+        "docs/verification/batch-18.md",
+        "docs/verification/batch-18-review.md"
+      ]
+    },
+    {
+      "id": "B18-CHECK",
+      "owner": "market18",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/contracts/market_sample.py",
+        "tests/test_market_sample.py"
+      ],
+      "depends_on": [],
+      "acceptance": "Offline exact session, date and OHLC checks",
+      "evidence": [
+        "docs/verification/batch-18.md",
+        "docs/verification/batch-18-review.md"
+      ]
+    },
+    {
+      "id": "QA-B18",
+      "owner": "qa18",
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-18-review.md"
+      ],
+      "depends_on": [],
+      "acceptance": "Independent design and runtime checks",
+      "evidence": [
+        "docs/verification/batch-18.md",
+        "docs/verification/batch-18-review.md"
+      ]
+    }
+  ],
+  "batch19_work_packages": [
+    {
+      "id": "B19-CALENDAR",
+      "owner": "calendar19",
+      "status": "done",
+      "depends_on": [
+        "B18-SOURCE",
+        "B18-CHECK"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/scheduled_sessions.py",
+        "tests/test_scheduled_sessions.py"
+      ],
+      "acceptance": "Deterministic scheduled session cohort from fixed official dates",
+      "evidence": [
+        "docs/verification/batch-19.md",
+        "docs/verification/batch-19-review.md"
+      ]
+    },
+    {
+      "id": "B19-FIXTURE",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B18-SOURCE"
+      ],
+      "write_paths": [
+        "config/sse-2026-scheduled-days.example.json",
+        "docs/contracts/scheduled-sessions-v0.1.md"
+      ],
+      "acceptance": "Official dates, bounded usage and deterministic verification",
+      "evidence": [
+        "docs/verification/batch-19.md",
+        "docs/verification/batch-19-review.md"
+      ]
+    },
+    {
+      "id": "QA-B19",
+      "owner": "qa19",
+      "status": "done",
+      "depends_on": [
+        "B19-CALENDAR"
+      ],
+      "write_paths": [
+        "docs/verification/batch-19-review.md"
+      ],
+      "acceptance": "Independent source transcription and behavior checks",
+      "evidence": [
+        "docs/verification/batch-19.md",
+        "docs/verification/batch-19-review.md"
+      ]
+    }
+  ],
+  "batch20_work_packages": [
+    {
+      "id": "B20-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "write_paths": [
+        "docs/contracts/tushare-index-sample-v0.1.md",
+        "collaboration/batch-20-antigravity-review.md",
+        "collaboration/task-board.json",
+        "src/market_intel/contracts/market_sample.py",
+        "collaboration/batch-20-plan.md"
+      ],
+      "depends_on": [
+        "B18-CHECK",
+        "B19-CALENDAR"
+      ],
+      "acceptance": "Official documented response shape; frozen offline contract",
+      "evidence": [
+        "docs/verification/batch-20.md",
+        "docs/verification/batch-20-review.md"
+      ]
+    },
+    {
+      "id": "B20-ADAPTER",
+      "owner": "sample20",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/adapters/market/tushare_sample.py",
+        "tests/test_tushare_sample.py"
+      ],
+      "depends_on": [
+        "B20-CONTRACT"
+      ],
+      "acceptance": "Exact decimal normalization, code/date validation, bounded bytes",
+      "evidence": [
+        "docs/verification/batch-20.md",
+        "docs/verification/batch-20-review.md"
+      ]
+    },
+    {
+      "id": "QA-B20",
+      "owner": "qa20",
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-20-review.md"
+      ],
+      "depends_on": [
+        "B20-CONTRACT"
+      ],
+      "acceptance": "Independent review and synthetic verification",
+      "evidence": [
+        "docs/verification/batch-20.md",
+        "docs/verification/batch-20-review.md"
+      ]
+    },
+    {
+      "id": "AGY-B20",
+      "owner": "antigravity",
+      "status": "planned",
+      "depends_on": [
+        "B20-ADAPTER"
+      ],
+      "write_paths": [],
+      "acceptance": "Actual review confirmed from Antigravity",
+      "task_sheet": "collaboration/batch-20-antigravity-review.md",
+      "progress_note": "Desktop process observed; no callable CLI or UI control in current session. Not dispatched."
+    }
+  ],
+  "batch21_work_packages": [
+    {
+      "id": "B21-AUDIT",
+      "owner": "audit21",
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/pipeline/market_sample_audit.py",
+        "tests/test_market_sample_audit.py"
+      ],
+      "depends_on": [
+        "B19-CALENDAR",
+        "B20-ADAPTER"
+      ],
+      "acceptance": "Bounded local response + SSE dates + deterministic SHA evidence",
+      "evidence": [
+        "docs/verification/batch-21.md",
+        "docs/verification/batch-21-review.md"
+      ]
+    },
+    {
+      "id": "QA-B21",
+      "owner": "qa21",
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-21-review.md"
+      ],
+      "depends_on": [
+        "B21-AUDIT"
+      ],
+      "acceptance": "Independent test and review",
+      "evidence": [
+        "docs/verification/batch-21.md",
+        "docs/verification/batch-21-review.md"
+      ]
+    },
+    {
+      "id": "B21-CLI",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B21-AUDIT"
+      ],
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "tests/test_batch21_cli.py",
+        "docs/contracts/sse-index-sample-audit-v0.1.md"
+      ],
+      "acceptance": "CLI and full regression",
+      "evidence": [
+        "docs/verification/batch-21.md"
+      ]
+    },
+    {
+      "id": "AGY-B21",
+      "owner": "antigravity",
+      "status": "done",
+      "depends_on": [],
+      "write_paths": [],
+      "acceptance": "Text review of synthetic scope, no project attached",
+      "evidence": [
+        "docs/verification/batch-21.md"
+      ]
+    }
+  ],
+  "batch22_work_packages": [
+    {
+      "id": "B22-EXCHANGES",
+      "owner": "market22",
+      "status": "done",
+      "depends_on": [
+        "B21-AUDIT"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/scheduled_sessions.py",
+        "src/market_intel/pipeline/market_sample_audit.py",
+        "tests/test_szse_index_audit.py"
+      ],
+      "acceptance": "SSE compatibility and explicit SZSE scope",
+      "evidence": [
+        "docs/verification/batch-22.md",
+        "docs/verification/batch-22-review.md"
+      ]
+    },
+    {
+      "id": "B22-CLI",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B22-EXCHANGES"
+      ],
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "config/szse-2026-scheduled-days.example.json",
+        "docs/contracts/szse-index-sample-audit-v0.1.md",
+        "tests/test_batch22_cli.py"
+      ],
+      "acceptance": "Official fixture and offline command regression",
+      "evidence": [
+        "docs/verification/batch-22.md",
+        "docs/verification/batch-22-review.md"
+      ]
+    },
+    {
+      "id": "QA-B22",
+      "owner": "qa22",
+      "status": "done",
+      "depends_on": [],
+      "write_paths": [
+        "docs/verification/batch-22-review.md"
+      ],
+      "acceptance": "Independent verification and review",
+      "evidence": [
+        "docs/verification/batch-22.md",
+        "docs/verification/batch-22-review.md"
+      ]
+    }
+  ],
+  "batch23_work_packages": [
+    {
+      "id": "B23-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B22-EXCHANGES"
+      ],
+      "write_paths": [
+        "docs/contracts/market-snapshot-synthetic-v0.1.md"
+      ],
+      "acceptance": "Independent design review with explicit synthetic scope",
+      "evidence": [
+        "docs/verification/batch-23.md",
+        "docs/verification/batch-23-review.md"
+      ]
+    },
+    {
+      "id": "B23-SNAPSHOT",
+      "owner": "snapshot23",
+      "status": "done",
+      "depends_on": [
+        "B23-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/market_snapshot.py",
+        "tests/test_market_snapshot.py"
+      ],
+      "acceptance": "Freeze and resolve exact revisions with availability times",
+      "evidence": [
+        "docs/verification/batch-23.md",
+        "docs/verification/batch-23-review.md"
+      ]
+    },
+    {
+      "id": "QA-B23",
+      "owner": "qa23",
+      "status": "done",
+      "depends_on": [
+        "B23-CONTRACT"
+      ],
+      "write_paths": [
+        "docs/verification/batch-23-review.md"
+      ],
+      "acceptance": "Independent design and behavior review",
+      "evidence": [
+        "docs/verification/batch-23.md",
+        "docs/verification/batch-23-review.md"
+      ]
+    }
+  ],
+  "batch24_work_packages": [
+    {
+      "id": "B24-ARTIFACT",
+      "owner": "replay24",
+      "status": "done",
+      "depends_on": [
+        "B23-SNAPSHOT"
+      ],
+      "write_paths": [
+        "src/market_intel/ops/market_replay.py",
+        "tests/test_market_replay.py"
+      ],
+      "acceptance": "Self-contained strict market replay and no replacement",
+      "evidence": [
+        "docs/verification/batch-24.md",
+        "docs/verification/batch-24-review.md"
+      ]
+    },
+    {
+      "id": "B24-CLI",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B24-ARTIFACT"
+      ],
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "docs/contracts/synthetic-market-replay-v0.1.md",
+        "tests/test_batch24_cli.py",
+        "config/market-replay.synthetic.example.json"
+      ],
+      "acceptance": "Create/verify CLI and regression",
+      "evidence": [
+        "docs/verification/batch-24.md",
+        "docs/verification/batch-24-review.md"
+      ]
+    },
+    {
+      "id": "QA-B24",
+      "owner": "qa24",
+      "status": "done",
+      "depends_on": [
+        "B24-ARTIFACT"
+      ],
+      "write_paths": [
+        "docs/verification/batch-24-review.md"
+      ],
+      "acceptance": "Independent review",
+      "evidence": [
+        "docs/verification/batch-24.md",
+        "docs/verification/batch-24-review.md"
+      ]
+    }
+  ],
+  "batch25_work_packages": [
+    {
+      "id": "B25-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "P17-STORE"
+      ],
+      "write_paths": [
+        "docs/contracts/synthetic-evaluation-window-v0.1.md"
+      ],
+      "acceptance": "Receipt-to-session strict open-time design QA",
+      "evidence": [
+        "docs/verification/batch-25.md",
+        "docs/verification/batch-25-review.md"
+      ]
+    },
+    {
+      "id": "B25-WINDOW",
+      "owner": "session25",
+      "status": "done",
+      "depends_on": [
+        "B25-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/evaluation_window.py",
+        "tests/test_evaluation_window.py"
+      ],
+      "acceptance": "Synthetic receipt closure and horizon behavior",
+      "evidence": [
+        "docs/verification/batch-25.md",
+        "docs/verification/batch-25-review.md"
+      ]
+    },
+    {
+      "id": "QA-B25",
+      "owner": "qa25",
+      "status": "done",
+      "depends_on": [
+        "B25-WINDOW"
+      ],
+      "write_paths": [
+        "docs/verification/batch-25-review.md"
+      ],
+      "acceptance": "Independent tests and integration review",
+      "evidence": [
+        "docs/verification/batch-25.md",
+        "docs/verification/batch-25-review.md"
+      ]
+    },
+    {
+      "id": "B25-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B25-WINDOW"
+      ],
+      "write_paths": [
+        "tests/test_batch25_integration.py"
+      ],
+      "acceptance": "Persisted receipt at exact open selects next session",
+      "evidence": [
+        "docs/verification/batch-25.md"
+      ]
+    }
+  ],
+  "batch26_work_packages": [
+    {
+      "id": "B26-CONTRACT",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B25-WINDOW",
+        "B23-SNAPSHOT"
+      ],
+      "write_paths": [
+        "docs/contracts/synthetic-abnormal-return-v0.1.md"
+      ],
+      "acceptance": "Freeze synthetic price and maturity semantics",
+      "evidence": [
+        "docs/verification/batch-26.md",
+        "docs/verification/batch-26-review.md"
+      ]
+    },
+    {
+      "id": "B26-CALC",
+      "owner": "return26",
+      "status": "done",
+      "depends_on": [
+        "B26-CONTRACT"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/abnormal_return.py",
+        "tests/test_abnormal_return.py"
+      ],
+      "acceptance": "AR/CAR from fixed target and benchmark revisions",
+      "evidence": [
+        "docs/verification/batch-26.md",
+        "docs/verification/batch-26-review.md"
+      ]
+    },
+    {
+      "id": "QA-B26",
+      "owner": "qa26",
+      "status": "done",
+      "depends_on": [
+        "B26-CALC"
+      ],
+      "write_paths": [
+        "docs/verification/batch-26-review.md"
+      ],
+      "acceptance": "Independent arithmetic and rejection checks",
+      "evidence": [
+        "docs/verification/batch-26.md",
+        "docs/verification/batch-26-review.md"
+      ]
+    },
+    {
+      "id": "B26-INTEGRATION",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B26-CALC"
+      ],
+      "write_paths": [
+        "tests/test_batch26_integration.py"
+      ],
+      "acceptance": "Persisted receipt and two frozen price legs end-to-end",
+      "evidence": [
+        "docs/verification/batch-26.md",
+        "docs/verification/batch-26-review.md"
+      ]
+    }
+  ],
+  "batch27_work_packages": [
+    {
+      "id": "B27-SUMMARY",
+      "owner": "summary28",
+      "status": "done",
+      "depends_on": [
+        "B26-CALC"
+      ],
+      "write_paths": [
+        "src/market_intel/contracts/weekly_review.py",
+        "tests/test_weekly_review.py"
+      ],
+      "acceptance": "Weekly same-protocol cohort summary",
+      "evidence": [
+        "docs/verification/batch-27.md",
+        "docs/verification/batch-27-review.md"
+      ]
+    },
+    {
+      "id": "QA-B27",
+      "owner": "qa28",
+      "status": "done",
+      "depends_on": [
+        "B27-SUMMARY"
+      ],
+      "write_paths": [
+        "docs/verification/batch-27-review.md"
+      ],
+      "acceptance": "Independent validation",
+      "evidence": [
+        "docs/verification/batch-27.md",
+        "docs/verification/batch-27-review.md"
+      ]
+    },
+    {
+      "id": "B27-RELEASE-PREP",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "QA-B27"
+      ],
+      "write_paths": [
+        "collaboration/task-board.json",
+        "docs/contracts/synthetic-weekly-review-v0.1.md",
+        "docs/verification/batch-27.md"
+      ],
+      "acceptance": "Offline-tested source and documentation release inventory",
+      "evidence": [
+        "docs/verification/batch-27.md",
+        "docs/verification/batch-27-review.md"
+      ]
+    }
+  ]
 }

@@ -9,15 +9,23 @@ $localPythonPath = Join-Path $PSScriptRoot 'python-path.local.txt'
 if (Test-Path -LiteralPath $localPythonPath) { $candidates += (Get-Content -LiteralPath $localPythonPath -Raw).Trim() }
 $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
 if ($pythonCommand) { $candidates += $pythonCommand.Source }
-$runtimeRoot = Join-Path $env:ProgramFiles 'WindowsApps'
-$runtimeDirs = Get-ChildItem -LiteralPath $runtimeRoot -Directory -Filter 'OpenAI.CodexPrimaryRuntime*' -ErrorAction SilentlyContinue | Sort-Object Name -Descending
-foreach ($runtimeDir in $runtimeDirs) { $candidates += Join-Path $runtimeDir.FullName 'dependencies/python/python.exe' }
-$interpreter = $null
-foreach ($candidate in $candidates) {
-    if (Test-Path -LiteralPath $candidate -PathType Leaf) {
-        & $candidate -c "import sys; sys.exit(0 if sys.version_info >= (3,11) else 1)" 2>$null
-        if ($LASTEXITCODE -eq 0) { $interpreter = $candidate; break }
+function Find-WorkingPython([string[]]$Paths) {
+    foreach ($candidate in $Paths) {
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+            try {
+                & $candidate -I -c "import sys; sys.exit(0 if sys.version_info >= (3,11) else 1)" 2>$null
+                if ($LASTEXITCODE -eq 0) { return $candidate }
+            } catch { continue }
+        }
     }
+    return $null
+}
+$interpreter = Find-WorkingPython $candidates
+if (-not $interpreter -and $env:ProgramFiles) {
+    $runtimeRoot = Join-Path $env:ProgramFiles 'WindowsApps'
+    $runtimeDirs = @(Get-ChildItem -LiteralPath $runtimeRoot -Directory -Filter 'OpenAI.CodexPrimaryRuntime*' -ErrorAction SilentlyContinue | Sort-Object Name -Descending)
+    $runtimeCandidates = @($runtimeDirs | ForEach-Object { Join-Path $_.FullName 'dependencies/python/python.exe' })
+    $interpreter = Find-WorkingPython $runtimeCandidates
 }
 if (-not $interpreter) { throw 'No Python 3.11+ found. Set MARKET_INTEL_PYTHON to a verified interpreter path.' }
 $previousPythonPath = $env:PYTHONPATH

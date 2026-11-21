@@ -4,6 +4,7 @@ from pathlib import Path
 import sqlite3
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from market_intel.capture import collect_fed, make_bundle, now
 from market_intel.offline import connect, ingest_fixture, ingest_bundle, render, replay_report
@@ -28,7 +29,7 @@ class WorkflowTests(unittest.TestCase):
                 "time_parse_status": "missing"}
 
     def test_new_schema_and_immutable_database_identity(self):
-        self.assertEqual(self.db.execute("PRAGMA user_version").fetchone()[0], 4)
+        self.assertEqual(self.db.execute("PRAGMA user_version").fetchone()[0], 5)
         self.assertEqual(self.db.execute("PRAGMA foreign_keys").fetchone()[0], 1)
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("INSERT INTO raw_items VALUES ('mismatch', '{\"raw_item_id\":\"different\"}')")
@@ -45,8 +46,40 @@ class WorkflowTests(unittest.TestCase):
         old.close()
         migrated = connect(legacy_path)
         try:
-            self.assertEqual(migrated.execute("PRAGMA user_version").fetchone()[0], 4)
+            self.assertEqual(migrated.execute("PRAGMA user_version").fetchone()[0], 5)
             self.assertEqual(migrated.execute("SELECT payload FROM raw_items").fetchone()[0], payload)
+        finally:
+            migrated.close()
+
+    def test_schema4_prediction_migration_rolls_back_without_rewriting_evidence(self):
+        path = self.root / "migration.db"
+
+        def fail_after_ddl(db):
+            db.execute("CREATE TABLE migration_probe(id INTEGER)")
+            raise RuntimeError("migration interrupted")
+
+        with patch("market_intel.store.predictions.migrate_predictions", side_effect=fail_after_ddl):
+            with self.assertRaisesRegex(RuntimeError, "migration interrupted"):
+                connect(path)
+            old = sqlite3.connect(path)
+            try:
+                ingest_fixture(old, self.bundle, self.root)
+                payload = old.execute("SELECT payload FROM raw_items").fetchone()[0]
+                published = render(old, self.root, "2026-11-06T00:30:00Z", "legacy_v4")
+                with self.assertRaisesRegex(RuntimeError, "migration interrupted"):
+                    connect(path)
+                self.assertEqual(old.execute("PRAGMA user_version").fetchone()[0], 4)
+                self.assertIsNone(old.execute("SELECT 1 FROM sqlite_master WHERE name='migration_probe'").fetchone())
+                self.assertIsNone(old.execute("SELECT 1 FROM schema_migrations WHERE version=5").fetchone())
+            finally:
+                old.close()
+        migrated = connect(path)
+        try:
+            self.assertEqual(migrated.execute("PRAGMA user_version").fetchone()[0], 5)
+            self.assertEqual(migrated.execute("SELECT payload FROM raw_items").fetchone()[0], payload)
+            self.assertIsNotNone(migrated.execute("SELECT 1 FROM schema_migrations WHERE version=5").fetchone())
+            replayed = replay_report(migrated, self.root, "legacy_v4", self.root / "migration-replay")
+            self.assertEqual((published / "brief.html").read_bytes(), (replayed / "brief.html").read_bytes())
         finally:
             migrated.close()
 

@@ -17,6 +17,9 @@ from ..store import SCHEMA_VERSION
 _HASH = re.compile(r"[0-9a-f]{64}\Z")
 _REPORT = re.compile(r"[A-Za-z0-9_-]+\Z")
 _MANIFEST = "backup-manifest.json"
+_LEGACY_MANIFEST_VERSION = "workspace-backup/0.1"
+_PREDICTION_MANIFEST_VERSION = "workspace-backup/0.2"
+_PREDICTION_COUNTS = ("predictions", "receipted_predictions")
 
 
 def _canonical(value):
@@ -108,6 +111,11 @@ def _integrity(db):
 def _schema_version(db):
     version = db.execute("PRAGMA user_version").fetchone()[0]
     if not 0 <= version <= SCHEMA_VERSION:
+        raise ValueError("backup_database_version_unsupported")
+    if version < 5 and db.execute(
+        "SELECT 1 FROM sqlite_schema WHERE type='table' AND name COLLATE NOCASE IN "
+        "('predictions','prediction_refs','prediction_receipts')"
+    ).fetchone():
         raise ValueError("backup_database_version_unsupported")
     return version
 
@@ -222,11 +230,17 @@ def create_backup(workspace: Path, destination: Path) -> dict:
             if files[ref]["sha256"] != checksum:
                 raise ValueError("backup_evidence_hash_mismatch")
         manifest = {
-            "schema_version": "workspace-backup/0.1", "backup_id": "backup_" + uuid4().hex,
+            "schema_version": _LEGACY_MANIFEST_VERSION, "backup_id": "backup_" + uuid4().hex,
             "created_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             "database_schema_version": schema_version,
             "raw_item_count": raw_count, "report_ids": report_ids, "files": files,
         }
+        if schema_version == 5:
+            from ..store.predictions import verify_prediction_inventory
+            snapshot.execute("BEGIN")
+            _integrity(snapshot)
+            manifest["schema_version"] = _PREDICTION_MANIFEST_VERSION
+            manifest.update(verify_prediction_inventory(snapshot, staging))
     finally:
         snapshot.close()
     (staging / _MANIFEST).write_text(_canonical(manifest), encoding="utf-8", newline="")
@@ -240,7 +254,14 @@ def verify_backup(backup: Path) -> dict:
     backup = _root(backup)
     manifest = _read_json(_file(backup, _MANIFEST))
     required = {"schema_version", "backup_id", "created_at", "database_schema_version", "raw_item_count", "report_ids", "files"}
-    if type(manifest) is not dict or manifest.keys() != required or manifest["schema_version"] != "workspace-backup/0.1":
+    if type(manifest) is not dict:
+        raise ValueError("backup_manifest_schema_invalid")
+    manifest_version = manifest.get("schema_version")
+    if manifest_version == _PREDICTION_MANIFEST_VERSION:
+        required.update(_PREDICTION_COUNTS)
+    elif manifest_version != _LEGACY_MANIFEST_VERSION:
+        raise ValueError("backup_manifest_schema_invalid")
+    if manifest.keys() != required:
         raise ValueError("backup_manifest_schema_invalid")
     if (type(manifest["backup_id"]) is not str or not re.fullmatch(r"backup_[0-9a-f]{32}", manifest["backup_id"])
             or type(manifest["created_at"]) is not str or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z", manifest["created_at"])):
@@ -260,11 +281,24 @@ def verify_backup(backup: Path) -> dict:
             raise ValueError("backup_file_hash_mismatch")
     db = _readonly(_file(backup, "market.db"))
     try:
+        db.execute("BEGIN")
         _integrity(db)
         schema_version = _schema_version(db)
         refs, raw_count = _raw_refs(db)
         if type(manifest["raw_item_count"]) is not int or raw_count != manifest["raw_item_count"] or type(manifest["database_schema_version"]) is not int or schema_version != manifest["database_schema_version"]:
             raise ValueError("backup_snapshot_metadata_mismatch")
+        if (schema_version == 5) != (manifest_version == _PREDICTION_MANIFEST_VERSION):
+            raise ValueError("backup_manifest_schema_invalid")
+        if schema_version == 5:
+            counts = {key: manifest[key] for key in _PREDICTION_COUNTS}
+            if (any(type(count) is not int or count < 0 for count in counts.values())
+                    or counts["receipted_predictions"] > counts["predictions"]):
+                raise ValueError("backup_prediction_counts_invalid")
+            from ..store.predictions import verify_prediction_inventory
+            if verify_prediction_inventory(db, backup) != counts:
+                raise ValueError("backup_prediction_counts_mismatch")
+        # Report verification establishes its own read transaction.
+        db.rollback()
         expected = {"market.db", *refs}
         if _reports(backup) != report_ids:
             raise ValueError("backup_report_inventory_mismatch")

@@ -1,0 +1,42 @@
+{
+  "schema_version": "scheduled-session-source/0.1",
+  "calendar_id": "sse-2026-scheduled-1",
+  "exchange": "SSE",
+  "year": 2026,
+  "closure_ranges": [
+    {
+      "start": "2026-01-01",
+      "end": "2026-01-03"
+    },
+    {
+      "start": "2026-02-15",
+      "end": "2026-02-23"
+    },
+    {
+      "start": "2026-04-04",
+      "end": "2026-04-06"
+    },
+    {
+      "start": "2026-05-01",
+      "end": "2026-05-05"
+    },
+    {
+      "start": "2026-06-19",
+      "end": "2026-06-21"
+    },
+    {
+      "start": "2026-09-25",
+      "end": "2026-09-27"
+    },
+    {
+      "start": "2026-10-01",
+      "end": "2026-10-07"
+    }
+  ],
+  "source_urls": [
+    "https://www.sse.com.cn/disclosure/announcement/general/c/c_20251222_10802507.shtml",
+    "https://www.sse.com.cn/disclosure/announcement/general/c/c_20260915_10832273.shtml",
+    "https://www.sse.com.cn/lawandrules/sselawsrules2025/repeal/rules/c/c_20250612_10824490.shtml",
+    "https://www.sse.com.cn/lawandrules/sselawsrules2025/stocks/exchange/c/c_20260424_10816482.shtml"
+  ]
+}

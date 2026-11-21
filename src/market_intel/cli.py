@@ -21,9 +21,12 @@ from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
 from .pipeline.candidates import select_candidates
 from .pipeline.evidence_candidates import plan_evidence_candidates
+from .pipeline.market_sample_audit import audit_sse_index_sample, audit_szse_index_sample
 from .ops.candidate_snapshot import (freeze_candidate_snapshot, verify_candidate_snapshot_file,
                                      replay_candidate_snapshot, verify_candidate_replay)
+from .ops.market_replay import create_market_replay, verify_market_replay
 from .ops.model_calls import inspect_model_call
+from .ops.provider_preflight import preflight_provider_evidence
 from .llm.batch import run_mock_candidates
 from .llm.client import _strict_loads
 from .ops.backup import _linked
@@ -54,6 +57,22 @@ def _load_candidate_input(path):
             raise ValueError("candidate_input_invalid") from None
     except OSError:
         raise ValueError("candidate_input_io_error") from None
+
+
+def _read_market_sample_file(path):
+    try:
+        path = path.absolute()
+        if path.drive.startswith("\\\\") or any(_linked(item) for item in (path, *path.parents)):
+            raise ValueError("market_sample_file_unsupported")
+        if not path.is_file():
+            raise ValueError("market_sample_file_missing")
+        with path.open("rb") as stream:
+            raw = stream.read(262_145)
+    except OSError:
+        raise ValueError("market_sample_file_io_error") from None
+    if len(raw) > 262_144:
+        raise ValueError("market_sample_file_too_large")
+    return raw
 
 
 def _candidate_command(args):
@@ -200,8 +219,34 @@ def main(argv=None):
     call_info = sub.add_parser("model-call-info", help="Read one bound model call summary; no model or settlement")
     call_info.add_argument("--workspace", type=Path, default=Path("data/live"))
     call_info.add_argument("--call-id", required=True)
+    provider_preflight = sub.add_parser("provider-evidence-preflight", help="List supplier evidence gaps read-only; never verify or settle invoices")
+    provider_preflight.add_argument("--workspace", type=Path, default=Path("data/live"))
+    provider_preflight.add_argument("--call-id", required=True)
+    for exchange in ("sse", "szse"):
+        market_audit = sub.add_parser(
+            f"{exchange}-index-sample-audit",
+            help=f"Audit a local index response against fixed {exchange.upper()} scheduled dates")
+        market_audit.add_argument("--calendar", type=Path, required=True)
+        market_audit.add_argument("--response", type=Path, required=True)
+        market_audit.add_argument("--symbol", required=True)
+        market_audit.add_argument("--start-date", required=True)
+        market_audit.add_argument("--end-date", required=True)
+    market_replay = sub.add_parser("create-synthetic-market-replay", help="Save a self-contained synthetic market replay")
+    market_replay.add_argument("--input", type=Path, required=True)
+    market_replay.add_argument("--destination", type=Path, required=True)
+    market_verify = sub.add_parser("verify-synthetic-market-replay", help="Verify a saved synthetic market replay offline")
+    market_verify.add_argument("--replay", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
+        if args.command in {"create-synthetic-market-replay", "verify-synthetic-market-replay"}:
+            result = (create_market_replay(args.input, args.destination)
+                      if args.command == "create-synthetic-market-replay"
+                      else verify_market_replay(args.replay))
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
+        if args.command == "provider-evidence-preflight":
+            print(json.dumps(preflight_provider_evidence(args.workspace, args.call_id), ensure_ascii=False))
+            return 0
         if args.command == "model-call-info":
             print(json.dumps(inspect_model_call(args.workspace, args.call_id), ensure_ascii=False))
             return 0
@@ -218,6 +263,18 @@ def main(argv=None):
                 result = verify_candidate_replay(args.replay)
             print(json.dumps(result, ensure_ascii=False))
             return 0
+        if args.command in {"sse-index-sample-audit", "szse-index-sample-audit"}:
+            calendar_raw = _read_market_sample_file(args.calendar)
+            try:
+                calendar = _strict_loads(calendar_raw.decode("utf-8"))
+            except (ModelError, UnicodeError):
+                raise ValueError("market_sample_calendar_invalid") from None
+            audit = audit_sse_index_sample if args.command == "sse-index-sample-audit" else audit_szse_index_sample
+            result = audit(
+                _read_market_sample_file(args.response), calendar, symbol=args.symbol,
+                start_date=args.start_date, end_date=args.end_date)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result["audit"]["status"] == "complete" else 2
         if args.command == "evidence-candidate-plan":
             print(json.dumps(plan_evidence_candidates(args.workspace, args.cutoff, args.max_candidates,
                                                       include_synthetic=args.include_synthetic), ensure_ascii=False))

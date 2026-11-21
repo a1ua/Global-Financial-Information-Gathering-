@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import sqlite3
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 
 def connect(path):
@@ -68,7 +68,23 @@ def connect(path):
             db.execute("INSERT INTO schema_migrations VALUES (4, ?, 'Durable source inbox and consumption checkpoints')", (datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),))
             db.execute("PRAGMA user_version=4")
             db.commit()
-        if db.execute("PRAGMA foreign_key_check").fetchall():
+        if version <= 4:
+            from .predictions import migrate_predictions
+
+            db.execute("BEGIN IMMEDIATE")
+            # Another opener may have migrated the database while this one waited.
+            locked_version = db.execute("PRAGMA user_version").fetchone()[0]
+            if locked_version == 4:
+                migrate_predictions(db)
+                db.execute("INSERT INTO schema_migrations VALUES (5, ?, 'Immutable synthetic predictions and receipts')",
+                           (datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),))
+                db.execute("PRAGMA user_version=5")
+            elif locked_version != SCHEMA_VERSION:
+                raise ValueError("unsupported_database_version")
+            if db.execute("PRAGMA foreign_key_check").fetchone():
+                raise ValueError("database_foreign_key_violation")
+            db.commit()
+        elif db.execute("PRAGMA foreign_key_check").fetchone():
             raise ValueError("database_foreign_key_violation")
         return db
     except Exception:
