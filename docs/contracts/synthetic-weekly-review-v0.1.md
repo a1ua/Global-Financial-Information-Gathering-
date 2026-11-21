@@ -7,3 +7,13 @@ summarize_synthetic_week(results, *, week_monday) 接收至多 1000 个 Batch26 
 返回精确键 schema_version=synthetic-weekly-review/0.1、is_synthetic=true、week_monday、counts、protocols。counts 含 total、calculated、pending、unavailable 四项。protocols 按 evaluation_protocol_sha256 升序，每项含该哈希、同样的 counts、mean_car。每组只按 calculated 样本已有的 CAR 精确求算术平均，保留 8 位小数并以 ties-to-even 舍入。没有已计算结果时 mean_car 为 null。输入顺序不影响输出。验证失败抛 ValueError("synthetic_weekly_review_invalid")。
 
 该报告用于合成联验。判断数量不代表统计独立样本数。状态按每条传入结果各自的 as_of 记录，周归属由回执决定。结果保留各状态的分母，按固定协议哈希分组，不汇成跨协议的平均值。
+
+## 本地命令
+
+从工作区运行，在已安装环境或 PYTHONPATH=src 下使用。
+
+```powershell
+python -m market_intel summarize-synthetic-week --input config/weekly-review.synthetic.example.json --week-monday 2026-11-09
+```
+
+输入限 1 MiB 的本地 UTF-8 JSON 数组，拒绝重复 JSON 键、非标准数字、链接和 UNC 路径。有效汇总输出至标准输出并返回 0。输入错误返回 1，错误写入标准错误。等待和缺价属于有效报告。

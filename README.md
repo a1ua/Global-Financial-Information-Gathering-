@@ -4,9 +4,10 @@
 
 ## 文档入口
 
-- [当前开发计划](docs/development-status-plan-20261122-batch27.md)
+- [当前开发计划](docs/development-status-plan-20261122-batch28.md)
 - [完整任务清单](docs/development-task-plan-20261121.md)
-- [Batch27 验收](docs/verification/batch-27.md)
+- [Batch28 验收](docs/verification/batch-28.md)
+- [合成周度汇总命令与样例](docs/contracts/synthetic-weekly-review-v0.1.md#本地命令)
 - `docs/charter-v3.md`：立项价值、范围与停止条件。
 - `docs/development-backlog-v3.md`：详细工作包、依赖、交付与验收。
 - `docs/contracts-v0.1.md`：数据与时间契约。

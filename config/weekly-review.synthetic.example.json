@@ -1,0 +1,51 @@
+[
+  {
+    "schema_version": "synthetic-abnormal-return/0.1",
+    "is_synthetic": true,
+    "prediction_id": "weekly-example-calculated",
+    "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "committed_at": "2026-11-09T13:00:00Z",
+    "calendar_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "evaluation_protocol_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "as_of": "2026-11-11T07:00:00Z",
+    "status": "calculated",
+    "reason": null,
+    "target_snapshot_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "benchmark_snapshot_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "missing_target_sessions": [],
+    "missing_benchmark_sessions": [],
+    "segments": [
+      {
+        "session_date": "2026-11-10",
+        "target_return": "0.10000000",
+        "benchmark_return": "0.05000000",
+        "abnormal_return": "0.05000000"
+      },
+      {
+        "session_date": "2026-11-11",
+        "target_return": "0.10000000",
+        "benchmark_return": "0.00000000",
+        "abnormal_return": "0.10000000"
+      }
+    ],
+    "car": "0.15000000"
+  },
+  {
+    "schema_version": "synthetic-abnormal-return/0.1",
+    "is_synthetic": true,
+    "prediction_id": "weekly-example-pending",
+    "content_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "committed_at": "2026-11-10T13:00:00Z",
+    "calendar_snapshot_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "evaluation_protocol_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "as_of": "2026-11-11T06:00:00Z",
+    "status": "pending",
+    "reason": "window_not_closed",
+    "target_snapshot_sha256": null,
+    "benchmark_snapshot_sha256": null,
+    "missing_target_sessions": [],
+    "missing_benchmark_sessions": [],
+    "segments": [],
+    "car": null
+  }
+]

@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch27 synthetic weekly summary accepted. 606 run 603 passed 3 permission skips; independent 11 + 4 passed. Production dependencies unchanged. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch28 synthetic weekly CLI accepted. 608 run, 605 passed, 3 Windows permission skips; independent 17 targeted regressions passed. Production dependencies remain open. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -529,9 +529,10 @@
         "同事件多个标的和窗口不扩大独立事件数",
         "不将描述性表现写成因果或研究有效性证明"
       ],
-      "progress_note": "Batch27 synthetic weekly receipt cohort and per-protocol CAR summary accepted. Formal weekly report awaits production REV-02.",
+      "progress_note": "Batch27 synthetic weekly receipt cohort and per-protocol CAR summary accepted. Formal weekly report awaits production REV-02. Batch28 exposes replay of synthetic weekly results via the offline CLI.",
       "evidence": [
-        "docs/verification/batch-27.md"
+        "docs/verification/batch-27.md",
+        "docs/verification/batch-28.md"
       ]
     },
     {
@@ -2647,6 +2648,59 @@
       "evidence": [
         "docs/verification/batch-27.md",
         "docs/verification/batch-27-review.md"
+      ]
+    }
+  ],
+  "batch28_work_packages": [
+    {
+      "id": "B28-CLI",
+      "owner": "coordinator",
+      "status": "done",
+      "depends_on": [
+        "B27-SUMMARY"
+      ],
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "docs/contracts/synthetic-weekly-review-v0.1.md",
+        "README.md"
+      ],
+      "acceptance": "Bounded local weekly review, standard offline regression and independent acceptance",
+      "evidence": [
+        "docs/verification/batch-28.md",
+        "docs/verification/batch-28-review.md"
+      ]
+    },
+    {
+      "id": "B28-EXAMPLE",
+      "owner": "fixture29",
+      "status": "done",
+      "depends_on": [
+        "B27-SUMMARY"
+      ],
+      "write_paths": [
+        "config/weekly-review.synthetic.example.json",
+        "tests/test_batch28_cli.py"
+      ],
+      "acceptance": "Runnable synthetic example and regression",
+      "evidence": [
+        "docs/verification/batch-28.md",
+        "tests/test_batch28_cli.py"
+      ]
+    },
+    {
+      "id": "QA-B28",
+      "owner": "qa29",
+      "status": "done",
+      "depends_on": [
+        "B28-CLI"
+      ],
+      "write_paths": [
+        "docs/verification/batch-28-review.md"
+      ],
+      "acceptance": "Independent CLI checks",
+      "evidence": [
+        "docs/verification/batch-28.md",
+        "docs/verification/batch-28-review.md"
       ]
     }
   ]

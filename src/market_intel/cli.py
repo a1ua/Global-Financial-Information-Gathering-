@@ -7,6 +7,7 @@ import sqlite3
 import sys
 from uuid import uuid4
 
+from .contracts.weekly_review import summarize_synthetic_week
 from .capture import SOURCES, collect_all, collect_source, now
 from .offline import connect, ingest_fixture, render, replay_report
 from .pipeline.capture_state import checkpoint
@@ -59,19 +60,19 @@ def _load_candidate_input(path):
         raise ValueError("candidate_input_io_error") from None
 
 
-def _read_market_sample_file(path):
+def _read_local_sample_file(path, *, limit, role):
     try:
         path = path.absolute()
         if path.drive.startswith("\\\\") or any(_linked(item) for item in (path, *path.parents)):
-            raise ValueError("market_sample_file_unsupported")
+            raise ValueError(f"{role}_unsupported")
         if not path.is_file():
-            raise ValueError("market_sample_file_missing")
+            raise ValueError(f"{role}_missing")
         with path.open("rb") as stream:
-            raw = stream.read(262_145)
+            raw = stream.read(limit + 1)
     except OSError:
-        raise ValueError("market_sample_file_io_error") from None
-    if len(raw) > 262_144:
-        raise ValueError("market_sample_file_too_large")
+        raise ValueError(f"{role}_io_error") from None
+    if len(raw) > limit:
+        raise ValueError(f"{role}_too_large")
     return raw
 
 
@@ -236,6 +237,9 @@ def main(argv=None):
     market_replay.add_argument("--destination", type=Path, required=True)
     market_verify = sub.add_parser("verify-synthetic-market-replay", help="Verify a saved synthetic market replay offline")
     market_verify.add_argument("--replay", type=Path, required=True)
+    weekly_review = sub.add_parser("summarize-synthetic-week", help="Summarize local synthetic evaluation results")
+    weekly_review.add_argument("--input", type=Path, required=True)
+    weekly_review.add_argument("--week-monday", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command in {"create-synthetic-market-replay", "verify-synthetic-market-replay"}:
@@ -263,15 +267,23 @@ def main(argv=None):
                 result = verify_candidate_replay(args.replay)
             print(json.dumps(result, ensure_ascii=False))
             return 0
+        if args.command == "summarize-synthetic-week":
+            raw = _read_local_sample_file(args.input, limit=1_048_576, role="weekly_review_input")
+            try:
+                results = _strict_loads(raw.decode("utf-8"))
+            except (ModelError, UnicodeError):
+                raise ValueError("weekly_review_input_invalid") from None
+            print(json.dumps(summarize_synthetic_week(results, week_monday=args.week_monday), ensure_ascii=False))
+            return 0
         if args.command in {"sse-index-sample-audit", "szse-index-sample-audit"}:
-            calendar_raw = _read_market_sample_file(args.calendar)
+            calendar_raw = _read_local_sample_file(args.calendar, limit=262_144, role="market_sample_file")
             try:
                 calendar = _strict_loads(calendar_raw.decode("utf-8"))
             except (ModelError, UnicodeError):
                 raise ValueError("market_sample_calendar_invalid") from None
             audit = audit_sse_index_sample if args.command == "sse-index-sample-audit" else audit_szse_index_sample
             result = audit(
-                _read_market_sample_file(args.response), calendar, symbol=args.symbol,
+                _read_local_sample_file(args.response, limit=262_144, role="market_sample_file"), calendar, symbol=args.symbol,
                 start_date=args.start_date, end_date=args.end_date)
             print(json.dumps(result, ensure_ascii=False))
             return 0 if result["audit"]["status"] == "complete" else 2
