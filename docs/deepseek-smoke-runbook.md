@@ -34,4 +34,10 @@ deepseek-check不读取key，不创建账本。缺失绑定时不可宣称模型
 
 具备逐调用资料后，可以按契约准备本地声明 JSON，再运行 `compare-provider-receipt --workspace data/live --call-id <调用ID> --claim out/receipt-claim.json`。查看 `missing_local_fields`、`mismatched_fields` 和 `amount_comparison`。声明及原始资料保存在本地。 [输入与输出契约](contracts/provider-receipt-v0.1.md)
 
+声明中的响应哈希应从供应商证据里的响应标识独立计算。若授权允许将标识暂存为本地单行文件，可用以下命令生成哈希。将结果填入声明的 `response_id_sha256` 字段。
+
+```powershell
+Get-Content -LiteralPath out/provider-response-id.local.txt | .\.venv\Scripts\market-intel.exe hash-provider-response-id
+```
+
 本地哈希不是供应商认证，手工声明和余额差也不是逐调用结算依据。清单字段齐全不代表账单验证通过。现阶段任何真实验证结果只记观察，不释放失败预算、不结算、不切换生产恢复。真实tokenizer/usage/费用以及可信高水位分别验收，证据不足保持NLP-01进行中。

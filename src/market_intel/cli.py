@@ -16,6 +16,7 @@ from .report.verify import verify_report
 from .report.weekly_review import render_synthetic_week_markdown
 from .llm import ModelClient, ModelError, Policy
 from .llm.deepseek import DeepSeekTransport
+from .llm.correlation import response_id_sha256
 from .llm.binding import check_workspace_ledger, ensure_workspace_ledger
 from .ops.llm_backup import create_ledger_backup, restore_ledger_backup, verify_ledger_backup
 from .ops.reconciliation import preview_reconciliation, prepare_audit_observation
@@ -76,6 +77,25 @@ def _read_local_sample_file(path, *, limit, role):
     if len(raw) > limit:
         raise ValueError(f"{role}_too_large")
     return raw
+
+
+def _hash_provider_response_id():
+    if sys.stdin.isatty():
+        raise ValueError("provider_correlation_invalid")
+    try:
+        # One 256-byte ID, an optional CRLF, and one byte to detect excess input.
+        raw = sys.stdin.buffer.read(259)
+    except OSError:
+        raise ValueError("provider_response_id_input_error") from None
+    if raw.endswith(b"\r\n"):
+        raw = raw[:-2]
+    elif raw.endswith(b"\n"):
+        raw = raw[:-1]
+    try:
+        value = raw.decode("ascii")
+    except UnicodeError:
+        raise ValueError("provider_correlation_invalid") from None
+    return {"response_id_sha256": response_id_sha256(value)}
 
 
 def _candidate_command(args):
@@ -229,6 +249,7 @@ def main(argv=None):
     receipt.add_argument("--workspace", type=Path, required=True)
     receipt.add_argument("--call-id", required=True)
     receipt.add_argument("--claim", type=Path, required=True)
+    sub.add_parser("hash-provider-response-id", help="Hash one provider response ID from redirected stdin")
     for exchange in ("sse", "szse"):
         market_audit = sub.add_parser(
             f"{exchange}-index-sample-audit",
@@ -267,6 +288,9 @@ def main(argv=None):
             except (ModelError, UnicodeError):
                 raise ValueError("provider_receipt_claim_invalid") from None
             print(json.dumps(compare_provider_receipt(args.workspace, args.call_id, claim), ensure_ascii=False))
+            return 0
+        if args.command == "hash-provider-response-id":
+            print(json.dumps(_hash_provider_response_id()))
             return 0
         if args.command == "model-call-info":
             print(json.dumps(inspect_model_call(args.workspace, args.call_id), ensure_ascii=False))

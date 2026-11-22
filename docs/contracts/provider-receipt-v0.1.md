@@ -15,3 +15,5 @@ read_only=true；evidence_authenticated/invoice_verified/settlement_allowed/swit
 ## 本地命令
 
 `compare-provider-receipt --workspace PATH --call-id ID --claim PATH` 接收最多 16 KiB 的本地 UTF-8 JSON 文件。拒绝链接、UNC 路径、重复键及非标准数字。有效比对以 JSON 输出至标准输出，退出码为 0，字段差异列在 `mismatched_fields` 中。文件、声明或账本错误返回 1，标准错误仅输出固定错误原因。命令不会发起模型调用。
+
+`hash-provider-response-id` 从重定向的标准输入读取单个供应商响应标识，允许末尾有一个 LF 或 CRLF。标识须为 1 至 256 个 ASCII 字母、数字、下划线、点或短横线。成功时退出码为 0，输出只含 `response_id_sha256`，口径与模型账本一致。格式错误或交互式输入返回 1，原因码为 `provider_correlation_invalid`。读取失败使用 `provider_response_id_input_error`。命令无需账本或网络。
