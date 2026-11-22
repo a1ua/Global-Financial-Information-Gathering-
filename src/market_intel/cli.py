@@ -1,4 +1,5 @@
 import argparse
+from hashlib import sha256
 from importlib.resources import files
 import json
 import os
@@ -280,6 +281,8 @@ def main(argv=None):
     extraction_eval = sub.add_parser("evaluate-synthetic-extraction", help="Score local labeled synthetic extraction cases")
     extraction_eval.add_argument("--input", type=Path, required=True)
     extraction_eval.add_argument("--cutoff", required=True)
+    extraction_eval.add_argument("--include-provenance", action="store_true",
+                                 help="Include the SHA-256 of the input bytes and the applied UTC cutoff")
     args = parser.parse_args(argv)
     try:
         if args.command in {"create-synthetic-market-replay", "verify-synthetic-market-replay"}:
@@ -324,7 +327,10 @@ def main(argv=None):
                 cases = _strict_loads(raw.decode("utf-8"))
             except (ModelError, UnicodeError):
                 raise ValueError("synthetic_extraction_input_invalid") from None
-            print(json.dumps(evaluate_synthetic_extraction(cases, cutoff=args.cutoff), ensure_ascii=False))
+            report = evaluate_synthetic_extraction(cases, cutoff=args.cutoff)
+            if args.include_provenance:
+                report["provenance"] = {"input_sha256": sha256(raw).hexdigest(), "cutoff": args.cutoff}
+            print(json.dumps(report, ensure_ascii=False))
             return 0
         if args.command == "summarize-synthetic-week":
             raw = _read_local_sample_file(args.input, limit=1_048_576, role="weekly_review_input")

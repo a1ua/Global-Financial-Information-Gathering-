@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch37 synthetic extraction evaluation example accepted. 641 run, 638 passed, 3 Windows permission skips; 14 independent targeted checks plus sample and cutoff smoke checks passed. Live extraction and independent labeling remain pending. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch38 optional synthetic evaluation provenance accepted. 644 run, 641 passed, 3 Windows permission skips; 17 independent targeted checks passed. Live extraction and independent labeling remain pending.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -376,12 +376,13 @@
         "每个事实绑定有效证据片段",
         "验证集独立，来源正文指令不能改变系统行为"
       ],
-      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned. Batch35 added offline scoring against supplied labels, keeping invalid and missing proposals in the total. Batch36 exposed the synthetic evaluator through a bounded offline JSON CLI. Batch37 added a reproducible four-case synthetic CLI example with one outcome in each count bucket.",
+      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned. Batch35 added offline scoring against supplied labels, keeping invalid and missing proposals in the total. Batch36 exposed the synthetic evaluator through a bounded offline JSON CLI. Batch37 added a reproducible four-case synthetic CLI example with one outcome in each count bucket. Batch38 added opt-in input SHA-256 and UTC cutoff provenance to the synthetic CLI report.",
       "evidence": [
         "docs/development-status-plan-20261122-batch34.md",
         "docs/development-status-plan-20261122-batch35.md",
         "docs/development-status-plan-20261122-batch36.md",
-        "docs/development-status-plan-20261122-batch37.md"
+        "docs/development-status-plan-20261122-batch37.md",
+        "docs/development-status-plan-20261122-batch38.md"
       ]
     },
     {
@@ -3099,6 +3100,45 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch37.md",
         "docs/verification/batch-37-review.md"
+      ]
+    }
+  ],
+  "batch38_work_packages": [
+    {
+      "id": "B38-SCORE-PROVENANCE",
+      "owner": "coordinator",
+      "depends_on": [
+        "B37-INTEGRATION"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "docs/contracts/synthetic-extraction-v0.1.md",
+        "docs/development-status-plan-20261122-batch38.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Opt-in digest of exact evaluated input bytes and applied UTC cutoff; default output unchanged",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch38.md",
+        "docs/verification/batch-38-review.md"
+      ]
+    },
+    {
+      "id": "QA-B38",
+      "owner": "score_provenance_qa",
+      "depends_on": [
+        "B38-SCORE-PROVENANCE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch38_evaluation_provenance.py",
+        "docs/verification/batch-38-review.md"
+      ],
+      "acceptance": "Verify exact byte binding, equivalent input formatting, unchanged report, and rejected inputs",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch38.md",
+        "docs/verification/batch-38-review.md"
       ]
     }
   ]
