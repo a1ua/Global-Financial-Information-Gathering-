@@ -30,6 +30,7 @@ is_synthetic""".split())
 ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 UTC = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?Z\Z")
 SHA256 = re.compile(r"[0-9a-f]{64}\Z")
+EVENT_CATEGORIES = {"macro", "policy", "company", "fund_flow", "geopolitics", "sentiment", "calendar", "other"}
 
 
 def fail(path, reason):
@@ -220,7 +221,7 @@ def validate_bundle(bundle, *, allow_synthetic=True):
 
     if type(event["version"]) is not int or event["version"] < 1:
         fail("event.version", "invalid_event_version")
-    choice(event["category"], {"macro", "policy", "company", "fund_flow", "geopolitics", "sentiment", "calendar", "other"}, "event.category")
+    choice(event["category"], EVENT_CATEGORIES, "event.category")
     if type(event["markets"]) is not list or not event["markets"]:
         fail("event.markets", "nonempty_list_required")
     for market in event["markets"]:

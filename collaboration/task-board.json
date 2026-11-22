@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch33 offline same-scope index sample comparison accepted. 627 run, 624 passed, 3 Windows permission skips; 33 independent targeted checks passed. Authorized sources and actual sessions pending. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch34 synthetic extraction binding prototype accepted. 632 run, 629 passed, 3 Windows permission skips; 51 independent targeted checks passed. Live extraction and classification evaluation remain pending. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -375,6 +375,10 @@
         "缺失信息保留空值而非补造",
         "每个事实绑定有效证据片段",
         "验证集独立，来源正文指令不能改变系统行为"
+      ],
+      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned.",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch34.md"
       ]
     },
     {
@@ -2907,6 +2911,46 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch33.md",
         "docs/verification/batch-33-review.md"
+      ]
+    }
+  ],
+  "batch34_work_packages": [
+    {
+      "id": "B34-SYNTH-EXTRACT",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/contracts/__init__.py",
+        "src/market_intel/contracts/synthetic_extraction.py",
+        "docs/contracts/synthetic-extraction-v0.1.md",
+        "docs/development-status-plan-20261122-batch34.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Pure synthetic output validation binds one quote to exact source identity and cutoff, no model or persistence",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch34.md",
+        "docs/verification/batch-34-review.md"
+      ]
+    },
+    {
+      "id": "QA-B34",
+      "owner": "synthetic_extraction_qa",
+      "depends_on": [
+        "B34-SYNTH-EXTRACT"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch34_synthetic_extraction.py",
+        "docs/verification/batch-34-review.md"
+      ],
+      "acceptance": "Independent Unicode, binding, cutoff, fail-closed and privacy tests",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch34.md",
+        "docs/verification/batch-34-review.md"
       ]
     }
   ]
