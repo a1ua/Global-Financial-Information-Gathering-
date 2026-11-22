@@ -283,6 +283,8 @@ def main(argv=None):
     extraction_eval.add_argument("--cutoff", required=True)
     extraction_eval.add_argument("--include-provenance", action="store_true",
                                  help="Include the SHA-256 of the input bytes and the applied UTC cutoff")
+    extraction_eval.add_argument("--include-diagnostics", action="store_true",
+                                 help="List the input positions of incorrect, invalid, and missing proposals")
     args = parser.parse_args(argv)
     try:
         if args.command in {"create-synthetic-market-replay", "verify-synthetic-market-replay"}:
@@ -327,7 +329,8 @@ def main(argv=None):
                 cases = _strict_loads(raw.decode("utf-8"))
             except (ModelError, UnicodeError):
                 raise ValueError("synthetic_extraction_input_invalid") from None
-            report = evaluate_synthetic_extraction(cases, cutoff=args.cutoff)
+            report = evaluate_synthetic_extraction(cases, cutoff=args.cutoff,
+                                                   include_diagnostics=args.include_diagnostics)
             if args.include_provenance:
                 report["provenance"] = {"input_sha256": sha256(raw).hexdigest(), "cutoff": args.cutoff}
             print(json.dumps(report, ensure_ascii=False))

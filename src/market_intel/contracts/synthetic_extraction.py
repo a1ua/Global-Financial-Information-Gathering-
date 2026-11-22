@@ -56,16 +56,17 @@ def validate_synthetic_extraction(reference_bundle, proposal, *, cutoff):
         raise ValueError("synthetic_extraction_invalid") from None
 
 
-def evaluate_synthetic_extraction(cases, *, cutoff):
+def evaluate_synthetic_extraction(cases, *, cutoff, include_diagnostics=False):
     """Count agreement with supplied category labels for a synthetic validation set."""
     counts = dict.fromkeys(("correct", "incorrect", "invalid", "missing"), 0)
     pairs = Counter()
     seen = set()
+    diagnostics = []
     try:
         cutoff_at = instant(cutoff, "cutoff")
-        if type(cases) is not list or len(cases) > 1000:
+        if type(cases) is not list or len(cases) > 1000 or type(include_diagnostics) is not bool:
             raise ValueError
-        for case in cases:
+        for case_number, case in enumerate(cases, start=1):
             record(case, {"reference_bundle", "expected_category", "proposal"}, "case")
             expected = case["expected_category"]
             choice(expected, EVENT_CATEGORIES, "case.expected_category")
@@ -75,20 +76,29 @@ def evaluate_synthetic_extraction(cases, *, cutoff):
                 raise ValueError
             seen.add(identity)
             proposal = case["proposal"]
+            category = None
             if proposal is None:
-                counts["missing"] += 1
-                continue
-            try:
-                category = _bound_category(raw, proposal)
-            except ValueError:
-                counts["invalid"] += 1
-                continue
-            pairs[expected, category] += 1
-            counts["correct" if category == expected else "incorrect"] += 1
+                status = "missing"
+            else:
+                try:
+                    category = _bound_category(raw, proposal)
+                except ValueError:
+                    status = "invalid"
+                else:
+                    pairs[expected, category] += 1
+                    status = "correct" if category == expected else "incorrect"
+            counts[status] += 1
+            if include_diagnostics and status != "correct":
+                diagnostics.append({
+                    "case_number": case_number,
+                    "status": status,
+                    "expected_category": expected,
+                    "proposed_category": category,
+                })
     except ValueError:
         raise ValueError("synthetic_extraction_evaluation_invalid") from None
 
-    return {
+    report = {
         "schema_version": "synthetic-extraction-evaluation/0.1",
         "is_synthetic": True,
         "counts": {"total": len(cases), **counts},
@@ -97,3 +107,6 @@ def evaluate_synthetic_extraction(cases, *, cutoff):
             for (expected, category), count in sorted(pairs.items())
         ],
     }
+    if include_diagnostics:
+        report["diagnostics"] = diagnostics
+    return report

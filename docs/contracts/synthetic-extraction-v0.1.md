@@ -40,3 +40,5 @@ python -m market_intel evaluate-synthetic-extraction --input config/synthetic-ex
 仓库样例包含四条不同的合成文本，其中正确、错误、引文不匹配和提案缺失各一条。预期 `counts` 为 `{"total":4,"correct":1,"incorrect":1,"invalid":1,"missing":1}`。类别对只有 `company → company` 与 `policy → macro`，各出现一次。样例标签和提案均为人为构造，用来复现计数和错误处理。
 
 添加 `--include-provenance` 可在成功报告中附加 `provenance`。其中 `input_sha256` 是实际参与评测的原始文件字节的 SHA-256，`cutoff` 保留传入并通过校验的 UTC 文本。空格或换行改动会改变输入哈希。默认命令输出和 Python API 维持原有字段；错误仍只写固定原因码。
+
+添加 `--include-diagnostics` 会列出需要复查的样本。也可以在 Python API 中传入 `include_diagnostics=True`。新增的 `diagnostics` 按输入顺序排列，每项包含从 1 开始的 `case_number`、`status`、`expected_category` 和 `proposed_category`。类别错误的提案保留通过结构校验的提议类别；无效或缺失提案的提议类别为 `null`。正确样本不出现在列表中。诊断只含位置、状态和类别，可与 `--include-provenance` 同时启用以定位原文件中的样本。非法批次照常整体拒绝。
