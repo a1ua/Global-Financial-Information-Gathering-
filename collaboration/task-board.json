@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch30 SSE and SZSE offline sample diagnostics accepted. 615 run, 612 passed, 3 Windows permission skips; 29 independent targeted checks passed. Production source dependencies remain open. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch31 offline receipt comparison CLI accepted. 619 run, 616 passed, 3 Windows permission skips; 31 independent targeted checks passed. Live usage and invoice evidence pending. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -334,13 +334,14 @@
       ],
       "gate": "G3",
       "accepted_scope": "Batch05 mock ledger plus Batch06 CNY currency migration, restricted DeepSeek HTTP adapter and isolated ledger backup/restore; code and synthetic HTTP accepted independently; Batch07 schema3 identity, fixed workspace binding and compatible backup accepted as code scope; Batch08 read-only statement comparison and candidate preflight with no settlement/switch permission; Batch08-C independent local observation audit with explicit no-external-trust boundary; Batch09-A synthetic-only candidate cap and mock ledger/cache/retry integration, no real evidence candidate pipeline; Batch09-B readonly existing evidence candidate selection by frozen versions/receipts, no model execution; Batch09-C fixed snapshot pure validation, exact-version input verification and explicit self-contained offline replay, no model execution; Batch10 successful completion-id hash correlation and readonly call summary with strict backup compatibility, synthetic HTTP only; Batch11 failed/incomplete response hash observations, full reservation preservation, readonly call summary0.2 and backup compatibility, synthetic HTTP only",
-      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Candidate snapshots plus successful/failed response hash observations accepted offline. Real API/tokenizer/usage/invoice verification, account-wide bound, terminal settlement, trusted external high-water and production switching remain pending. Failed observations never release reservations.",
+      "progress_note": "DeepSeek10 CNY/day per UTC ledger. Candidate snapshots plus successful/failed response hash observations accepted offline. Real API/tokenizer/usage/invoice verification, account-wide bound, terminal settlement, trusted external high-water and production switching remain pending. Failed observations never release reservations. Batch31 added a bounded offline CLI for manual provider receipt claims, retaining unverified comparison semantics.",
       "evidence": [
         "docs/llm-client.md",
         "docs/verification/batch-05-review.md",
         "docs/verification/batch-05.md",
         "docs/verification/batch-06.md",
-        "docs/verification/batch-06-review.md"
+        "docs/verification/batch-06-review.md",
+        "docs/development-status-plan-20261122-batch31.md"
       ],
       "acceptance": [
         "超时、错误JSON、重试及超额mock测试通过",
@@ -2782,6 +2783,47 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch30.md",
         "docs/verification/batch-30-review.md"
+      ]
+    }
+  ],
+  "batch31_work_packages": [
+    {
+      "id": "B31-RECEIPT-CLI",
+      "owner": "coordinator",
+      "depends_on": [
+        "B14-RECEIPT",
+        "QA-B14"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "docs/deepseek-smoke-runbook.md",
+        "docs/development-status-plan-20261122-batch31.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json",
+        "docs/contracts/provider-receipt-v0.1.md"
+      ],
+      "acceptance": "Read-only bounded local claim comparison, fixed errors, no network or settlement",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch31.md",
+        "docs/verification/batch-31-review.md"
+      ]
+    },
+    {
+      "id": "QA-B31",
+      "owner": "receipt_cli_qa",
+      "depends_on": [
+        "B31-RECEIPT-CLI"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch31_provider_receipt_cli.py",
+        "docs/verification/batch-31-review.md"
+      ],
+      "acceptance": "Verify CLI/API parity, invalid input, and unchanged ledger",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch31.md",
+        "docs/verification/batch-31-review.md"
       ]
     }
   ]

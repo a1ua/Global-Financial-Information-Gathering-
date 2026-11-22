@@ -29,6 +29,7 @@ from .ops.candidate_snapshot import (freeze_candidate_snapshot, verify_candidate
 from .ops.market_replay import create_market_replay, verify_market_replay
 from .ops.model_calls import inspect_model_call
 from .ops.provider_preflight import preflight_provider_evidence
+from .ops.provider_receipt import compare_provider_receipt
 from .llm.batch import run_mock_candidates
 from .llm.client import _strict_loads
 from .ops.backup import _linked
@@ -224,6 +225,10 @@ def main(argv=None):
     provider_preflight = sub.add_parser("provider-evidence-preflight", help="List supplier evidence gaps read-only; never verify or settle invoices")
     provider_preflight.add_argument("--workspace", type=Path, default=Path("data/live"))
     provider_preflight.add_argument("--call-id", required=True)
+    receipt = sub.add_parser("compare-provider-receipt", help="Compare a local, unverified receipt claim")
+    receipt.add_argument("--workspace", type=Path, required=True)
+    receipt.add_argument("--call-id", required=True)
+    receipt.add_argument("--claim", type=Path, required=True)
     for exchange in ("sse", "szse"):
         market_audit = sub.add_parser(
             f"{exchange}-index-sample-audit",
@@ -254,6 +259,14 @@ def main(argv=None):
             return 0
         if args.command == "provider-evidence-preflight":
             print(json.dumps(preflight_provider_evidence(args.workspace, args.call_id), ensure_ascii=False))
+            return 0
+        if args.command == "compare-provider-receipt":
+            raw = _read_local_sample_file(args.claim, limit=16 * 1024, role="provider_receipt_claim")
+            try:
+                claim = _strict_loads(raw.decode("utf-8"))
+            except (ModelError, UnicodeError):
+                raise ValueError("provider_receipt_claim_invalid") from None
+            print(json.dumps(compare_provider_receipt(args.workspace, args.call_id, claim), ensure_ascii=False))
             return 0
         if args.command == "model-call-info":
             print(json.dumps(inspect_model_call(args.workspace, args.call_id), ensure_ascii=False))
