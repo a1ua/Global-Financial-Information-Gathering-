@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch35 synthetic extraction scoring accepted. 637 run, 634 passed, 3 Windows permission skips; 56 independent targeted checks passed. Live extraction and independently labeled evaluation remain pending. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch36 synthetic evaluation CLI accepted. 641 run, 638 passed, 3 Windows permission skips; 39 independent targeted checks passed. Antigravity contract review and 4 follow-up CLI scenarios completed. Live extraction remains pending. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -376,10 +376,11 @@
         "每个事实绑定有效证据片段",
         "验证集独立，来源正文指令不能改变系统行为"
       ],
-      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned. Batch35 added offline scoring against supplied labels, keeping invalid and missing proposals in the total.",
+      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned. Batch35 added offline scoring against supplied labels, keeping invalid and missing proposals in the total. Batch36 exposed the synthetic evaluator through a bounded offline JSON CLI.",
       "evidence": [
         "docs/development-status-plan-20261122-batch34.md",
-        "docs/development-status-plan-20261122-batch35.md"
+        "docs/development-status-plan-20261122-batch35.md",
+        "docs/development-status-plan-20261122-batch36.md"
       ]
     },
     {
@@ -2991,6 +2992,58 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch35.md",
         "docs/verification/batch-35-review.md"
+      ]
+    }
+  ],
+  "batch36_work_packages": [
+    {
+      "id": "B36-SCORE-CLI",
+      "owner": "coordinator",
+      "depends_on": [
+        "B35-SYNTH-SCORE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "docs/contracts/synthetic-extraction-v0.1.md",
+        "docs/development-status-plan-20261122-batch36.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Bounded offline JSON CLI for synthetic evaluation",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch36.md",
+        "docs/verification/batch-36-review.md"
+      ]
+    },
+    {
+      "id": "QA-B36",
+      "owner": "score_cli_qa",
+      "depends_on": [
+        "B36-SCORE-CLI"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch36_synthetic_score_cli.py",
+        "docs/verification/batch-36-review.md"
+      ],
+      "acceptance": "Offline CLI parity and invalid input",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch36.md",
+        "docs/verification/batch-36-review.md"
+      ]
+    },
+    {
+      "id": "AG-B36",
+      "owner": "Antigravity",
+      "depends_on": [
+        "B35-SYNTH-SCORE"
+      ],
+      "status": "done",
+      "write_paths": [],
+      "acceptance": "Review synthetic CLI contract boundary cases, text only",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch36.md"
       ]
     }
   ]

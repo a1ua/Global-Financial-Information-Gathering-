@@ -28,3 +28,11 @@
 - `missing` 计数提案为 `null` 的样本。
 
 `category_pairs` 只包含结构有效提案，逐对列出 `expected_category`、`proposed_category` 和 `count`，按前两个字段排序。报告只输出聚合计数。类别一致表示与传入标签相符，片段支持度仍需单独标注。
+
+### 本地命令
+
+```powershell
+python -m market_intel evaluate-synthetic-extraction --input out/synthetic-evaluation.json --cutoff 2026-11-06T00:05:03Z
+```
+
+输入为本地 UTF-8 JSON 数组，最大 1 MiB，按原始字节计。拒绝链接、UNC 路径、重复键和非标准 JSON 数字。有效批次将报告写到标准输出，退出码为 0。即使所有提案都无效或缺失，退出码也为 0，质量评估须查看各项计数。文件、JSON 或批次级错误返回 1，标准错误仅含固定原因码。

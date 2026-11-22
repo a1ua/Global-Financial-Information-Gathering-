@@ -8,6 +8,7 @@ import sys
 from uuid import uuid4
 
 from .contracts.weekly_review import summarize_synthetic_week
+from .contracts.synthetic_extraction import evaluate_synthetic_extraction
 from .capture import SOURCES, collect_all, collect_source, now
 from .offline import connect, ingest_fixture, render, replay_report
 from .pipeline.capture_state import checkpoint
@@ -276,6 +277,9 @@ def main(argv=None):
     weekly_review.add_argument("--input", type=Path, required=True)
     weekly_review.add_argument("--week-monday", required=True)
     weekly_review.add_argument("--format", choices=("json", "markdown"), default="json")
+    extraction_eval = sub.add_parser("evaluate-synthetic-extraction", help="Score local labeled synthetic extraction cases")
+    extraction_eval.add_argument("--input", type=Path, required=True)
+    extraction_eval.add_argument("--cutoff", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command in {"create-synthetic-market-replay", "verify-synthetic-market-replay"}:
@@ -313,6 +317,14 @@ def main(argv=None):
             else:
                 result = verify_candidate_replay(args.replay)
             print(json.dumps(result, ensure_ascii=False))
+            return 0
+        if args.command == "evaluate-synthetic-extraction":
+            raw = _read_local_sample_file(args.input, limit=1_048_576, role="synthetic_extraction_input")
+            try:
+                cases = _strict_loads(raw.decode("utf-8"))
+            except (ModelError, UnicodeError):
+                raise ValueError("synthetic_extraction_input_invalid") from None
+            print(json.dumps(evaluate_synthetic_extraction(cases, cutoff=args.cutoff), ensure_ascii=False))
             return 0
         if args.command == "summarize-synthetic-week":
             raw = _read_local_sample_file(args.input, limit=1_048_576, role="weekly_review_input")
