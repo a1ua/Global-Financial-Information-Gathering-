@@ -31,7 +31,7 @@ def _scope_day(value, exchange):
     return day
 
 
-def _audit_index_sample(raw, calendar_source, *, exchange, symbol, start_date, end_date):
+def _audit_index_sample(raw, calendar_source, *, exchange, symbol, start_date, end_date, explain_scope):
     if type(symbol) is not str or not _SYMBOLS[exchange].fullmatch(symbol):
         _scope_invalid(exchange)
     start = _scope_day(start_date, exchange)
@@ -49,7 +49,7 @@ def _audit_index_sample(raw, calendar_source, *, exchange, symbol, start_date, e
 
     bars = parse_index_daily_sample(raw, expected_symbol=symbol)
     audit = audit_daily_ohlc(expected, bars)
-    return {
+    result = {
         "schema_version": f"{exchange.lower()}-index-sample-audit/0.1",
         "symbol": symbol,
         "start_date": start_date,
@@ -59,15 +59,22 @@ def _audit_index_sample(raw, calendar_source, *, exchange, symbol, start_date, e
         "response_sha256": sha256(raw).hexdigest(),
         "audit": audit,
     }
+    if explain_scope:
+        diagnostics = {"outside_requested_range": [], "inside_range_not_scheduled": []}
+        for day in audit["unexpected_sessions"]:
+            category = "inside_range_not_scheduled" if start_date <= day <= end_date else "outside_requested_range"
+            diagnostics[category].append(day)
+        result["scope_diagnostics"] = diagnostics
+    return result
 
 
-def audit_sse_index_sample(raw, calendar_source, *, symbol, start_date, end_date):
+def audit_sse_index_sample(raw, calendar_source, *, symbol, start_date, end_date, explain_scope=False):
     """Bind a Shanghai sample audit to its response and SSE snapshot."""
     return _audit_index_sample(raw, calendar_source, exchange="SSE",
-                               symbol=symbol, start_date=start_date, end_date=end_date)
+                               symbol=symbol, start_date=start_date, end_date=end_date, explain_scope=explain_scope)
 
 
-def audit_szse_index_sample(raw, calendar_source, *, symbol, start_date, end_date):
+def audit_szse_index_sample(raw, calendar_source, *, symbol, start_date, end_date, explain_scope=False):
     """Bind a Shenzhen sample audit to its response and SZSE snapshot."""
     return _audit_index_sample(raw, calendar_source, exchange="SZSE",
-                               symbol=symbol, start_date=start_date, end_date=end_date)
+                               symbol=symbol, start_date=start_date, end_date=end_date, explain_scope=explain_scope)

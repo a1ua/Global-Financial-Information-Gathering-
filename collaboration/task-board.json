@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch29 synthetic weekly Markdown accepted. 612 run, 609 passed, 3 Windows permission skips; independent 11 targeted regressions passed. Production dependencies remain open. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch30 SSE and SZSE offline sample diagnostics accepted. 615 run, 612 passed, 3 Windows permission skips; 29 independent targeted checks passed. Production source dependencies remain open. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -266,7 +266,7 @@
         5
       ],
       "gate": "G4",
-      "progress_note": "Batch18 reviewed CSI/SSE source evidence and 2 historical OHLC rows, validated normalized OHLC against explicit sessions. Tushare index_daily documentation candidate; authorized direct sample, actual open/arrival semantics, historical session coverage, revisions and retention pending. Batch19 generated 242 SSE scheduled dates from official notices and linked OHLC audit. Actual session and authorized provider coverage still pending. Batch20 offline documented Tushare sample normalization and session audit accepted. Real sample not accessed. Batch21 offline file-to-coverage audit accepted; Antigravity reviewed synthetic edge cases; authorized real source pending. Batch22 validated SZSE plan and offline .SZ audit with non-interchangeable SSE/SZSE provenance. Authorized samples and actual sessions pending.",
+      "progress_note": "Batch18 reviewed CSI/SSE source evidence and 2 historical OHLC rows, validated normalized OHLC against explicit sessions. Tushare index_daily documentation candidate; authorized direct sample, actual open/arrival semantics, historical session coverage, revisions and retention pending. Batch19 generated 242 SSE scheduled dates from official notices and linked OHLC audit. Actual session and authorized provider coverage still pending. Batch20 offline documented Tushare sample normalization and session audit accepted. Real sample not accessed. Batch21 offline file-to-coverage audit accepted; Antigravity reviewed synthetic edge cases; authorized real source pending. Batch22 validated SZSE plan and offline .SZ audit with non-interchangeable SSE/SZSE provenance. Authorized samples and actual sessions pending. Batch30 added opt-in offline scope diagnostics for SSE and SZSE sample audits. Authorized samples and actual sessions still pending.",
       "evidence": [
         "docs/market/capability-review-20261108.md",
         "docs/market/probe-results-20261108.json",
@@ -276,7 +276,8 @@
         "docs/verification/batch-19.md",
         "docs/verification/batch-20.md",
         "docs/verification/batch-21.md",
-        "docs/verification/batch-22.md"
+        "docs/verification/batch-22.md",
+        "docs/development-status-plan-20261122-batch30.md"
       ],
       "acceptance": [
         "代码、币种、OHLC和调整口径可解释",
@@ -2741,6 +2742,46 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch29.md",
         "docs/verification/batch-29-review.md"
+      ]
+    }
+  ],
+  "batch30_work_packages": [
+    {
+      "id": "B30-MKT-SCOPE",
+      "owner": "coordinator",
+      "depends_on": [
+        "ENG-03"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/pipeline/market_sample_audit.py",
+        "src/market_intel/cli.py",
+        "docs/market/sample-audit-intake.md",
+        "docs/development-status-plan-20261122-batch30.md",
+        "collaboration/task-board.json",
+        "docs/ACTIVE_CONTEXT.md"
+      ],
+      "acceptance": "SSE and SZSE opt-in scope diagnostics, default output unchanged",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch30.md",
+        "docs/verification/batch-30-review.md"
+      ]
+    },
+    {
+      "id": "QA-B30",
+      "owner": "market_scope_qa",
+      "depends_on": [
+        "B30-MKT-SCOPE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch30_market_scope.py",
+        "docs/verification/batch-30-review.md"
+      ],
+      "acceptance": "Offline split by requested range, schedule exclusions, and unchanged exit codes",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch30.md",
+        "docs/verification/batch-30-review.md"
       ]
     }
   ]

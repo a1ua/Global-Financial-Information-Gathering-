@@ -233,6 +233,8 @@ def main(argv=None):
         market_audit.add_argument("--symbol", required=True)
         market_audit.add_argument("--start-date", required=True)
         market_audit.add_argument("--end-date", required=True)
+        market_audit.add_argument("--explain-scope", action="store_true",
+                                  help="Separate unexpected dates outside the range from unscheduled dates inside it")
     market_replay = sub.add_parser("create-synthetic-market-replay", help="Save a self-contained synthetic market replay")
     market_replay.add_argument("--input", type=Path, required=True)
     market_replay.add_argument("--destination", type=Path, required=True)
@@ -290,7 +292,7 @@ def main(argv=None):
             audit = audit_sse_index_sample if args.command == "sse-index-sample-audit" else audit_szse_index_sample
             result = audit(
                 _read_local_sample_file(args.response, limit=262_144, role="market_sample_file"), calendar, symbol=args.symbol,
-                start_date=args.start_date, end_date=args.end_date)
+                start_date=args.start_date, end_date=args.end_date, explain_scope=args.explain_scope)
             print(json.dumps(result, ensure_ascii=False))
             return 0 if result["audit"]["status"] == "complete" else 2
         if args.command == "evidence-candidate-plan":
