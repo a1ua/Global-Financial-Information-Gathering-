@@ -17,3 +17,11 @@ python -m market_intel summarize-synthetic-week --input config/weekly-review.syn
 ```
 
 输入限 1 MiB 的本地 UTF-8 JSON 数组，拒绝重复 JSON 键、非标准数字、链接和 UNC 路径。有效汇总输出至标准输出并返回 0。输入错误返回 1，错误写入标准错误。等待和缺价属于有效报告。
+
+默认使用 `--format json`，供脚本读取。加入 `--format markdown` 可生成便于人工核对的合成周报，仍写入标准输出。
+
+```powershell
+python -m market_intel summarize-synthetic-week --input config/weekly-review.synthetic.example.json --week-monday 2026-11-09 --format markdown
+```
+
+Markdown 沿用同一份汇总的回执周、各状态计数和完整协议哈希。平均 CAR 保留原始八位小数，以比例显示；没有已计算结果的协议显示 `N/A`。空批次保留零计数并标明没有评价协议。

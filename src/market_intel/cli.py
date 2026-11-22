@@ -13,6 +13,7 @@ from .offline import connect, ingest_fixture, render, replay_report
 from .pipeline.capture_state import checkpoint
 from .ops.backup import create_backup, restore_backup, verify_backup
 from .report.verify import verify_report
+from .report.weekly_review import render_synthetic_week_markdown
 from .llm import ModelClient, ModelError, Policy
 from .llm.deepseek import DeepSeekTransport
 from .llm.binding import check_workspace_ledger, ensure_workspace_ledger
@@ -240,6 +241,7 @@ def main(argv=None):
     weekly_review = sub.add_parser("summarize-synthetic-week", help="Summarize local synthetic evaluation results")
     weekly_review.add_argument("--input", type=Path, required=True)
     weekly_review.add_argument("--week-monday", required=True)
+    weekly_review.add_argument("--format", choices=("json", "markdown"), default="json")
     args = parser.parse_args(argv)
     try:
         if args.command in {"create-synthetic-market-replay", "verify-synthetic-market-replay"}:
@@ -273,7 +275,11 @@ def main(argv=None):
                 results = _strict_loads(raw.decode("utf-8"))
             except (ModelError, UnicodeError):
                 raise ValueError("weekly_review_input_invalid") from None
-            print(json.dumps(summarize_synthetic_week(results, week_monday=args.week_monday), ensure_ascii=False))
+            summary = summarize_synthetic_week(results, week_monday=args.week_monday)
+            if args.format == "markdown":
+                print(render_synthetic_week_markdown(summary))
+            else:
+                print(json.dumps(summary, ensure_ascii=False))
             return 0
         if args.command in {"sse-index-sample-audit", "szse-index-sample-audit"}:
             calendar_raw = _read_local_sample_file(args.calendar, limit=262_144, role="market_sample_file")

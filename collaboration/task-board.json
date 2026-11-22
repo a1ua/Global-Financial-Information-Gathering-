@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch28 synthetic weekly CLI accepted. 608 run, 605 passed, 3 Windows permission skips; independent 17 targeted regressions passed. Production dependencies remain open. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch29 synthetic weekly Markdown accepted. 612 run, 609 passed, 3 Windows permission skips; independent 11 targeted regressions passed. Production dependencies remain open. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -529,10 +529,11 @@
         "同事件多个标的和窗口不扩大独立事件数",
         "不将描述性表现写成因果或研究有效性证明"
       ],
-      "progress_note": "Batch27 synthetic weekly receipt cohort and per-protocol CAR summary accepted. Formal weekly report awaits production REV-02. Batch28 exposes replay of synthetic weekly results via the offline CLI.",
+      "progress_note": "Batch27 synthetic weekly receipt cohort and per-protocol CAR summary accepted. Formal weekly report awaits production REV-02. Batch28 exposes replay of synthetic weekly results via the offline CLI. Batch29 adds Markdown rendering for the same synthetic summary.",
       "evidence": [
         "docs/verification/batch-27.md",
-        "docs/verification/batch-28.md"
+        "docs/verification/batch-28.md",
+        "docs/development-status-plan-20261122-batch29.md"
       ]
     },
     {
@@ -2701,6 +2702,45 @@
       "evidence": [
         "docs/verification/batch-28.md",
         "docs/verification/batch-28-review.md"
+      ]
+    }
+  ],
+  "batch29_work_packages": [
+    {
+      "id": "B29-WEEKLY-MARKDOWN",
+      "owner": "coordinator",
+      "depends_on": [
+        "B28-CLI"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "docs/contracts/synthetic-weekly-review-v0.1.md",
+        "docs/development-status-plan-20261122-batch29.md",
+        "collaboration/task-board.json",
+        "src/market_intel/report/weekly_review.py"
+      ],
+      "acceptance": "Markdown and JSON parity, exact protocol hashes and explicit synthetic label",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch29.md",
+        "docs/verification/batch-29-review.md"
+      ]
+    },
+    {
+      "id": "QA-B29",
+      "owner": "independent-qa",
+      "depends_on": [
+        "B29-WEEKLY-MARKDOWN"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch29_weekly_markdown.py",
+        "docs/verification/batch-29-review.md"
+      ],
+      "acceptance": "Offline regressions for existing JSON default, Markdown counts, empty report, and missing mean without fabricated values",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch29.md",
+        "docs/verification/batch-29-review.md"
       ]
     }
   ]
