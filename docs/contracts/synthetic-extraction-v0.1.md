@@ -16,3 +16,15 @@
 成功返回 `synthetic-extraction-validation/0.1`，状态为 `structurally_valid`，并附 `is_synthetic`、`raw_item_id`、`content_sha256`、`category` 和位置 `start`、`end`。返回值只保留定位所需信息。输入校验失败时抛出固定的 `ValueError("synthetic_extraction_invalid")`。
 
 验收范围是合成输入的结构、截点及片段定位。类别准确率和片段对类别的支持度，仍需独立标注验证集与真实模型输出。函数仅计算内存输入。
+
+## 合成分类批量评测
+
+`evaluate_synthetic_extraction(cases, *, cutoff)` 按调用方提供的标签评测 0 至 1000 条合成样本。每条为精确包含 `reference_bundle`、`expected_category` 和 `proposal` 的对象。参考输入和截点沿用上述规则，`raw_item_id` 在批次内必须唯一。期望类别由调用方单独提供，允许与参考事件类别不同。无效参考、期望类别、截点或重复 ID 导致整批拒绝，原因码为 `synthetic_extraction_evaluation_invalid`。
+
+输出版本为 `synthetic-extraction-evaluation/0.1`，标记 `is_synthetic=true`。所有样本都计入 `counts.total`，每条只进入下列一个计数。
+
+- `correct` 与 `incorrect` 分别计数结构有效且与期望类别相同或不同的提案。
+- `invalid` 计数结构或证据绑定失败的提案。
+- `missing` 计数提案为 `null` 的样本。
+
+`category_pairs` 只包含结构有效提案，逐对列出 `expected_category`、`proposed_category` 和 `count`，按前两个字段排序。报告只输出聚合计数。类别一致表示与传入标签相符，片段支持度仍需单独标注。

@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch34 synthetic extraction binding prototype accepted. 632 run, 629 passed, 3 Windows permission skips; 51 independent targeted checks passed. Live extraction and classification evaluation remain pending. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch35 synthetic extraction scoring accepted. 637 run, 634 passed, 3 Windows permission skips; 56 independent targeted checks passed. Live extraction and independently labeled evaluation remain pending. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -376,9 +376,10 @@
         "每个事实绑定有效证据片段",
         "验证集独立，来源正文指令不能改变系统行为"
       ],
-      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned.",
+      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned. Batch35 added offline scoring against supplied labels, keeping invalid and missing proposals in the total.",
       "evidence": [
-        "docs/development-status-plan-20261122-batch34.md"
+        "docs/development-status-plan-20261122-batch34.md",
+        "docs/development-status-plan-20261122-batch35.md"
       ]
     },
     {
@@ -2951,6 +2952,45 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch34.md",
         "docs/verification/batch-34-review.md"
+      ]
+    }
+  ],
+  "batch35_work_packages": [
+    {
+      "id": "B35-SYNTH-SCORE",
+      "owner": "coordinator",
+      "depends_on": [
+        "B34-SYNTH-EXTRACT"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/contracts/synthetic_extraction.py",
+        "docs/contracts/synthetic-extraction-v0.1.md",
+        "docs/development-status-plan-20261122-batch35.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Count every labeled synthetic case; score only proposals with verified source binding and provide deterministic category pairs",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch35.md",
+        "docs/verification/batch-35-review.md"
+      ]
+    },
+    {
+      "id": "QA-B35",
+      "owner": "synthetic_score_qa",
+      "depends_on": [
+        "B35-SYNTH-SCORE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch35_synthetic_score.py",
+        "docs/verification/batch-35-review.md"
+      ],
+      "acceptance": "Independent mixed-case accounting, reference and label boundaries, order, and regression checks",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch35.md",
+        "docs/verification/batch-35-review.md"
       ]
     }
   ]
