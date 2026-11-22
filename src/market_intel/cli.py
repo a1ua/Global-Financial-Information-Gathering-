@@ -24,7 +24,7 @@ from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
 from .pipeline.candidates import select_candidates
 from .pipeline.evidence_candidates import plan_evidence_candidates
-from .pipeline.market_sample_audit import audit_sse_index_sample, audit_szse_index_sample
+from .pipeline.market_sample_audit import audit_sse_index_sample, audit_szse_index_sample, compare_index_samples
 from .ops.candidate_snapshot import (freeze_candidate_snapshot, verify_candidate_snapshot_file,
                                      replay_candidate_snapshot, verify_candidate_replay)
 from .ops.market_replay import create_market_replay, verify_market_replay
@@ -261,6 +261,12 @@ def main(argv=None):
         market_audit.add_argument("--end-date", required=True)
         market_audit.add_argument("--explain-scope", action="store_true",
                                   help="Separate unexpected dates outside the range from unscheduled dates inside it")
+    market_compare = sub.add_parser("compare-index-samples", help="Compare two local index samples against one schedule")
+    market_compare.add_argument("--exchange", choices=("SSE", "SZSE"), required=True)
+    for flag in ("--calendar", "--before", "--after"):
+        market_compare.add_argument(flag, type=Path, required=True)
+    for flag in ("--symbol", "--start-date", "--end-date"):
+        market_compare.add_argument(flag, required=True)
     market_replay = sub.add_parser("create-synthetic-market-replay", help="Save a self-contained synthetic market replay")
     market_replay.add_argument("--input", type=Path, required=True)
     market_replay.add_argument("--destination", type=Path, required=True)
@@ -320,12 +326,21 @@ def main(argv=None):
             else:
                 print(json.dumps(summary, ensure_ascii=False))
             return 0
-        if args.command in {"sse-index-sample-audit", "szse-index-sample-audit"}:
+        if args.command in {"sse-index-sample-audit", "szse-index-sample-audit", "compare-index-samples"}:
             calendar_raw = _read_local_sample_file(args.calendar, limit=262_144, role="market_sample_file")
             try:
                 calendar = _strict_loads(calendar_raw.decode("utf-8"))
             except (ModelError, UnicodeError):
                 raise ValueError("market_sample_calendar_invalid") from None
+            if args.command == "compare-index-samples":
+                result = compare_index_samples(
+                    _read_local_sample_file(args.before, limit=262_144, role="market_sample_before"),
+                    _read_local_sample_file(args.after, limit=262_144, role="market_sample_after"),
+                    calendar, exchange=args.exchange, symbol=args.symbol,
+                    start_date=args.start_date, end_date=args.end_date,
+                )
+                print(json.dumps(result, ensure_ascii=False))
+                return 2 if result["status"] == "coverage_incomplete" else 0
             audit = audit_sse_index_sample if args.command == "sse-index-sample-audit" else audit_szse_index_sample
             result = audit(
                 _read_local_sample_file(args.response, limit=262_144, role="market_sample_file"), calendar, symbol=args.symbol,

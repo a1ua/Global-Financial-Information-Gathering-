@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch32 offline provider response ID hashing accepted. 623 run, 620 passed, 3 Windows permission skips; 30 independent targeted checks passed. Live usage and invoice evidence pending. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch33 offline same-scope index sample comparison accepted. 627 run, 624 passed, 3 Windows permission skips; 33 independent targeted checks passed. Authorized sources and actual sessions pending. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -266,7 +266,7 @@
         5
       ],
       "gate": "G4",
-      "progress_note": "Batch18 reviewed CSI/SSE source evidence and 2 historical OHLC rows, validated normalized OHLC against explicit sessions. Tushare index_daily documentation candidate; authorized direct sample, actual open/arrival semantics, historical session coverage, revisions and retention pending. Batch19 generated 242 SSE scheduled dates from official notices and linked OHLC audit. Actual session and authorized provider coverage still pending. Batch20 offline documented Tushare sample normalization and session audit accepted. Real sample not accessed. Batch21 offline file-to-coverage audit accepted; Antigravity reviewed synthetic edge cases; authorized real source pending. Batch22 validated SZSE plan and offline .SZ audit with non-interchangeable SSE/SZSE provenance. Authorized samples and actual sessions pending. Batch30 added opt-in offline scope diagnostics for SSE and SZSE sample audits. Authorized samples and actual sessions still pending.",
+      "progress_note": "Batch18 reviewed CSI/SSE source evidence and 2 historical OHLC rows, validated normalized OHLC against explicit sessions. Tushare index_daily documentation candidate; authorized direct sample, actual open/arrival semantics, historical session coverage, revisions and retention pending. Batch19 generated 242 SSE scheduled dates from official notices and linked OHLC audit. Actual session and authorized provider coverage still pending. Batch20 offline documented Tushare sample normalization and session audit accepted. Real sample not accessed. Batch21 offline file-to-coverage audit accepted; Antigravity reviewed synthetic edge cases; authorized real source pending. Batch22 validated SZSE plan and offline .SZ audit with non-interchangeable SSE/SZSE provenance. Authorized samples and actual sessions pending. Batch30 added opt-in offline scope diagnostics for SSE and SZSE sample audits. Authorized samples and actual sessions still pending. Batch33 compares exact OHLC values across two complete same-scope offline samples and binds both response hashes and the schedule snapshot.",
       "evidence": [
         "docs/market/capability-review-20261108.md",
         "docs/market/probe-results-20261108.json",
@@ -277,7 +277,8 @@
         "docs/verification/batch-20.md",
         "docs/verification/batch-21.md",
         "docs/verification/batch-22.md",
-        "docs/development-status-plan-20261122-batch30.md"
+        "docs/development-status-plan-20261122-batch30.md",
+        "docs/development-status-plan-20261122-batch33.md"
       ],
       "acceptance": [
         "代码、币种、OHLC和调整口径可解释",
@@ -2866,6 +2867,46 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch32.md",
         "docs/verification/batch-32-review.md"
+      ]
+    }
+  ],
+  "batch33_work_packages": [
+    {
+      "id": "B33-INDEX-COMPARE",
+      "owner": "coordinator",
+      "depends_on": [
+        "B30-MKT-SCOPE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/cli.py",
+        "src/market_intel/pipeline/market_sample_audit.py",
+        "docs/market/sample-audit-intake.md",
+        "docs/development-status-plan-20261122-batch33.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Compare complete same-scope local samples exactly, bind original hashes and withhold revision claims on incomplete coverage",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch33.md",
+        "docs/verification/batch-33-review.md"
+      ]
+    },
+    {
+      "id": "QA-B33",
+      "owner": "index_compare_qa",
+      "depends_on": [
+        "B33-INDEX-COMPARE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch33_index_compare.py",
+        "docs/verification/batch-33-review.md"
+      ],
+      "acceptance": "Test two exchanges, decimal equivalence, missing or duplicate bars, scope errors, and actual CLI",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch33.md",
+        "docs/verification/batch-33-review.md"
       ]
     }
   ]
