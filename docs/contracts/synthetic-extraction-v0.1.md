@@ -32,7 +32,9 @@
 ### 本地命令
 
 ```powershell
-python -m market_intel evaluate-synthetic-extraction --input out/synthetic-evaluation.json --cutoff 2026-11-06T00:05:03Z
+python -m market_intel evaluate-synthetic-extraction --input config/synthetic-extraction-evaluation.example.json --cutoff 2026-11-06T00:05:03Z
 ```
 
 输入为本地 UTF-8 JSON 数组，最大 1 MiB，按原始字节计。拒绝链接、UNC 路径、重复键和非标准 JSON 数字。有效批次将报告写到标准输出，退出码为 0。即使所有提案都无效或缺失，退出码也为 0，质量评估须查看各项计数。文件、JSON 或批次级错误返回 1，标准错误仅含固定原因码。
+
+仓库样例包含四条不同的合成文本，其中正确、错误、引文不匹配和提案缺失各一条。预期 `counts` 为 `{"total":4,"correct":1,"incorrect":1,"invalid":1,"missing":1}`。类别对只有 `company → company` 与 `policy → macro`，各出现一次。样例标签和提案均为人为构造，用来复现计数和错误处理。

@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-22",
-  "status_note": "Batch36 synthetic evaluation CLI accepted. 641 run, 638 passed, 3 Windows permission skips; 39 independent targeted checks passed. Antigravity contract review and 4 follow-up CLI scenarios completed. Live extraction remains pending. Historical release metadata below refers to Batch11.",
+  "status_note": "Batch37 synthetic extraction evaluation example accepted. 641 run, 638 passed, 3 Windows permission skips; 14 independent targeted checks plus sample and cutoff smoke checks passed. Live extraction and independent labeling remain pending. Historical release metadata below refers to Batch11.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -376,11 +376,12 @@
         "每个事实绑定有效证据片段",
         "验证集独立，来源正文指令不能改变系统行为"
       ],
-      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned. Batch35 added offline scoring against supplied labels, keeping invalid and missing proposals in the total. Batch36 exposed the synthetic evaluator through a bounded offline JSON CLI.",
+      "progress_note": "Batch34 accepted a pure synthetic prototype for validating one classification proposal and exact source span by UTC cutoff. Production extraction and evaluation remain planned. Batch35 added offline scoring against supplied labels, keeping invalid and missing proposals in the total. Batch36 exposed the synthetic evaluator through a bounded offline JSON CLI. Batch37 added a reproducible four-case synthetic CLI example with one outcome in each count bucket.",
       "evidence": [
         "docs/development-status-plan-20261122-batch34.md",
         "docs/development-status-plan-20261122-batch35.md",
-        "docs/development-status-plan-20261122-batch36.md"
+        "docs/development-status-plan-20261122-batch36.md",
+        "docs/development-status-plan-20261122-batch37.md"
       ]
     },
     {
@@ -3044,6 +3045,60 @@
       "acceptance": "Review synthetic CLI contract boundary cases, text only",
       "evidence": [
         "docs/development-status-plan-20261122-batch36.md"
+      ]
+    }
+  ],
+  "batch37_work_packages": [
+    {
+      "id": "B37-SCORE-SAMPLE",
+      "owner": "score_sample",
+      "depends_on": [
+        "B36-SCORE-CLI"
+      ],
+      "status": "done",
+      "write_paths": [
+        "config/synthetic-extraction-evaluation.example.json"
+      ],
+      "acceptance": "Four distinct synthetic sample cases covering one count in each bucket",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch37.md",
+        "docs/verification/batch-37-review.md"
+      ]
+    },
+    {
+      "id": "QA-B37",
+      "owner": "score_sample_qa",
+      "depends_on": [
+        "B37-SCORE-SAMPLE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "docs/verification/batch-37-review.md"
+      ],
+      "acceptance": "Independent command smoke and targeted regression with explicit expected outcomes",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch37.md",
+        "docs/verification/batch-37-review.md"
+      ]
+    },
+    {
+      "id": "B37-INTEGRATION",
+      "owner": "coordinator",
+      "depends_on": [
+        "B37-SCORE-SAMPLE",
+        "QA-B37"
+      ],
+      "status": "done",
+      "write_paths": [
+        "docs/contracts/synthetic-extraction-v0.1.md",
+        "docs/development-status-plan-20261122-batch37.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Document reproducible offline sample and publish verified scope",
+      "evidence": [
+        "docs/development-status-plan-20261122-batch37.md",
+        "docs/verification/batch-37-review.md"
       ]
     }
   ]

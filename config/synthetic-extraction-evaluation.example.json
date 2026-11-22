@@ -1,0 +1,348 @@
+[
+  {
+    "reference_bundle": {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_synth_eval_company_v1",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-extraction-evaluation-company",
+        "original_url": "https://example.com/synthetic/extraction-evaluation/company",
+        "canonical_url": "https://example.com/synthetic/extraction-evaluation/company",
+        "source_tier": "primary",
+        "title": "合成公司公告",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/4601b155dcd90d184c01470c8ca6675424f04e3cce89c525e8a54d17a4a58f0f.txt",
+        "content_sha256": "4601b155dcd90d184c01470c8ca6675424f04e3cce89c525e8a54d17a4a58f0f",
+        "normalized_text": "合成公司公告：样本甲将在下季度投用一条新生产线。",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_synth_eval_company",
+        "event_version_id": "event_synth_eval_company_v1",
+        "version": 1,
+        "title": "合成公司公告",
+        "fact_summary": "合成公司公告：样本甲将在下季度投用一条新生产线。",
+        "category": "company",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_synth_eval_company"
+        ],
+        "input_raw_item_ids": [
+          "raw_synth_eval_company_v1"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_synth_eval_company",
+        "event_version_id": "event_synth_eval_company_v1",
+        "raw_item_id": "raw_synth_eval_company_v1",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 24
+        },
+        "quote": "合成公司公告：样本甲将在下季度投用一条新生产线。",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:05:03Z",
+        "is_synthetic": true
+      }
+    },
+    "expected_category": "company",
+    "proposal": {
+      "schema_version": "synthetic-extraction-proposal/0.1",
+      "is_synthetic": true,
+      "raw_item_id": "raw_synth_eval_company_v1",
+      "content_sha256": "4601b155dcd90d184c01470c8ca6675424f04e3cce89c525e8a54d17a4a58f0f",
+      "normalization_version": "text-normalize/0.1",
+      "category": "company",
+      "start": 0,
+      "end": 24,
+      "quote": "合成公司公告：样本甲将在下季度投用一条新生产线。"
+    }
+  },
+  {
+    "reference_bundle": {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_synth_eval_policy_v1",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-extraction-evaluation-policy",
+        "original_url": "https://example.com/synthetic/extraction-evaluation/policy",
+        "canonical_url": "https://example.com/synthetic/extraction-evaluation/policy",
+        "source_tier": "primary",
+        "title": "合成政策公告",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/2b39e81eeede573dec2cbe4d5d8008c54f2ebe22bdf212ff7a9de2d9f00b6a0d.txt",
+        "content_sha256": "2b39e81eeede573dec2cbe4d5d8008c54f2ebe22bdf212ff7a9de2d9f00b6a0d",
+        "normalized_text": "合成政策公告：样本乙主管机构发布节能设备补助规则。",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_synth_eval_policy",
+        "event_version_id": "event_synth_eval_policy_v1",
+        "version": 1,
+        "title": "合成政策公告",
+        "fact_summary": "合成政策公告：样本乙主管机构发布节能设备补助规则。",
+        "category": "policy",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_synth_eval_policy"
+        ],
+        "input_raw_item_ids": [
+          "raw_synth_eval_policy_v1"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_synth_eval_policy",
+        "event_version_id": "event_synth_eval_policy_v1",
+        "raw_item_id": "raw_synth_eval_policy_v1",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 25
+        },
+        "quote": "合成政策公告：样本乙主管机构发布节能设备补助规则。",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:05:03Z",
+        "is_synthetic": true
+      }
+    },
+    "expected_category": "policy",
+    "proposal": {
+      "schema_version": "synthetic-extraction-proposal/0.1",
+      "is_synthetic": true,
+      "raw_item_id": "raw_synth_eval_policy_v1",
+      "content_sha256": "2b39e81eeede573dec2cbe4d5d8008c54f2ebe22bdf212ff7a9de2d9f00b6a0d",
+      "normalization_version": "text-normalize/0.1",
+      "category": "macro",
+      "start": 0,
+      "end": 25,
+      "quote": "合成政策公告：样本乙主管机构发布节能设备补助规则。"
+    }
+  },
+  {
+    "reference_bundle": {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_synth_eval_invalid_v1",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-extraction-evaluation-invalid",
+        "original_url": "https://example.com/synthetic/extraction-evaluation/invalid",
+        "canonical_url": "https://example.com/synthetic/extraction-evaluation/invalid",
+        "source_tier": "primary",
+        "title": "合成统计公告",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/bffa1ecab16b9eee10fc4edbed877f149eb2919f079c5577ddc11017b3f25543.txt",
+        "content_sha256": "bffa1ecab16b9eee10fc4edbed877f149eb2919f079c5577ddc11017b3f25543",
+        "normalized_text": "合成统计公告：样本丙工业产出指数较上月增加两点。",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_synth_eval_invalid",
+        "event_version_id": "event_synth_eval_invalid_v1",
+        "version": 1,
+        "title": "合成统计公告",
+        "fact_summary": "合成统计公告：样本丙工业产出指数较上月增加两点。",
+        "category": "macro",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_synth_eval_invalid"
+        ],
+        "input_raw_item_ids": [
+          "raw_synth_eval_invalid_v1"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_synth_eval_invalid",
+        "event_version_id": "event_synth_eval_invalid_v1",
+        "raw_item_id": "raw_synth_eval_invalid_v1",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 24
+        },
+        "quote": "合成统计公告：样本丙工业产出指数较上月增加两点。",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:05:03Z",
+        "is_synthetic": true
+      }
+    },
+    "expected_category": "macro",
+    "proposal": {
+      "schema_version": "synthetic-extraction-proposal/0.1",
+      "is_synthetic": true,
+      "raw_item_id": "raw_synth_eval_invalid_v1",
+      "content_sha256": "bffa1ecab16b9eee10fc4edbed877f149eb2919f079c5577ddc11017b3f25543",
+      "normalization_version": "text-normalize/0.1",
+      "category": "macro",
+      "start": 0,
+      "end": 24,
+      "quote": "虚构的引文"
+    }
+  },
+  {
+    "reference_bundle": {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_synth_eval_missing_v1",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-extraction-evaluation-missing",
+        "original_url": "https://example.com/synthetic/extraction-evaluation/missing",
+        "canonical_url": "https://example.com/synthetic/extraction-evaluation/missing",
+        "source_tier": "primary",
+        "title": "合成日程公告",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/75ca40449111728d26d2a88cfe3df643d46196cfac94a2b30a93110afda945ad.txt",
+        "content_sha256": "75ca40449111728d26d2a88cfe3df643d46196cfac94a2b30a93110afda945ad",
+        "normalized_text": "合成日程公告：样本丁将在下周三发布季度调查结果。",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_synth_eval_missing",
+        "event_version_id": "event_synth_eval_missing_v1",
+        "version": 1,
+        "title": "合成日程公告",
+        "fact_summary": "合成日程公告：样本丁将在下周三发布季度调查结果。",
+        "category": "calendar",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_synth_eval_missing"
+        ],
+        "input_raw_item_ids": [
+          "raw_synth_eval_missing_v1"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_synth_eval_missing",
+        "event_version_id": "event_synth_eval_missing_v1",
+        "raw_item_id": "raw_synth_eval_missing_v1",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 24
+        },
+        "quote": "合成日程公告：样本丁将在下周三发布季度调查结果。",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:05:03Z",
+        "is_synthetic": true
+      }
+    },
+    "expected_category": "calendar",
+    "proposal": null
+  }
+]
