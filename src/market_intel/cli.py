@@ -26,6 +26,7 @@ from .ops.reconciliation import preview_reconciliation, prepare_audit_observatio
 from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
 from .pipeline.candidates import select_candidates
+from .pipeline.process.cluster import plan_synthetic_event_clusters
 from .pipeline.evidence_candidates import plan_evidence_candidates
 from .pipeline.market_sample_audit import audit_sse_index_sample, audit_szse_index_sample, compare_index_samples
 from .ops.candidate_snapshot import (freeze_candidate_snapshot, verify_candidate_snapshot_file,
@@ -311,6 +312,9 @@ def main(argv=None):
                                  help="Include the SHA-256 of the input bytes and the applied UTC cutoff")
     extraction_eval.add_argument("--include-diagnostics", action="store_true",
                                  help="List the input positions of incorrect, invalid, and missing proposals")
+    event_clusters = sub.add_parser("plan-synthetic-event-clusters", help="Group local synthetic event candidates")
+    event_clusters.add_argument("--input", type=Path, required=True)
+    event_clusters.add_argument("--cutoff", required=True)
     ops_st = sub.add_parser("ops-status", help="Inspect workspace lock and run journal read-only")
     ops_st.add_argument("--workspace", type=Path, default=Path("data/live"))
     ops_st.add_argument("--now", default=None)
@@ -439,6 +443,14 @@ def main(argv=None):
             else:
                 result = verify_candidate_replay(args.replay)
             print(json.dumps(result, ensure_ascii=False))
+            return 0
+        if args.command == "plan-synthetic-event-clusters":
+            raw = _read_local_sample_file(args.input, limit=1_048_576, role="synthetic_event_cluster_input")
+            try:
+                bundles = _strict_loads(raw.decode("utf-8"))
+            except (ModelError, UnicodeError):
+                raise ValueError("synthetic_event_cluster_input_invalid") from None
+            print(json.dumps(plan_synthetic_event_clusters(bundles, cutoff=args.cutoff), ensure_ascii=False))
             return 0
         if args.command == "evaluate-synthetic-extraction":
             raw = _read_local_sample_file(args.input, limit=1_048_576, role="synthetic_extraction_input")

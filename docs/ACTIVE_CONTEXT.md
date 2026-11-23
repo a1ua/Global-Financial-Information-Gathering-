@@ -7,8 +7,8 @@
 
 - **更新时间**：`2026-11-24`
 - **任务统计**：已完成 `10` / 进行中 `2` / 待开发 `13` / 已取消 `1`
-- **最新状态**：Batch40 (B40-SESSION-BRIEF + QA-B40) and Batch41 (B41-OPS-RUNLOCK + QA-B41, offline OPS-01 lock/journal/recovery-planner/dry-run Windows task template) both passed independent multi-round adversarial QA (full ./scripts/dev.ps1 test: 701 run, 697 passed, 4 Windows symlink skips; 360-thread lock recovery stress: 0 anomalies). Ready for Codex GitHub main publication via collaboration/codex/PUBLISH-B40-B41-task.md.
-- **最新交接**：`docs/development-status-plan-20261124-batch41.md`
+- **最新状态**：Batch42 synthetic event cluster planner accepted. 706 run, 702 passed, 4 Windows symlink permission skips; 50 independent targeted checks passed. Production clustering remains pending.
+- **最新交接**：`docs/development-status-plan-20261124-batch42.md`
 - **闸门状态**：`G0`: passed_local | `G1`: partial | `G2`: partial | `G3`: not_accepted | `G4`: not_started | `G5`: not_started
 
 ## 2. 当前进行中任务（优先推进）
@@ -43,13 +43,13 @@
 | `WB-02` | WorkBuddy时间与收益黑盒复核 | `G4` | `REV-02` |
 | `WB-03` | WorkBuddy报告阅读与证据抽检 | `G3` | `RPT-02` |
 
-## 4. 最近批次收尾（`batch41_work_packages`）
+## 4. 最近批次收尾（`batch42_work_packages`）
 
-- `B41-OPS-RUNLOCK`（`done` / `antigravity_lead`）：`src/market_intel/contracts/ops_schedule.py`, `src/market_intel/ops/scheduler.py`, `src/market_intel/cli.py`, `docs/contracts/ops-schedule-v0.1.md`, `docs/development-status-plan-20261124-batch41.md`, `collaboration/codex/PUBLISH-B40-B41-task.md`, `tests/test_ops_scheduler.py`, `collaboration/task-board.json`, `docs/ACTIVE_CONTEXT.md`
-- `QA-B41`（`done` / `independent_qa`）：`tests/test_batch41_ops_scheduler_qa.py`, `docs/verification/batch-41-review.md`
+- `B42-NLP-CLUSTER`（`done` / `coordinator`）：`src/market_intel/pipeline/process/cluster.py`, `src/market_intel/cli.py`, `docs/contracts/synthetic-event-cluster-v0.1.md`, `docs/development-status-plan-20261124-batch42.md`, `docs/ACTIVE_CONTEXT.md`, `collaboration/task-board.json`
+- `QA-B42`（`done` / `cluster_qa`）：`tests/clustering/test_batch42_synthetic_cluster.py`, `docs/verification/batch-42-review.md`, `tests/clustering/__init__.py`
 
 ## 5. 新会话最小启动清单
 
-1. 必读：`AGENTS.md` + 本文件 `docs/ACTIVE_CONTEXT.md` + `docs/development-status-plan-20261124-batch41.md`
+1. 必读：`AGENTS.md` + 本文件 `docs/ACTIVE_CONTEXT.md` + `docs/development-status-plan-20261124-batch42.md`
 2. 按需读：本轮任务对应的 `docs/contracts/*.md` 与允许修改的 2~3 个源码/测试文件
 3. 刷新本文件：更新 `collaboration/task-board.json` 后运行 `./.venv/Scripts/python.exe scripts/build-active-context.py`

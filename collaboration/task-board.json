@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-24",
-  "status_note": "Batch40 (B40-SESSION-BRIEF + QA-B40) and Batch41 (B41-OPS-RUNLOCK + QA-B41, offline OPS-01 lock/journal/recovery-planner/dry-run Windows task template) both passed independent multi-round adversarial QA (full ./scripts/dev.ps1 test: 701 run, 697 passed, 4 Windows symlink skips; 360-thread lock recovery stress: 0 anomalies). Ready for Codex GitHub main publication via collaboration/codex/PUBLISH-B40-B41-task.md.",
+  "status_note": "Batch42 synthetic event cluster planner accepted. 706 run, 702 passed, 4 Windows symlink permission skips; 50 independent targeted checks passed. Production clustering remains pending.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -407,6 +407,10 @@
         "精确去重先由代码处理",
         "误合并与漏合并分别报告",
         "后续进展与矛盾证据不覆盖历史"
+      ],
+      "progress_note": "Batch42 accepted a synthetic fixed-cutoff exact duplicate and ambiguous title candidate planner retaining history and explicit conflict relations. Production clustering and labeled error assessment remain planned.",
+      "evidence": [
+        "docs/development-status-plan-20261124-batch42.md"
       ]
     },
     {
@@ -3268,6 +3272,47 @@
       "evidence": [
         "tests/test_batch41_ops_scheduler_qa.py",
         "docs/verification/batch-41-review.md"
+      ]
+    }
+  ],
+  "batch42_work_packages": [
+    {
+      "id": "B42-NLP-CLUSTER",
+      "owner": "coordinator",
+      "depends_on": [
+        "B39-SCORE-DIAGNOSTICS"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/pipeline/process/cluster.py",
+        "src/market_intel/cli.py",
+        "docs/contracts/synthetic-event-cluster-v0.1.md",
+        "docs/development-status-plan-20261124-batch42.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Offline exact duplicate and ambiguous title candidate groups, fixed UTC cutoff, historical versions and explicit conflict evidence preserved",
+      "evidence": [
+        "docs/development-status-plan-20261124-batch42.md",
+        "docs/verification/batch-42-review.md"
+      ]
+    },
+    {
+      "id": "QA-B42",
+      "owner": "cluster_qa",
+      "depends_on": [
+        "B42-NLP-CLUSTER"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/clustering/test_batch42_synthetic_cluster.py",
+        "docs/verification/batch-42-review.md",
+        "tests/clustering/__init__.py"
+      ],
+      "acceptance": "Independent contract, state, cutoff, grouping, conflict, CLI and redaction checks",
+      "evidence": [
+        "docs/development-status-plan-20261124-batch42.md",
+        "docs/verification/batch-42-review.md"
       ]
     }
   ]
