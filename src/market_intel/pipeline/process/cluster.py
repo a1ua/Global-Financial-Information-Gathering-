@@ -2,7 +2,8 @@
 
 from collections import defaultdict
 
-from ...contracts import identifier, instant, record, validate_bundle
+from ...contracts import choice, identifier, instant, record, validate_bundle
+from ...contracts.candidate_snapshot import payload_sha256
 
 
 def plan_synthetic_event_clusters(bundles, *, cutoff):
@@ -78,6 +79,22 @@ def _group_index(groups):
     }
 
 
+def _same_group(group_ids, left, right):
+    return left in group_ids and group_ids[left] == group_ids.get(right)
+
+
+def _version_pair(ids, members):
+    if type(ids) is not list or len(ids) != 2:
+        raise ValueError
+    for version_id in ids:
+        identifier(version_id, "pair.event_version_id")
+    left, right = sorted(ids)
+    if (left not in members or right not in members
+            or members[left]["event_id"] == members[right]["event_id"]):
+        raise ValueError
+    return left, right
+
+
 def evaluate_synthetic_event_clusters(bundles, labels, *, cutoff, include_title_review=False):
     """Measure exact duplicate candidates against explicitly labeled visible pairs."""
     counts = dict.fromkeys(("true_positive", "false_positive", "false_negative", "true_negative"), 0)
@@ -90,23 +107,21 @@ def evaluate_synthetic_event_clusters(bundles, labels, *, cutoff, include_title_
         if type(labels) is not list or len(labels) > 1000 or type(include_title_review) is not bool:
             raise ValueError
         plan = plan_synthetic_event_clusters(bundles, cutoff=cutoff)
-        event_ids = {member["event_version_id"]: member["event_id"] for member in plan["members"]}
+        members = {member["event_version_id"]: member for member in plan["members"]}
         group_ids = _group_index(plan["exact_duplicate_groups"])
         title_ids = _group_index(plan["ambiguous_title_groups"]) if include_title_review else {}
         for label in labels:
             record(label, {"event_version_ids", "same_event"}, "label")
             ids, same_event = label["event_version_ids"], label["same_event"]
-            if type(ids) is not list or len(ids) != 2 or type(same_event) is not bool:
+            if type(same_event) is not bool:
                 raise ValueError
-            for version_id in ids:
-                identifier(version_id, "label.event_version_id")
-            left, right = pair = tuple(sorted(ids))
-            if (left not in event_ids or right not in event_ids
-                    or event_ids[left] == event_ids[right] or pair in seen):
+            pair = _version_pair(ids, members)
+            left, right = pair
+            if pair in seen:
                 raise ValueError
             seen.add(pair)
-            predicted = left in group_ids and group_ids[left] == group_ids.get(right)
-            if not predicted and left in title_ids and title_ids[left] == title_ids.get(right):
+            predicted = _same_group(group_ids, left, right)
+            if not predicted and _same_group(title_ids, left, right):
                 if same_event:
                     covered_false_negative.append(pair)
                 else:
@@ -139,3 +154,44 @@ def evaluate_synthetic_event_clusters(bundles, labels, *, cutoff, include_title_
             "covered_false_negative_pairs": [list(pair) for pair in sorted(covered_false_negative)],
         }
     return report
+
+
+def adjudicate_synthetic_event_clusters(bundles, decisions, *, cutoff):
+    """Report explicit decisions for eligible title-review pairs."""
+    counts = dict.fromkeys(("same_event", "different_event", "needs_more_evidence"), 0)
+    adjudications = {}
+    try:
+        if type(decisions) is not list or len(decisions) > 1000:
+            raise ValueError
+        plan = plan_synthetic_event_clusters(bundles, cutoff=cutoff)
+        members = {member["event_version_id"]: member for member in plan["members"]}
+        bundles_by_version = {bundle["event"]["event_version_id"]: bundle for bundle in bundles}
+        exact_ids = _group_index(plan["exact_duplicate_groups"])
+        title_ids = _group_index(plan["ambiguous_title_groups"])
+        for entry in decisions:
+            record(entry, {"event_version_ids", "decision"}, "adjudication")
+            decision = entry["decision"]
+            choice(decision, counts, "adjudication.decision")
+            pair = _version_pair(entry["event_version_ids"], members)
+            left, right = pair
+            if (pair in adjudications or not _same_group(title_ids, left, right)
+                    or _same_group(exact_ids, left, right)):
+                raise ValueError
+            counts[decision] += 1
+            adjudications[pair] = {
+                "decision": decision,
+                "members": [
+                    {**members[version_id], "bundle_sha256": payload_sha256(bundles_by_version[version_id])}
+                    for version_id in pair
+                ],
+            }
+    except ValueError:
+        raise ValueError("synthetic_event_cluster_adjudication_invalid") from None
+
+    return {
+        "schema_version": "synthetic-event-cluster-adjudication/0.1",
+        "is_synthetic": True,
+        "cutoff": cutoff,
+        "counts": {"decisions": len(decisions), **counts},
+        "adjudications": [adjudications[pair] for pair in sorted(adjudications)],
+    }

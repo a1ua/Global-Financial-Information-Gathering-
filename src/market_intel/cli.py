@@ -26,7 +26,11 @@ from .ops.reconciliation import preview_reconciliation, prepare_audit_observatio
 from .ops.audit_journal import append_observation, verify_audit_journal
 from .ops.recovery_preflight import preflight_ledger_recovery
 from .pipeline.candidates import select_candidates
-from .pipeline.process.cluster import evaluate_synthetic_event_clusters, plan_synthetic_event_clusters
+from .pipeline.process.cluster import (
+    adjudicate_synthetic_event_clusters,
+    evaluate_synthetic_event_clusters,
+    plan_synthetic_event_clusters,
+)
 from .pipeline.evidence_candidates import plan_evidence_candidates
 from .pipeline.market_sample_audit import audit_sse_index_sample, audit_szse_index_sample, compare_index_samples
 from .ops.candidate_snapshot import (freeze_candidate_snapshot, verify_candidate_snapshot_file,
@@ -315,6 +319,7 @@ def main(argv=None):
     for command, help_text in (
         ("plan-synthetic-event-clusters", "Group local synthetic event candidates"),
         ("evaluate-synthetic-event-clusters", "Score exact candidates against labeled synthetic pairs"),
+        ("adjudicate-synthetic-event-clusters", "Validate human decisions on synthetic title-review pairs"),
     ):
         event_clusters = sub.add_parser(command, help=help_text)
         event_clusters.add_argument("--input", type=Path, required=True)
@@ -451,7 +456,8 @@ def main(argv=None):
                 result = verify_candidate_replay(args.replay)
             print(json.dumps(result, ensure_ascii=False))
             return 0
-        if args.command in {"plan-synthetic-event-clusters", "evaluate-synthetic-event-clusters"}:
+        if args.command in {"plan-synthetic-event-clusters", "evaluate-synthetic-event-clusters",
+                            "adjudicate-synthetic-event-clusters"}:
             raw = _read_local_sample_file(args.input, limit=1_048_576, role="synthetic_event_cluster_input")
             try:
                 payload = _strict_loads(raw.decode("utf-8"))
@@ -464,6 +470,11 @@ def main(argv=None):
                     payload["bundles"], payload["labels"], cutoff=args.cutoff,
                     include_title_review=args.include_title_review,
                 )
+            elif args.command == "adjudicate-synthetic-event-clusters":
+                if type(payload) is not dict or payload.keys() != {"bundles", "decisions"}:
+                    raise ValueError("synthetic_event_cluster_adjudication_invalid")
+                result = adjudicate_synthetic_event_clusters(payload["bundles"], payload["decisions"],
+                                                            cutoff=args.cutoff)
             else:
                 result = plan_synthetic_event_clusters(payload, cutoff=args.cutoff)
             print(json.dumps(result, ensure_ascii=False))

@@ -1,7 +1,7 @@
 {
   "version": "3.0",
   "updated_at": "2026-11-24",
-  "status_note": "Batch44 title-review coverage and runnable synthetic example accepted. 714 run, 710 passed, 4 Windows symlink permission skips; 36 independent targeted checks passed. Production clustering and independent real labels remain pending.",
+  "status_note": "Batch45 synthetic title-review adjudication accepted. 718 run, 714 passed, 4 Windows symlink permission skips; 40 independent targeted checks passed. Production clustering and independent labels remain pending.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -408,11 +408,12 @@
         "误合并与漏合并分别报告",
         "后续进展与矛盾证据不覆盖历史"
       ],
-      "progress_note": "Batch42 accepted a synthetic fixed-cutoff exact duplicate and ambiguous title candidate planner retaining history and explicit conflict relations. Production clustering and labeled error assessment remain planned. Batch43 scores exact rules on explicitly labeled visible version pairs and separately lists false positives and false negatives. Batch44 measures title-review queue coverage of labeled misses and different-event review load without changing exact scores.",
+      "progress_note": "Batch42 accepted a synthetic fixed-cutoff exact duplicate and ambiguous title candidate planner retaining history and explicit conflict relations. Production clustering and labeled error assessment remain planned. Batch43 scores exact rules on explicitly labeled visible version pairs and separately lists false positives and false negatives. Batch44 measures title-review queue coverage of labeled misses and different-event review load without changing exact scores. Batch45 records explicit synthetic title-review pair decisions at a fixed cutoff with both evidence relations and canonical bundle hashes.",
       "evidence": [
         "docs/development-status-plan-20261124-batch42.md",
         "docs/development-status-plan-20261124-batch43.md",
-        "docs/development-status-plan-20261124-batch44.md"
+        "docs/development-status-plan-20261124-batch44.md",
+        "docs/development-status-plan-20261124-batch45.md"
       ]
     },
     {
@@ -3396,6 +3397,46 @@
       "evidence": [
         "docs/development-status-plan-20261124-batch44.md",
         "docs/verification/batch-44-review.md"
+      ]
+    }
+  ],
+  "batch45_work_packages": [
+    {
+      "id": "B45-TITLE-ADJUDICATION",
+      "owner": "coordinator",
+      "depends_on": [
+        "B44-TITLE-REVIEW-COVERAGE"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/pipeline/process/cluster.py",
+        "src/market_intel/cli.py",
+        "docs/contracts/synthetic-event-cluster-v0.1.md",
+        "docs/development-status-plan-20261124-batch45.md",
+        "docs/ACTIVE_CONTEXT.md",
+        "collaboration/task-board.json"
+      ],
+      "acceptance": "Read-only synthetic human decisions on eligible title-only pairs, preserving exact evidence binding and conflicts",
+      "evidence": [
+        "docs/development-status-plan-20261124-batch45.md",
+        "docs/verification/batch-45-review.md"
+      ]
+    },
+    {
+      "id": "QA-B45",
+      "owner": "title_adjudication_qa",
+      "depends_on": [
+        "B45-TITLE-ADJUDICATION"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/clustering/test_batch45_title_adjudication.py",
+        "docs/verification/batch-45-review.md"
+      ],
+      "acceptance": "Independent CLI/API, exact eligibility, version binding, cutoff and duplicate rejection, and stable output",
+      "evidence": [
+        "docs/development-status-plan-20261124-batch45.md",
+        "docs/verification/batch-45-review.md"
       ]
     }
   ]

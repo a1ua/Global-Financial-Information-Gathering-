@@ -46,3 +46,15 @@ python -m market_intel evaluate-synthetic-event-clusters --input config/syntheti
 ```
 
 样例使用合成记录和人工构造标签。精确规则在 4 个标注对上得到 1 个正例命中、0 个误报、2 个漏报和 1 个负例命中。同标题队列新增 2 个已标注候选，覆盖其中 1 个漏报，并带来 1 个异事件对待核对。
+
+## 同标题候选人工裁决
+
+`adjudicate_synthetic_event_clusters(bundles, decisions, *, cutoff)` 按同一 UTC 截点重建候选。每个裁决对象恰含 `event_version_ids`（两个版本 ID）及 `decision`（`same_event`、`different_event` 或 `needs_more_evidence`）。最多 1,000 项。提交的版本对须来自不同逻辑事件，两个版本均在截点可见，并且同在待核对标题组中。已命中精确规则的对和重复提交的无序对均拒绝。未提交的对继续待核对。
+
+报告版本为 `synthetic-event-cluster-adjudication/0.1`，带有合成标记、经校验的 `cutoff`、裁决总数及各状态计数。 `adjudications` 按版本 ID 对排序，每项含 `decision` 和按版本 ID 排序的两个 `members`。每个成员保留计划中的身份、版本和证据关系，并附规范 JSON bundle 的 `bundle_sha256`，用于复核输入版本。裁决是针对这一对的人工记录，系统不推导传递关系、不归并事件，也不改写证据。
+
+```powershell
+python -m market_intel adjudicate-synthetic-event-clusters --input out/synthetic-cluster-decisions.json --cutoff 2026-11-06T00:06:00Z
+```
+
+本地 JSON 对象恰含 `bundles` 和 `decisions`，使用同一 1 MiB 上限和严格 UTF-8 JSON 读取规则。裁决或候选校验失败统一退出 1，使用原因码 `synthetic_event_cluster_adjudication_invalid`。
