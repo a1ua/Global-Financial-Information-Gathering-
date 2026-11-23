@@ -16,3 +16,17 @@ python -m market_intel plan-synthetic-event-clusters --input out/synthetic-clust
 ```
 
 输入是最多 1 MiB 的本地 UTF-8 JSON 数组，沿用现有文件和严格 JSON 校验。合法结果写入标准输出并退出 0，失败退出 1。整个命令只读取输入文件并在内存中计算。
+
+## 按标注评测精确去重候选
+
+`evaluate_synthetic_event_clusters(bundles, labels, *, cutoff)` 使用同一截点重建计划，再逐对比较人工标签。每个标签恰有 `event_version_ids`（两个版本 ID）和布尔值 `same_event`。两版本须属于不同逻辑事件且在截点可见。同一无序对只允许标注一次。允许 0 至 1,000 个标签。
+
+同属一个精确去重候选组表示规则将该对列为正例。只出现在同标题待核对组的对仍按规则负例计数。未标注的对完全排除在评测分母外。
+
+结果版本为 `synthetic-event-cluster-evaluation/0.1`，标记为 `is_synthetic=true`。 `counts` 包括 `labeled_pairs`、`true_positive`、`false_positive`、`false_negative` 和 `true_negative`。 `false_positive_pairs` 定位可能的误合并候选，`false_negative_pairs` 定位漏掉的同事件对。列表及每对 ID 均按字典序排列。两类差异属于固定标注集上的规则评测，流程保留所有原始事件版本。
+
+```powershell
+python -m market_intel evaluate-synthetic-event-clusters --input out/synthetic-cluster-evaluation.json --cutoff 2026-11-06T00:06:00Z
+```
+
+CLI 输入为恰含 `bundles` 和 `labels` 的本地 UTF-8 JSON 对象，最多 1 MiB。合法结果写入标准输出并退出 0。无效输入退出 1，其中非法评测参数或标签使用固定原因码 `synthetic_event_cluster_evaluation_invalid`。
