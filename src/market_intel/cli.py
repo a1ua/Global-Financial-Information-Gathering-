@@ -15,6 +15,7 @@ from .offline import connect, ingest_fixture, render, replay_report
 from .pipeline.capture_state import checkpoint
 from .ops.backup import create_backup, restore_backup, verify_backup
 from .report.verify import verify_report
+from .report.session_brief import render_session_brief, replay_session_brief, verify_session_brief
 from .report.weekly_review import render_synthetic_week_markdown
 from .llm import ModelClient, ModelError, Policy
 from .llm.deepseek import DeepSeekTransport
@@ -33,6 +34,14 @@ from .ops.market_replay import create_market_replay, verify_market_replay
 from .ops.model_calls import inspect_model_call
 from .ops.provider_preflight import preflight_provider_evidence
 from .ops.provider_receipt import compare_provider_receipt
+from .ops.scheduler import (
+    acquire_run_lock,
+    plan_missed_runs,
+    read_ops_status,
+    record_ops_run,
+    release_run_lock,
+    render_windows_task_template,
+)
 from .llm.batch import run_mock_candidates
 from .llm.client import _strict_loads
 from .ops.backup import _linked
@@ -180,6 +189,23 @@ def main(argv=None):
     validate = sub.add_parser("validate-report", help="Verify published manifest, evidence closure and file hashes")
     validate.add_argument("--workspace", type=Path, default=Path("data/live"))
     validate.add_argument("--report-id", required=True)
+    sb = sub.add_parser("session-brief", help="Generate a dual-template (HTML + Markdown) degraded session brief")
+    sb.add_argument("--workspace", type=Path, default=Path("data/live"))
+    sb.add_argument("--report-type", choices=("pre_market", "post_market"), required=True)
+    sb.add_argument("--session-date", required=True)
+    sb.add_argument("--cutoff", default=None)
+    sb.add_argument("--report-id", default=None)
+    sb.add_argument("--run-id", default=None)
+    sb.add_argument("--display-timezone", default="Asia/Shanghai")
+    sb.add_argument("--supersedes", default=None)
+    sb.add_argument("--synthetic-empty", action="store_true")
+    sb_verify = sub.add_parser("verify-session-brief", help="Verify published dual-template session brief read-only")
+    sb_verify.add_argument("--workspace", type=Path, default=Path("data/live"))
+    sb_verify.add_argument("--report-id", required=True)
+    sb_replay = sub.add_parser("replay-session-brief", help="Replay a verified dual-template session brief into a separate destination")
+    sb_replay.add_argument("--workspace", type=Path, default=Path("data/live"))
+    sb_replay.add_argument("--report-id", required=True)
+    sb_replay.add_argument("--destination", type=Path, default=Path("out/replay-session"))
     backup = sub.add_parser("backup", help="Create a SQLite-consistent evidence backup at a new destination")
     backup.add_argument("--workspace", type=Path, default=Path("data/live"))
     backup.add_argument("--destination", type=Path, required=True)
@@ -285,8 +311,99 @@ def main(argv=None):
                                  help="Include the SHA-256 of the input bytes and the applied UTC cutoff")
     extraction_eval.add_argument("--include-diagnostics", action="store_true",
                                  help="List the input positions of incorrect, invalid, and missing proposals")
+    ops_st = sub.add_parser("ops-status", help="Inspect workspace lock and run journal read-only")
+    ops_st.add_argument("--workspace", type=Path, default=Path("data/live"))
+    ops_st.add_argument("--now", default=None)
+    ops_acq = sub.add_parser("ops-lock-acquire", help="Atomically acquire workspace single-instance run lock")
+    ops_acq.add_argument("--workspace", type=Path, default=Path("data/live"))
+    ops_acq.add_argument("--job", choices=("pre_market", "post_market", "collect_all", "manual_recovery"), required=True)
+    ops_acq.add_argument("--run-id", required=True)
+    ops_acq.add_argument("--ttl-seconds", type=int, default=900)
+    ops_acq.add_argument("--now", default=None)
+    ops_acq.add_argument("--lock-id", default=None)
+    ops_acq.add_argument("--no-recover-expired", action="store_true")
+    ops_rel = sub.add_parser("ops-lock-release", help="Release workspace single-instance run lock by owner lock_id")
+    ops_rel.add_argument("--workspace", type=Path, default=Path("data/live"))
+    ops_rel.add_argument("--lock-id", required=True)
+    ops_rec = sub.add_parser("ops-record-run", help="Append one validated ops-run-record/0.1 entry to runs.jsonl")
+    ops_rec.add_argument("--workspace", type=Path, default=Path("data/live"))
+    ops_rec.add_argument("--input", type=Path, required=True)
+    ops_plan = sub.add_parser("ops-plan-recovery", help="Plan missed pre/post market runs read-only; no auto execution")
+    ops_plan.add_argument("--workspace", type=Path, default=Path("data/live"))
+    ops_plan_src = ops_plan.add_mutually_exclusive_group(required=True)
+    ops_plan_src.add_argument("--session-dates", default=None, help="Comma-separated YYYY-MM-DD dates")
+    ops_plan_src.add_argument("--calendar-file", type=Path, default=None, help="JSON scheduled-session-snapshot/0.1 file")
+    ops_plan.add_argument("--now", default=None)
+    ops_plan.add_argument("--display-timezone", default="Asia/Shanghai")
+    ops_plan.add_argument("--pre-market-local", default="08:30")
+    ops_plan.add_argument("--post-market-local", default="16:30")
+    ops_tpl = sub.add_parser("ops-render-task-template", help="Render dry-run Windows Task Scheduler XML template; never installs")
+    ops_tpl.add_argument("--job", choices=("pre_market", "post_market"), required=True)
+    ops_tpl.add_argument("--task-name", required=True)
+    ops_tpl.add_argument("--trigger-time", required=True)
+    ops_tpl.add_argument("--display-timezone", default="Asia/Shanghai")
+    ops_tpl.add_argument("--workspace-rel", default="data/live")
+    ops_tpl.add_argument("--start-date", default="2026-11-24")
+    ops_tpl.add_argument("--output", type=Path, default=None)
     args = parser.parse_args(argv)
     try:
+        if args.command == "ops-status":
+            print(json.dumps(read_ops_status(args.workspace, now_utc=args.now), ensure_ascii=False))
+            return 0
+        if args.command == "ops-lock-acquire":
+            result = acquire_run_lock(
+                args.workspace,
+                job_name=args.job,
+                run_id=args.run_id,
+                ttl_seconds=args.ttl_seconds,
+                now_utc=args.now,
+                lock_id=args.lock_id,
+                recover_expired=not args.no_recover_expired,
+            )
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result["acquired"] else 2
+        if args.command == "ops-lock-release":
+            print(json.dumps(release_run_lock(args.workspace, lock_id=args.lock_id), ensure_ascii=False))
+            return 0
+        if args.command == "ops-record-run":
+            raw = _read_local_sample_file(args.input, limit=65_536, role="ops_run_record")
+            try:
+                payload = _strict_loads(raw.decode("utf-8"))
+            except (ModelError, UnicodeError):
+                raise ValueError("ops_run_record_invalid") from None
+            print(json.dumps(record_ops_run(args.workspace, payload), ensure_ascii=False))
+            return 0
+        if args.command == "ops-plan-recovery":
+            if args.calendar_file is not None:
+                raw = _read_local_sample_file(args.calendar_file, limit=262_144, role="ops_calendar_file")
+                try:
+                    scheduled = _strict_loads(raw.decode("utf-8"))
+                except (ModelError, UnicodeError):
+                    raise ValueError("ops_calendar_file_invalid") from None
+            else:
+                scheduled = [part.strip() for part in args.session_dates.split(",") if part.strip()]
+            result = plan_missed_runs(
+                args.workspace,
+                scheduled_dates=scheduled,
+                now_utc=args.now,
+                display_timezone=args.display_timezone,
+                pre_market_local=args.pre_market_local,
+                post_market_local=args.post_market_local,
+            )
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
+        if args.command == "ops-render-task-template":
+            result = render_windows_task_template(
+                job_name=args.job,
+                task_name=args.task_name,
+                trigger_local_time=args.trigger_time,
+                display_timezone=args.display_timezone,
+                workspace_rel=args.workspace_rel,
+                start_date=args.start_date,
+                output_path=args.output,
+            )
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
         if args.command in {"create-synthetic-market-replay", "verify-synthetic-market-replay"}:
             result = (create_market_replay(args.input, args.destination)
                       if args.command == "create-synthetic-market-replay"
@@ -423,7 +540,7 @@ def main(argv=None):
             return 0
         if args.command not in ("demo", "collect-fed", "collect-nbs", "collect-all") and not (args.workspace / "market.db").exists():
             raise ValueError("workspace_database_missing")
-        db = sqlite3.connect((args.workspace / "market.db").resolve().as_uri() + "?mode=ro", uri=True) if args.command == "validate-report" else connect(args.workspace / "market.db")
+        db = sqlite3.connect((args.workspace / "market.db").resolve().as_uri() + "?mode=ro", uri=True) if args.command in ("validate-report", "verify-session-brief") else connect(args.workspace / "market.db")
         try:
             if args.command == "demo":
                 fixture = args.fixture.read_text(encoding="utf-8") if args.fixture else files("market_intel").joinpath("fixtures/demo.json").read_text(encoding="utf-8")
@@ -444,6 +561,43 @@ def main(argv=None):
                 result = {"status": "replayed", "report": str((path / "brief.html").resolve())}
             elif args.command == "validate-report":
                 result = verify_report(db, args.workspace, args.report_id)
+            elif args.command == "session-brief":
+                path = render_session_brief(
+                    db,
+                    args.workspace,
+                    cutoff=args.cutoff or now(),
+                    report_id=args.report_id or f"{args.report_type}_{uuid4().hex}",
+                    report_type=args.report_type,
+                    market_session_date=args.session_date,
+                    run_id=args.run_id,
+                    display_timezone=args.display_timezone,
+                    supersedes_report_id=args.supersedes,
+                    default_synthetic=args.synthetic_empty,
+                )
+                manifest = json.loads((path / "manifest.json").read_text(encoding="utf-8"))
+                result = {
+                    "status": manifest["status"],
+                    "report_id": manifest["report_id"],
+                    "run_id": manifest["run_id"],
+                    "report_type": manifest["report_type"],
+                    "market_session_date": manifest["market_session_date"],
+                    "is_synthetic": manifest["is_synthetic"],
+                    "supersedes_report_id": manifest["supersedes_report_id"],
+                    "html": str((path / "brief.html").resolve()),
+                    "markdown": str((path / "brief.md").resolve()),
+                    "manifest": str((path / "manifest.json").resolve()),
+                }
+            elif args.command == "verify-session-brief":
+                result = verify_session_brief(db, args.workspace, args.report_id)
+            elif args.command == "replay-session-brief":
+                path = replay_session_brief(db, args.workspace, args.report_id, args.destination)
+                result = {
+                    "status": "replayed",
+                    "report_id": args.report_id,
+                    "html": str((path / "brief.html").resolve()),
+                    "markdown": str((path / "brief.md").resolve()),
+                    "manifest": str((path / "manifest.json").resolve()),
+                }
             else:
                 result = {"schema_version": db.execute("PRAGMA user_version").fetchone()[0], "counts": {table: db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0] for table in ("raw_items", "event_versions", "evidence")}}
                 result["sources"] = {key: checkpoint(db, value["id"]) for key, value in SOURCES.items()}

@@ -1,7 +1,7 @@
 {
   "version": "3.0",
-  "updated_at": "2026-11-22",
-  "status_note": "Batch39 synthetic evaluation diagnostics accepted. 649 run, 646 passed, 3 Windows permission skips; 22 independent targeted checks passed. Live extraction and independent labeling remain pending.",
+  "updated_at": "2026-11-24",
+  "status_note": "Batch40 (B40-SESSION-BRIEF + QA-B40) and Batch41 (B41-OPS-RUNLOCK + QA-B41, offline OPS-01 lock/journal/recovery-planner/dry-run Windows task template) both passed independent multi-round adversarial QA (full ./scripts/dev.ps1 test: 701 run, 697 passed, 4 Windows symlink skips; 360-thread lock recovery stress: 0 anomalies). Ready for Codex GitHub main publication via collaboration/codex/PUBLISH-B40-B41-task.md.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -3180,6 +3180,94 @@
       "evidence": [
         "docs/development-status-plan-20261122-batch39.md",
         "docs/verification/batch-39-review.md"
+      ]
+    }
+  ],
+  "batch40_work_packages": [
+    {
+      "id": "B40-SESSION-BRIEF",
+      "owner": "antigravity_lead",
+      "depends_on": [
+        "B39-SCORE-DIAGNOSTICS"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/contracts/session_brief.py",
+        "src/market_intel/report/session_brief.py",
+        "src/market_intel/cli.py",
+        "docs/contracts/session-brief-v0.1.md",
+        "docs/development-status-plan-20261123-batch40.md",
+        "collaboration/codex/QA-B40-task.md",
+        "tests/test_session_brief.py",
+        "collaboration/task-board.json",
+        "docs/ACTIVE_CONTEXT.md"
+      ],
+      "acceptance": "Offline degraded pre_market/post_market dual-template (HTML + Markdown) session brief with strict cutoff, citation closure, supplement chain, atomic archive, replay, and read-only verify",
+      "evidence": [
+        "docs/development-status-plan-20261123-batch40.md",
+        "docs/contracts/session-brief-v0.1.md",
+        "docs/verification/batch-40-review.md"
+      ]
+    },
+    {
+      "id": "QA-B40",
+      "owner": "independent_qa",
+      "depends_on": [
+        "B40-SESSION-BRIEF"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch40_session_brief_qa.py",
+        "docs/verification/batch-40-review.md"
+      ],
+      "acceptance": "Independent read-only code review, adversarial QA tests (3 defects found, fixed, and re-verified), and full 679-test offline regression PASS",
+      "evidence": [
+        "tests/test_batch40_session_brief_qa.py",
+        "docs/verification/batch-40-review.md"
+      ]
+    }
+  ],
+  "batch41_work_packages": [
+    {
+      "id": "B41-OPS-RUNLOCK",
+      "owner": "antigravity_lead",
+      "depends_on": [
+        "QA-B40"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/contracts/ops_schedule.py",
+        "src/market_intel/ops/scheduler.py",
+        "src/market_intel/cli.py",
+        "docs/contracts/ops-schedule-v0.1.md",
+        "docs/development-status-plan-20261124-batch41.md",
+        "collaboration/codex/PUBLISH-B40-B41-task.md",
+        "tests/test_ops_scheduler.py",
+        "collaboration/task-board.json",
+        "docs/ACTIVE_CONTEXT.md"
+      ],
+      "acceptance": "Offline OPS-01 core: atomic single-instance lock with stale-lock forensic archival, append-only run journal, read-only ops-status, deterministic missed-run recovery planner, and dry-run Windows Task Scheduler XML template renderer (no OS installation or credentials)",
+      "evidence": [
+        "docs/contracts/ops-schedule-v0.1.md",
+        "docs/development-status-plan-20261124-batch41.md",
+        "docs/verification/batch-41-review.md"
+      ]
+    },
+    {
+      "id": "QA-B41",
+      "owner": "independent_qa",
+      "depends_on": [
+        "B41-OPS-RUNLOCK"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch41_ops_scheduler_qa.py",
+        "docs/verification/batch-41-review.md"
+      ],
+      "acceptance": "Independent read-only code review, 3-round adversarial QA tests (4 defects + Windows WinError 32 sharing-violation race + 3 hardening items closed), 360-thread concurrency stress (0 anomalies), and full 701-test offline regression PASS",
+      "evidence": [
+        "tests/test_batch41_ops_scheduler_qa.py",
+        "docs/verification/batch-41-review.md"
       ]
     }
   ]
