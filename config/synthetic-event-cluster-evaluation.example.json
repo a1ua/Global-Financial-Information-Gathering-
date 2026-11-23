@@ -1,0 +1,409 @@
+{
+  "bundles": [
+    {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_cluster_demo_original",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-cluster-original",
+        "original_url": "https://example.com/synthetic-cluster/original",
+        "canonical_url": "https://example.com/synthetic-cluster/original",
+        "source_tier": "primary",
+        "title": "Synthetic industry support notice",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/60af5373b4cea6a07173b950264551e63b9da295ed18ba49ae7d607b3ccb7c1b.txt",
+        "content_sha256": "60af5373b4cea6a07173b950264551e63b9da295ed18ba49ae7d607b3ccb7c1b",
+        "normalized_text": "Synthetic agency A announced industry support for program 1.",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_cluster_demo_original",
+        "event_version_id": "ev_cluster_demo_original",
+        "version": 1,
+        "title": "Synthetic industry support notice",
+        "fact_summary": "Synthetic agency A announced industry support for program 1.",
+        "category": "policy",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_cluster_demo_original"
+        ],
+        "input_raw_item_ids": [
+          "raw_cluster_demo_original"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:06:00Z",
+        "available_at": "2026-11-06T00:06:00Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_cluster_demo_original",
+        "event_version_id": "ev_cluster_demo_original",
+        "raw_item_id": "raw_cluster_demo_original",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 60
+        },
+        "quote": "Synthetic agency A announced industry support for program 1.",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:06:00Z",
+        "is_synthetic": true
+      }
+    },
+    {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_cluster_demo_copy",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-cluster-copy",
+        "original_url": "https://example.com/synthetic-cluster/copy",
+        "canonical_url": "https://example.com/synthetic-cluster/copy",
+        "source_tier": "primary",
+        "title": "Synthetic industry support notice",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/60af5373b4cea6a07173b950264551e63b9da295ed18ba49ae7d607b3ccb7c1b.txt",
+        "content_sha256": "60af5373b4cea6a07173b950264551e63b9da295ed18ba49ae7d607b3ccb7c1b",
+        "normalized_text": "Synthetic agency A announced industry support for program 1.",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_cluster_demo_copy",
+        "event_version_id": "ev_cluster_demo_copy",
+        "version": 1,
+        "title": "Synthetic industry support notice",
+        "fact_summary": "Synthetic agency A announced industry support for program 1.",
+        "category": "policy",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_cluster_demo_copy"
+        ],
+        "input_raw_item_ids": [
+          "raw_cluster_demo_copy"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:06:00Z",
+        "available_at": "2026-11-06T00:06:00Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_cluster_demo_copy",
+        "event_version_id": "ev_cluster_demo_copy",
+        "raw_item_id": "raw_cluster_demo_copy",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 60
+        },
+        "quote": "Synthetic agency A announced industry support for program 1.",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:06:00Z",
+        "is_synthetic": true
+      }
+    },
+    {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_cluster_demo_restatement",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-cluster-restatement",
+        "original_url": "https://example.com/synthetic-cluster/restatement",
+        "canonical_url": "https://example.com/synthetic-cluster/restatement",
+        "source_tier": "primary",
+        "title": "Synthetic industry support notice",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/d4e3282b7a450c0ebca8432179280b8ab8c8ebc2d14e32a2a00e53e3d816bf1a.txt",
+        "content_sha256": "d4e3282b7a450c0ebca8432179280b8ab8c8ebc2d14e32a2a00e53e3d816bf1a",
+        "normalized_text": "Synthetic agency A shared the details of support program 1.",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_cluster_demo_restatement",
+        "event_version_id": "ev_cluster_demo_restatement",
+        "version": 1,
+        "title": "Synthetic industry support notice",
+        "fact_summary": "Synthetic agency A shared the details of support program 1.",
+        "category": "policy",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_cluster_demo_restatement"
+        ],
+        "input_raw_item_ids": [
+          "raw_cluster_demo_restatement"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:06:00Z",
+        "available_at": "2026-11-06T00:06:00Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_cluster_demo_restatement",
+        "event_version_id": "ev_cluster_demo_restatement",
+        "raw_item_id": "raw_cluster_demo_restatement",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 59
+        },
+        "quote": "Synthetic agency A shared the details of support program 1.",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:06:00Z",
+        "is_synthetic": true
+      }
+    },
+    {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_cluster_demo_unrelated",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-cluster-unrelated",
+        "original_url": "https://example.com/synthetic-cluster/unrelated",
+        "canonical_url": "https://example.com/synthetic-cluster/unrelated",
+        "source_tier": "primary",
+        "title": "Synthetic industry support notice",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/31558fe673ad1ba425d9181001032cdac4d7fd94f57038b1dbccbcb6479f619c.txt",
+        "content_sha256": "31558fe673ad1ba425d9181001032cdac4d7fd94f57038b1dbccbcb6479f619c",
+        "normalized_text": "Synthetic agency B announced a separate support program 2.",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_cluster_demo_unrelated",
+        "event_version_id": "ev_cluster_demo_unrelated",
+        "version": 1,
+        "title": "Synthetic industry support notice",
+        "fact_summary": "Synthetic agency B announced a separate support program 2.",
+        "category": "policy",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_cluster_demo_unrelated"
+        ],
+        "input_raw_item_ids": [
+          "raw_cluster_demo_unrelated"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:06:00Z",
+        "available_at": "2026-11-06T00:06:00Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_cluster_demo_unrelated",
+        "event_version_id": "ev_cluster_demo_unrelated",
+        "raw_item_id": "raw_cluster_demo_unrelated",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 58
+        },
+        "quote": "Synthetic agency B announced a separate support program 2.",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:06:00Z",
+        "is_synthetic": true
+      }
+    },
+    {
+      "raw": {
+        "schema_version": "raw-item/0.1",
+        "raw_item_id": "raw_cluster_demo_alternate_title",
+        "source_id": "fixture_official",
+        "source_config_version": "sources-demo-1",
+        "source_item_key": "synthetic-cluster-alternate_title",
+        "original_url": "https://example.com/synthetic-cluster/alternate_title",
+        "canonical_url": "https://example.com/synthetic-cluster/alternate_title",
+        "source_tier": "primary",
+        "title": "Synthetic agency A confirms program 1",
+        "source_time_text": "2026-11-06 08:00",
+        "source_timezone": "Asia/Shanghai",
+        "source_time_precision": "minute",
+        "time_parse_status": "parsed",
+        "source_published_at": "2026-11-06T00:00:00Z",
+        "source_published_date": "2026-11-06",
+        "first_seen_at": "2026-11-06T00:05:00Z",
+        "fetched_at": "2026-11-06T00:05:02Z",
+        "persisted_at": "2026-11-06T00:05:03Z",
+        "available_at": "2026-11-06T00:05:03Z",
+        "storage_policy": "full_text_fixture",
+        "content_ref": "raw/c617eb57cd188dc7d5cb9829ca1306aa8424e11352e68b72249b33514f122fbf.txt",
+        "content_sha256": "c617eb57cd188dc7d5cb9829ca1306aa8424e11352e68b72249b33514f122fbf",
+        "normalized_text": "Synthetic agency A confirmed the first details of industry support program 1.",
+        "normalization_version": "text-normalize/0.1",
+        "supersedes_raw_item_id": null,
+        "is_synthetic": true
+      },
+      "event": {
+        "schema_version": "event-version/0.1",
+        "event_id": "event_cluster_demo_alternate_title",
+        "event_version_id": "ev_cluster_demo_alternate_title",
+        "version": 1,
+        "title": "Synthetic agency A confirms program 1",
+        "fact_summary": "Synthetic agency A confirmed the first details of industry support program 1.",
+        "category": "policy",
+        "markets": [
+          "A"
+        ],
+        "entities": [],
+        "evidence_ids": [
+          "evidence_cluster_demo_alternate_title"
+        ],
+        "input_raw_item_ids": [
+          "raw_cluster_demo_alternate_title"
+        ],
+        "extraction_method": "fixture",
+        "extractor_version": "fixture-extractor/0.1",
+        "extraction_quality": "validated_fixture",
+        "processed_at": "2026-11-06T00:06:00Z",
+        "available_at": "2026-11-06T00:06:00Z",
+        "supersedes_event_version_id": null,
+        "is_synthetic": true
+      },
+      "evidence": {
+        "schema_version": "evidence/0.1",
+        "evidence_id": "evidence_cluster_demo_alternate_title",
+        "event_version_id": "ev_cluster_demo_alternate_title",
+        "raw_item_id": "raw_cluster_demo_alternate_title",
+        "relation": "supports",
+        "claim_key": "fact_summary",
+        "normalization_version": "text-normalize/0.1",
+        "locator": {
+          "field": "normalized_text",
+          "offset_unit": "unicode_code_point",
+          "start": 0,
+          "end": 77
+        },
+        "quote": "Synthetic agency A confirmed the first details of industry support program 1.",
+        "validation_status": "exact_quote_match",
+        "available_at": "2026-11-06T00:06:00Z",
+        "is_synthetic": true
+      }
+    }
+  ],
+  "labels": [
+    {
+      "event_version_ids": [
+        "ev_cluster_demo_original",
+        "ev_cluster_demo_copy"
+      ],
+      "same_event": true
+    },
+    {
+      "event_version_ids": [
+        "ev_cluster_demo_restatement",
+        "ev_cluster_demo_original"
+      ],
+      "same_event": true
+    },
+    {
+      "event_version_ids": [
+        "ev_cluster_demo_unrelated",
+        "ev_cluster_demo_copy"
+      ],
+      "same_event": false
+    },
+    {
+      "event_version_ids": [
+        "ev_cluster_demo_original",
+        "ev_cluster_demo_alternate_title"
+      ],
+      "same_event": true
+    }
+  ]
+}

@@ -319,6 +319,9 @@ def main(argv=None):
         event_clusters = sub.add_parser(command, help=help_text)
         event_clusters.add_argument("--input", type=Path, required=True)
         event_clusters.add_argument("--cutoff", required=True)
+        if command == "evaluate-synthetic-event-clusters":
+            event_clusters.add_argument("--include-title-review", action="store_true",
+                                        help="Report labeled pairs added by the title review queue")
     ops_st = sub.add_parser("ops-status", help="Inspect workspace lock and run journal read-only")
     ops_st.add_argument("--workspace", type=Path, default=Path("data/live"))
     ops_st.add_argument("--now", default=None)
@@ -457,7 +460,10 @@ def main(argv=None):
             if args.command == "evaluate-synthetic-event-clusters":
                 if type(payload) is not dict or payload.keys() != {"bundles", "labels"}:
                     raise ValueError("synthetic_event_cluster_evaluation_invalid")
-                result = evaluate_synthetic_event_clusters(payload["bundles"], payload["labels"], cutoff=args.cutoff)
+                result = evaluate_synthetic_event_clusters(
+                    payload["bundles"], payload["labels"], cutoff=args.cutoff,
+                    include_title_review=args.include_title_review,
+                )
             else:
                 result = plan_synthetic_event_clusters(payload, cutoff=args.cutoff)
             print(json.dumps(result, ensure_ascii=False))

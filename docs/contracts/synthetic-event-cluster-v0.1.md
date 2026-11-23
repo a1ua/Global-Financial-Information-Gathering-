@@ -30,3 +30,19 @@ python -m market_intel evaluate-synthetic-event-clusters --input out/synthetic-c
 ```
 
 CLI 输入为恰含 `bundles` 和 `labels` 的本地 UTF-8 JSON 对象，最多 1 MiB。合法结果写入标准输出并退出 0。无效输入退出 1，其中非法评测参数或标签使用固定原因码 `synthetic_event_cluster_evaluation_invalid`。
+
+### 同标题候选覆盖
+
+添加 `--include-title-review`，或在 Python API 传入 `include_title_review=True`，可附加 `title_review`。该对象只统计截点可见、已标注、同属一个待核对标题组且未被精确规则命中的版本对。
+
+- `labeled_candidates` 是新增的待核对对数，等于 `same_event_candidates` 与 `different_event_candidates` 之和。
+- `covered_false_negative_pairs` 列出待核对队列覆盖的精确规则漏报，版本 ID 和列表均按字典序排列。
+- `uncovered_false_negatives` 是待核对队列仍未覆盖的精确规则漏报数。
+
+精确规则的原有计数与差异列表保持不变。报告中的新增对仍需人工核对。默认命令和 API 保持原有输出。
+
+```powershell
+python -m market_intel evaluate-synthetic-event-clusters --input config/synthetic-event-cluster-evaluation.example.json --cutoff 2026-11-06T00:06:00Z --include-title-review
+```
+
+样例使用合成记录和人工构造标签。精确规则在 4 个标注对上得到 1 个正例命中、0 个误报、2 个漏报和 1 个负例命中。同标题队列新增 2 个已标注候选，覆盖其中 1 个漏报，并带来 1 个异事件对待核对。

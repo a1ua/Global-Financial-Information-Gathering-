@@ -70,22 +70,29 @@ def plan_synthetic_event_clusters(bundles, *, cutoff):
     }
 
 
-def evaluate_synthetic_event_clusters(bundles, labels, *, cutoff):
+def _group_index(groups):
+    return {
+        version_id: number
+        for number, group in enumerate(groups)
+        for version_id in group
+    }
+
+
+def evaluate_synthetic_event_clusters(bundles, labels, *, cutoff, include_title_review=False):
     """Measure exact duplicate candidates against explicitly labeled visible pairs."""
     counts = dict.fromkeys(("true_positive", "false_positive", "false_negative", "true_negative"), 0)
     false_positive = []
     false_negative = []
+    covered_false_negative = []
+    different_event_candidates = 0
     seen = set()
     try:
-        if type(labels) is not list or len(labels) > 1000:
+        if type(labels) is not list or len(labels) > 1000 or type(include_title_review) is not bool:
             raise ValueError
         plan = plan_synthetic_event_clusters(bundles, cutoff=cutoff)
         event_ids = {member["event_version_id"]: member["event_id"] for member in plan["members"]}
-        group_ids = {
-            version_id: number
-            for number, group in enumerate(plan["exact_duplicate_groups"])
-            for version_id in group
-        }
+        group_ids = _group_index(plan["exact_duplicate_groups"])
+        title_ids = _group_index(plan["ambiguous_title_groups"]) if include_title_review else {}
         for label in labels:
             record(label, {"event_version_ids", "same_event"}, "label")
             ids, same_event = label["event_version_ids"], label["same_event"]
@@ -99,6 +106,11 @@ def evaluate_synthetic_event_clusters(bundles, labels, *, cutoff):
                 raise ValueError
             seen.add(pair)
             predicted = left in group_ids and group_ids[left] == group_ids.get(right)
+            if not predicted and left in title_ids and title_ids[left] == title_ids.get(right):
+                if same_event:
+                    covered_false_negative.append(pair)
+                else:
+                    different_event_candidates += 1
             if predicted == same_event:
                 counts["true_positive" if same_event else "true_negative"] += 1
             elif predicted:
@@ -110,10 +122,20 @@ def evaluate_synthetic_event_clusters(bundles, labels, *, cutoff):
     except ValueError:
         raise ValueError("synthetic_event_cluster_evaluation_invalid") from None
 
-    return {
+    report = {
         "schema_version": "synthetic-event-cluster-evaluation/0.1",
         "is_synthetic": True,
         "counts": {"labeled_pairs": len(labels), **counts},
         "false_positive_pairs": [list(pair) for pair in sorted(false_positive)],
         "false_negative_pairs": [list(pair) for pair in sorted(false_negative)],
     }
+    if include_title_review:
+        covered_count = len(covered_false_negative)
+        report["title_review"] = {
+            "labeled_candidates": covered_count + different_event_candidates,
+            "same_event_candidates": covered_count,
+            "different_event_candidates": different_event_candidates,
+            "uncovered_false_negatives": len(false_negative) - covered_count,
+            "covered_false_negative_pairs": [list(pair) for pair in sorted(covered_false_negative)],
+        }
+    return report

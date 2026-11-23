@@ -7,8 +7,8 @@
 
 - **更新时间**：`2026-11-24`
 - **任务统计**：已完成 `10` / 进行中 `2` / 待开发 `13` / 已取消 `1`
-- **最新状态**：Batch43 synthetic cluster evaluation accepted. 710 run, 706 passed, 4 Windows symlink permission skips; 37 independent targeted checks passed. Production clustering and independent real labels remain pending.
-- **最新交接**：`docs/development-status-plan-20261124-batch43.md`
+- **最新状态**：Batch44 title-review coverage and runnable synthetic example accepted. 714 run, 710 passed, 4 Windows symlink permission skips; 36 independent targeted checks passed. Production clustering and independent real labels remain pending.
+- **最新交接**：`docs/development-status-plan-20261124-batch44.md`
 - **闸门状态**：`G0`: passed_local | `G1`: partial | `G2`: partial | `G3`: not_accepted | `G4`: not_started | `G5`: not_started
 
 ## 2. 当前进行中任务（优先推进）
@@ -43,13 +43,13 @@
 | `WB-02` | WorkBuddy时间与收益黑盒复核 | `G4` | `REV-02` |
 | `WB-03` | WorkBuddy报告阅读与证据抽检 | `G3` | `RPT-02` |
 
-## 4. 最近批次收尾（`batch43_work_packages`）
+## 4. 最近批次收尾（`batch44_work_packages`）
 
-- `B43-CLUSTER-SCORE`（`done` / `coordinator`）：`src/market_intel/pipeline/process/cluster.py`, `src/market_intel/cli.py`, `docs/contracts/synthetic-event-cluster-v0.1.md`, `docs/development-status-plan-20261124-batch43.md`, `docs/ACTIVE_CONTEXT.md`, `collaboration/task-board.json`
-- `QA-B43`（`done` / `cluster_score_qa`）：`tests/clustering/test_batch43_cluster_evaluation.py`, `docs/verification/batch-43-review.md`
+- `B44-TITLE-REVIEW-COVERAGE`（`done` / `coordinator`）：`src/market_intel/pipeline/process/cluster.py`, `src/market_intel/cli.py`, `docs/contracts/synthetic-event-cluster-v0.1.md`, `docs/development-status-plan-20261124-batch44.md`, `docs/ACTIVE_CONTEXT.md`, `collaboration/task-board.json`
+- `QA-B44`（`done` / `title_review_qa`）：`tests/clustering/test_batch44_title_review_coverage.py`, `config/synthetic-event-cluster-evaluation.example.json`, `docs/verification/batch-44-review.md`
 
 ## 5. 新会话最小启动清单
 
-1. 必读：`AGENTS.md` + 本文件 `docs/ACTIVE_CONTEXT.md` + `docs/development-status-plan-20261124-batch43.md`
+1. 必读：`AGENTS.md` + 本文件 `docs/ACTIVE_CONTEXT.md` + `docs/development-status-plan-20261124-batch44.md`
 2. 按需读：本轮任务对应的 `docs/contracts/*.md` 与允许修改的 2~3 个源码/测试文件
 3. 刷新本文件：更新 `collaboration/task-board.json` 后运行 `./.venv/Scripts/python.exe scripts/build-active-context.py`
