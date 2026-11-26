@@ -5,10 +5,10 @@
 
 ## 1. 基线快照
 
-- **更新时间**：`2026-11-24`
+- **更新时间**：`2026-11-26`
 - **任务统计**：已完成 `10` / 进行中 `2` / 待开发 `13` / 已取消 `1`
-- **最新状态**：Batch45 synthetic title-review adjudication accepted. 718 run, 714 passed, 4 Windows symlink permission skips; 40 independent targeted checks passed. Production clustering and independent labels remain pending.
-- **最新交接**：`docs/development-status-plan-20261124-batch45.md`
+- **最新状态**：Batch46 guarded offline session-brief runner (B46-OPS-GUARDED-BRIEF + QA-B46) and dual-template session-brief backup/verify/restore integration accepted after 2-round independent adversarial QA and Windows concurrency hardening. Full ./scripts/dev.ps1 test: 741 run, 737 passed, 4 Windows symlink permission skips; 3 unmocked multi-thread Windows stress probes: 0 errors. Ready for Codex secondary review & GitHub main publication via collaboration/codex/QA-PUBLISH-B46-task.md.
+- **最新交接**：`docs/development-status-plan-20261126-batch46.md`
 - **闸门状态**：`G0`: passed_local | `G1`: partial | `G2`: partial | `G3`: not_accepted | `G4`: not_started | `G5`: not_started
 
 ## 2. 当前进行中任务（优先推进）
@@ -43,13 +43,13 @@
 | `WB-02` | WorkBuddy时间与收益黑盒复核 | `G4` | `REV-02` |
 | `WB-03` | WorkBuddy报告阅读与证据抽检 | `G3` | `RPT-02` |
 
-## 4. 最近批次收尾（`batch45_work_packages`）
+## 4. 最近批次收尾（`batch46_work_packages`）
 
-- `B45-TITLE-ADJUDICATION`（`done` / `coordinator`）：`src/market_intel/pipeline/process/cluster.py`, `src/market_intel/cli.py`, `docs/contracts/synthetic-event-cluster-v0.1.md`, `docs/development-status-plan-20261124-batch45.md`, `docs/ACTIVE_CONTEXT.md`, `collaboration/task-board.json`
-- `QA-B45`（`done` / `title_adjudication_qa`）：`tests/clustering/test_batch45_title_adjudication.py`, `docs/verification/batch-45-review.md`
+- `B46-OPS-GUARDED-BRIEF`（`done` / `antigravity_lead`）：`src/market_intel/ops/session_runner.py`, `src/market_intel/ops/scheduler.py`, `src/market_intel/ops/backup.py`, `src/market_intel/cli.py`, `docs/contracts/ops-guarded-session-brief-v0.1.md`, `docs/development-status-plan-20261126-batch46.md`, `collaboration/codex/QA-PUBLISH-B46-task.md`, `tests/test_ops_session_runner.py`, `collaboration/task-board.json`, `docs/ACTIVE_CONTEXT.md`
+- `QA-B46`（`done` / `independent_qa`）：`tests/test_batch46_ops_session_runner_qa.py`, `docs/verification/batch-46-review.md`
 
 ## 5. 新会话最小启动清单
 
-1. 必读：`AGENTS.md` + 本文件 `docs/ACTIVE_CONTEXT.md` + `docs/development-status-plan-20261124-batch45.md`
+1. 必读：`AGENTS.md` + 本文件 `docs/ACTIVE_CONTEXT.md` + `docs/development-status-plan-20261126-batch46.md`
 2. 按需读：本轮任务对应的 `docs/contracts/*.md` 与允许修改的 2~3 个源码/测试文件
 3. 刷新本文件：更新 `collaboration/task-board.json` 后运行 `./.venv/Scripts/python.exe scripts/build-active-context.py`

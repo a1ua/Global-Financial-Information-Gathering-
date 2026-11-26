@@ -84,14 +84,44 @@ def _safe_workspace(path):
     return _normalize_resolved(raw_path)
 
 
+def _unlink_with_retry(path, *, attempts=20, delay=0.005):
+    for attempt in range(attempts):
+        try:
+            path.unlink()
+            return
+        except FileNotFoundError:
+            return
+        except PermissionError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(delay)
+
+
 def _safe_child_no_symlink(base_dir, *parts):
     current = base_dir
     for part in parts:
+        if (
+            type(part) is not str
+            or not part
+            or part in {".", ".."}
+            or "/" in part
+            or "\\" in part
+            or ":" in part
+        ):
+            raise ValueError("ops_path_outside_workspace")
         current = current / part
         if _linked(current):
             raise ValueError("ops_symlink_not_allowed")
-    resolved = _normalize_resolved(current)
-    if not resolved.is_relative_to(base_dir):
+    for _ in range(5):
+        resolved = _normalize_resolved(current)
+        if resolved.is_relative_to(base_dir):
+            return current
+        if "$Extend\\$Deleted\\" in str(resolved):
+            time.sleep(0.005)
+            continue
+        raise ValueError("ops_path_outside_workspace")
+    parent_resolved = _normalize_resolved(current.parent)
+    if not parent_resolved.is_relative_to(base_dir):
         raise ValueError("ops_path_outside_workspace")
     return current
 
@@ -99,11 +129,18 @@ def _safe_child_no_symlink(base_dir, *parts):
 def _read_bounded_bytes(path, *, limit, role):
     if _linked(path):
         raise ValueError("ops_symlink_not_allowed")
-    try:
-        with path.open("rb") as stream:
-            data = stream.read(limit + 1)
-    except OSError as exc:
-        raise ValueError(f"{role}_io_error") from exc
+    data = None
+    for attempt in range(5):
+        try:
+            with path.open("rb") as stream:
+                data = stream.read(limit + 1)
+            break
+        except PermissionError as exc:
+            if path.is_dir() or attempt == 4:
+                raise ValueError(f"{role}_io_error") from exc
+            time.sleep(0.005)
+        except OSError as exc:
+            raise ValueError(f"{role}_io_error") from exc
     if len(data) > limit:
         raise ValueError(f"{role}_too_large")
     return data
@@ -407,8 +444,7 @@ def acquire_run_lock(
                 continue
         finally:
             try:
-                if recovery_guard.exists():
-                    recovery_guard.unlink()
+                _unlink_with_retry(recovery_guard)
             except OSError:
                 pass
 
@@ -445,25 +481,23 @@ def release_run_lock(workspace, *, lock_id):
     ws = _safe_workspace(workspace)
     ws_hash = hashlib.sha256(str(ws).encode("utf-8")).hexdigest()
     lock_path = _safe_child_no_symlink(ws, "ops", "run.lock")
-    existing, state = _read_lock_file(lock_path, expected_ws_hash=ws_hash)
+    existing, state = None, "busy"
+    for _ in range(10):
+        existing, state = _read_lock_file(lock_path, expected_ws_hash=ws_hash)
+        if state != "busy":
+            break
+        time.sleep(0.005)
     if state == "missing":
         raise ValueError("lock_not_found")
     if state != "valid":
         raise ValueError("lock_corrupt_manual_check_required")
     if existing["lock_id"] != lock_id:
         raise ValueError("lock_owner_mismatch")
-    lock_path.unlink()
+    _unlink_with_retry(lock_path)
     return {"status": "released", "lock_id": lock_id}
 
 
-def _load_run_journal(ws):
-    ops_dir = _safe_child_no_symlink(ws, "ops")
-    journal_path = _safe_child_no_symlink(ws, "ops", "runs.jsonl")
-    if not ops_dir.exists() or not journal_path.exists():
-        return [], {}
-    if not journal_path.is_file():
-        raise ValueError("ops_run_journal_corrupt")
-    raw = _read_bounded_bytes(journal_path, limit=_MAX_JOURNAL_BYTES, role="ops_run_journal")
+def _parse_run_journal_bytes(raw):
     try:
         decoded = raw.decode("utf-8")
     except UnicodeError as exc:
@@ -491,28 +525,68 @@ def _load_run_journal(ws):
     return records, by_id
 
 
+def _load_run_journal(ws, *, under_guard=False):
+    ops_dir = _safe_child_no_symlink(ws, "ops")
+    journal_path = _safe_child_no_symlink(ws, "ops", "runs.jsonl")
+    journal_guard = _safe_child_no_symlink(ws, "ops", ".runs-journal.lock")
+    if not ops_dir.exists() or not journal_path.exists():
+        return [], {}
+    if not journal_path.is_file():
+        raise ValueError("ops_run_journal_corrupt")
+    for attempt in range(1 if under_guard else 6):
+        raw = _read_bounded_bytes(journal_path, limit=_MAX_JOURNAL_BYTES, role="ops_run_journal")
+        try:
+            return _parse_run_journal_bytes(raw)
+        except ValueError as exc:
+            if not under_guard and str(exc) == "ops_run_journal_corrupt" and journal_guard.exists() and attempt < 5:
+                time.sleep(0.005)
+                continue
+            raise
+    raise ValueError("ops_run_journal_corrupt")
+
+
 def record_ops_run(workspace, run_record):
-    """Append a validated ops-run-record/0.1 entry to <workspace>/ops/runs.jsonl."""
+    """Append a validated ops-run-record/0.1 entry to <workspace>/ops/runs.jsonl.
+
+    Serializes read-validate-append-fsync under an exclusive ops/.runs-journal.lock
+    guard so concurrent callers never drop or interleave journal records on Windows.
+    """
     validate_ops_run_record(run_record)
     ws = _safe_workspace(workspace)
     ops_dir = _safe_child_no_symlink(ws, "ops")
     journal_path = _safe_child_no_symlink(ws, "ops", "runs.jsonl")
-
-    _, existing_by_id = _load_run_journal(ws)
+    journal_guard = _safe_child_no_symlink(ws, "ops", ".runs-journal.lock")
     rid = run_record["run_id"]
     canonical_line = _canonical(run_record)
-    if rid in existing_by_id:
-        if _canonical(existing_by_id[rid]) == canonical_line:
-            return {"status": "idempotent_duplicate", "recorded": False, "run_id": rid}
-        raise ValueError("ops_run_id_conflict")
 
     ops_dir.mkdir(parents=True, exist_ok=True)
-    if _linked(journal_path):
-        raise ValueError("ops_symlink_not_allowed")
-    with journal_path.open("ab") as handle:
-        handle.write((canonical_line + "\n").encode("utf-8"))
-        handle.flush()
-        os.fsync(handle.fileno())
+    acquired_guard = False
+    for _ in range(200):
+        try:
+            _atomic_create_file(ops_dir, journal_guard, f"{rid}\n".encode("utf-8"))
+            acquired_guard = True
+            break
+        except FileExistsError:
+            time.sleep(0.005)
+    if not acquired_guard:
+        raise ValueError("ops_run_journal_busy")
+
+    try:
+        _, existing_by_id = _load_run_journal(ws, under_guard=True)
+        if rid in existing_by_id:
+            if _canonical(existing_by_id[rid]) == canonical_line:
+                return {"status": "idempotent_duplicate", "recorded": False, "run_id": rid}
+            raise ValueError("ops_run_id_conflict")
+
+        if _linked(journal_path):
+            raise ValueError("ops_symlink_not_allowed")
+        with journal_path.open("ab") as handle:
+            handle.write((canonical_line + "\n").encode("utf-8"))
+            handle.flush()
+            os.fsync(handle.fileno())
+    finally:
+        _unlink_with_retry(journal_guard)
+
     return {"status": "recorded", "recorded": True, "run_id": rid, "outcome": run_record["outcome"]}
 
 

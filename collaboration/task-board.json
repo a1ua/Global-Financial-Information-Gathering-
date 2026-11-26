@@ -1,7 +1,7 @@
 {
   "version": "3.0",
-  "updated_at": "2026-11-24",
-  "status_note": "Batch45 synthetic title-review adjudication accepted. 718 run, 714 passed, 4 Windows symlink permission skips; 40 independent targeted checks passed. Production clustering and independent labels remain pending.",
+  "updated_at": "2026-11-26",
+  "status_note": "Batch46 guarded offline session-brief runner (B46-OPS-GUARDED-BRIEF + QA-B46) and dual-template session-brief backup/verify/restore integration accepted after 2-round independent adversarial QA and Windows concurrency hardening. Full ./scripts/dev.ps1 test: 741 run, 737 passed, 4 Windows symlink permission skips; 3 unmocked multi-thread Windows stress probes: 0 errors. Ready for Codex secondary review & GitHub main publication via collaboration/codex/QA-PUBLISH-B46-task.md.",
   "tasks": [
     {
       "id": "ENG-01",
@@ -3437,6 +3437,51 @@
       "evidence": [
         "docs/development-status-plan-20261124-batch45.md",
         "docs/verification/batch-45-review.md"
+      ]
+    }
+  ],
+  "batch46_work_packages": [
+    {
+      "id": "B46-OPS-GUARDED-BRIEF",
+      "owner": "antigravity_lead",
+      "depends_on": [
+        "QA-B45"
+      ],
+      "status": "done",
+      "write_paths": [
+        "src/market_intel/ops/session_runner.py",
+        "src/market_intel/ops/scheduler.py",
+        "src/market_intel/ops/backup.py",
+        "src/market_intel/cli.py",
+        "docs/contracts/ops-guarded-session-brief-v0.1.md",
+        "docs/development-status-plan-20261126-batch46.md",
+        "collaboration/codex/QA-PUBLISH-B46-task.md",
+        "tests/test_ops_session_runner.py",
+        "collaboration/task-board.json",
+        "docs/ACTIVE_CONTEXT.md"
+      ],
+      "acceptance": "Deterministic guarded offline session-brief runner integrating OPS-01 lock/journal/recovery with RPT-02 render/verify, backup/verify/restore support for session-brief-manifest/0.1, Windows concurrency hardening (journal guard, WinError 32 unlink retry, $Extend\\$Deleted resilience), and full offline vertical integration tests",
+      "evidence": [
+        "docs/contracts/ops-guarded-session-brief-v0.1.md",
+        "docs/development-status-plan-20261126-batch46.md",
+        "docs/verification/batch-46-review.md"
+      ]
+    },
+    {
+      "id": "QA-B46",
+      "owner": "independent_qa",
+      "depends_on": [
+        "B46-OPS-GUARDED-BRIEF"
+      ],
+      "status": "done",
+      "write_paths": [
+        "tests/test_batch46_ops_session_runner_qa.py",
+        "docs/verification/batch-46-review.md"
+      ],
+      "acceptance": "Independent read-only code review, 2-round adversarial QA tests (3 Windows concurrency/NTFS defects found, fixed, and re-verified), 3 unmocked Windows stress probes (0 errors), and full 741-test offline regression PASS",
+      "evidence": [
+        "tests/test_batch46_ops_session_runner_qa.py",
+        "docs/verification/batch-46-review.md"
       ]
     }
   ]

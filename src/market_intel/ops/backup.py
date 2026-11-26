@@ -144,14 +144,32 @@ def _report(root, report_id, db):
         raise ValueError("invalid_backup_report_id")
     relative = f"reports/{report_id}/manifest.json"
     manifest = _read_json(_file(root, relative))
+    if type(manifest) is not dict:
+        raise ValueError("backup_report_manifest_invalid")
+    is_session_brief = manifest.get("schema_version") == "session-brief-manifest/0.1"
     try:
-        if manifest["report_id"] != report_id or manifest["artifact_refs"] != ["brief.html"]:
+        if manifest["report_id"] != report_id:
             raise ValueError("backup_report_identity_mismatch")
-        checksum = manifest["artifact_sha256"]
-        if type(checksum) is not str or not _HASH.fullmatch(checksum):
-            raise ValueError("backup_report_hash_invalid")
-        if _hash_file(_file(root, f"reports/{report_id}/brief.html"))["sha256"] != checksum:
-            raise ValueError("backup_report_artifact_corrupt")
+        if is_session_brief:
+            if manifest["artifact_refs"] != ["brief.html", "brief.md"]:
+                raise ValueError("backup_report_identity_mismatch")
+            checksums = manifest["artifact_sha256"]
+            if type(checksums) is not dict or set(checksums.keys()) != {"brief.html", "brief.md"}:
+                raise ValueError("backup_report_hash_invalid")
+            for ref_name in ("brief.html", "brief.md"):
+                checksum = checksums[ref_name]
+                if type(checksum) is not str or not _HASH.fullmatch(checksum):
+                    raise ValueError("backup_report_hash_invalid")
+                if _hash_file(_file(root, f"reports/{report_id}/{ref_name}"))["sha256"] != checksum:
+                    raise ValueError("backup_report_artifact_corrupt")
+        else:
+            if manifest["artifact_refs"] != ["brief.html"]:
+                raise ValueError("backup_report_identity_mismatch")
+            checksum = manifest["artifact_sha256"]
+            if type(checksum) is not str or not _HASH.fullmatch(checksum):
+                raise ValueError("backup_report_hash_invalid")
+            if _hash_file(_file(root, f"reports/{report_id}/brief.html"))["sha256"] != checksum:
+                raise ValueError("backup_report_artifact_corrupt")
         inputs = manifest["input_manifest"]
         if hashlib.sha256(_canonical(inputs).encode("utf-8")).hexdigest() != manifest["input_manifest_sha256"]:
             raise ValueError("backup_report_input_hash_mismatch")
@@ -164,6 +182,10 @@ def _report(root, report_id, db):
                     raise ValueError("backup_report_input_missing_from_snapshot")
     except (KeyError, TypeError) as exc:
         raise ValueError("backup_report_manifest_invalid") from exc
+    if is_session_brief:
+        from ..report.session_brief import verify_session_brief
+        verify_session_brief(db, root, report_id)
+        return (relative, f"reports/{report_id}/brief.html", f"reports/{report_id}/brief.md")
     from ..report.verify import verify_report
     verify_report(db, root, report_id)
     return (relative, f"reports/{report_id}/brief.html")

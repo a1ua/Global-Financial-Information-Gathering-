@@ -47,6 +47,7 @@ from .ops.scheduler import (
     release_run_lock,
     render_windows_task_template,
 )
+from .ops.session_runner import run_guarded_session_brief
 from .llm.batch import run_mock_candidates
 from .llm.client import _strict_loads
 from .ops.backup import _linked
@@ -361,8 +362,48 @@ def main(argv=None):
     ops_tpl.add_argument("--workspace-rel", default="data/live")
     ops_tpl.add_argument("--start-date", default="2026-11-24")
     ops_tpl.add_argument("--output", type=Path, default=None)
+    ops_run = sub.add_parser("ops-run-session-brief", help="Lock-guarded offline session-brief render, verify, and run-journal append")
+    ops_run.add_argument("--workspace", type=Path, default=Path("data/live"))
+    ops_run.add_argument("--report-type", choices=("pre_market", "post_market"), required=True)
+    ops_run.add_argument("--session-date", required=True)
+    ops_run.add_argument("--cutoff", default=None)
+    ops_run.add_argument("--run-id", default=None)
+    ops_run.add_argument("--report-id", default=None)
+    ops_run.add_argument("--scheduled-for", default=None)
+    ops_run.add_argument("--display-timezone", default="Asia/Shanghai")
+    ops_run.add_argument("--supersedes", default=None)
+    ops_run.add_argument("--synthetic-empty", action="store_true")
+    ops_run.add_argument("--retrospective-catchup", action="store_true")
+    ops_run.add_argument("--ttl-seconds", type=int, default=900)
+    ops_run.add_argument("--now", default=None)
+    ops_run.add_argument("--lock-id", default=None)
+    ops_run.add_argument("--no-recover-expired", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.command == "ops-run-session-brief":
+            result = run_guarded_session_brief(
+                args.workspace,
+                report_type=args.report_type,
+                market_session_date=args.session_date,
+                cutoff=args.cutoff or now(),
+                run_id=args.run_id,
+                report_id=args.report_id,
+                scheduled_for=args.scheduled_for,
+                display_timezone=args.display_timezone,
+                supersedes_report_id=args.supersedes,
+                default_synthetic=args.synthetic_empty,
+                retrospective_catchup=args.retrospective_catchup,
+                ttl_seconds=args.ttl_seconds,
+                now_utc=args.now,
+                lock_id=args.lock_id,
+                recover_expired=not args.no_recover_expired,
+            )
+            print(json.dumps(result, ensure_ascii=False))
+            if result["status"] == "degraded":
+                return 0
+            if result["status"] == "skipped_locked":
+                return 2
+            return 1
         if args.command == "ops-status":
             print(json.dumps(read_ops_status(args.workspace, now_utc=args.now), ensure_ascii=False))
             return 0
